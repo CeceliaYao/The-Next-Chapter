@@ -367,46 +367,39 @@ function bgMovingOut(b, L) {
   drawStackedBoxes(b);
 }
 
-/* ---------- title screen: the bedroom door (after Chloee's laptop mock-up) ---------- */
-const DOOR_ART = { x: 84, w: 152 };        // door leaf position on the 320 x 180 art grid
-function drawDoorWall() {
-  const b = new PixBuf(ART_W, ART_H, 0), x1 = DOOR_ART.x, x2 = DOOR_ART.x + DOOR_ART.w;
-  b.rect(0, 0, ART_W, ART_H, '#c9b496');
-  for (let x = 0; x < ART_W; x += 6) b.vline(x, 0, ART_H, '#c2ad8e');
-  b.dither(0, 0, ART_W, ART_H, '#b8a284', 3);
-  // the light from the room behind the door (seen when it opens)
-  skyGrad(b, x1, 0, DOOR_ART.w, ART_H, ['#fff6ea', '#ffe6b8', '#ffc98a']);
-  b.ell(x1 + DOOR_ART.w / 2, 70, 60, 70, '#fffaf2');
-  // door casing, two shades of beige
-  [[x1 - 12, 12], [x2, 12]].forEach(([x, w]) => {
-    b.rect(x, 0, w, ART_H, '#e6d6b8'); b.vline(x, 0, ART_H, '#f3e8d2'); b.vline(x + w - 1, 0, ART_H, '#bfa985');
-    b.vline(x + 3, 0, ART_H, '#d8c5a2');
-  });
-  b.rect(x1 - 2, 0, 2, ART_H, '#7a5a40'); b.rect(x2, 0, 1, ART_H, '#7a5a40');
-  // hinges
-  [30, 150].forEach(y => { b.rect(x1 - 3, y, 3, 8, '#b08a3e'); b.px(x1 - 2, y + 2, '#e8c46a'); });
+/* ---------- title screen: the bedroom door on the left half of the cover ---------- */
+// Door leaf and its frame, in art pixels (1 art px = 4 screen px). The leaf swings open on START.
+const DOOR_ART = { fw: 118, fh: 152, lx: 4, ly: 4, lw: 110, lh: 148 };
+function drawDoorFrame() {
+  const { fw, fh, lx, ly, lw, lh } = DOOR_ART, b = new PixBuf(fw, fh, 0);
+  // warm light from the room behind the door (seen when it opens)
+  skyGrad(b, lx, ly, lw, lh, ['#fffaf2', '#ffe6b8', '#ffc98a']);
+  b.ell(lx + lw / 2, ly + 50, 40, 50, '#fffdf8');
+  // casing on three sides, two shades of beige
+  b.rect(0, 0, fw, ly, '#e6d6b8'); b.rect(0, 0, lx, fh, '#e6d6b8'); b.rect(fw - lx, 0, lx, fh, '#e6d6b8');
+  b.hline(0, 0, fw, '#f3e8d2'); b.vline(0, 0, fh, '#f3e8d2'); b.vline(fw - 1, 0, fh, '#bfa985');
+  b.vline(lx - 1, ly - 1, fh, '#7a5a40'); b.vline(fw - lx, ly - 1, fh, '#7a5a40'); b.hline(lx - 1, ly - 1, lw + 2, '#7a5a40');
+  b.rect(0, fh - 2, fw, 2, '#bfa985');
+  [24, 120].forEach(y => { b.rect(lx - 2, y, 2, 7, '#b08a3e'); b.px(lx - 2, y + 2, '#e8c46a'); });   // hinges
   return b.toCanvas(1);
 }
 function drawDoorLeaf() {
-  const W = DOOR_ART.w, H = ART_H, b = new PixBuf(W, H, 0);
+  const W = DOOR_ART.lw, H = DOOR_ART.lh, b = new PixBuf(W, H, 0);
   const base = '#d9604f', dark = '#b8483a', groove = '#c4523f', hi = '#ec8a75';
   b.rect(0, 0, W, H, base);
-  for (let x = 6; x < W; x += 5) b.vline(x, 0, H, groove);
+  for (let x = 5; x < W; x += 5) b.vline(x, 0, H, groove);
   b.dither(0, 0, W, H, '#cf5646', 4);
   const panel = (x, y, w, h) => {
     b.rect(x, y, w, h, '#d35a49');
     for (let i = x + 4; i < x + w - 2; i += 6) b.vline(i, y + 3, h - 6, dark);
     b.hline(x, y, w, dark); b.vline(x, y, h, dark); b.hline(x, y + h - 1, w, hi); b.vline(x + w - 1, y, h, hi);
-    b.hline(x + 2, y + 2, w - 4, groove); b.vline(x + 2, y + 2, h - 4, groove);
   };
-  panel(12, 18, W - 24, 104);
-  panel(12, 134, W - 24, 52);
+  panel(9, 12, W - 18, 84);
+  panel(9, 106, W - 18, 34);
   b.vline(0, 0, H, dark); b.vline(W - 1, 0, H, '#a8402f');
-  // peephole
-  b.ell(W / 2, 9, 2.6, 2.6, '#c9a24a'); b.px(Math.floor(W / 2), 9, '#3a2a1a');
-  // deadbolt + lever handle
-  b.ell(W - 13, 92, 3.4, 3.4, '#c9a24a'); b.ell(W - 13, 92, 1.6, 1.6, '#7a5a2a');
-  b.rect(W - 16, 100, 6, 18, '#2a2420'); b.rect(W - 15, 101, 4, 16, '#3a322c');
-  b.rect(W - 16, 104, 2, 3, '#555'); b.rect(W - 22, 104, 8, 3, '#2a2420'); b.px(W - 22, 104, '#555');
+  b.ell(W / 2, 7, 2.2, 2.2, '#c9a24a'); b.px(Math.floor(W / 2), 7, '#3a2a1a');                       // peephole
+  b.ell(W - 10, 88, 3, 3, '#c9a24a'); b.ell(W - 10, 88, 1.4, 1.4, '#7a5a2a');                         // deadbolt
+  b.rect(W - 13, 94, 5, 14, '#2a2420'); b.rect(W - 12, 95, 3, 12, '#3a322c');                          // handle plate
+  b.rect(W - 18, 98, 7, 3, '#2a2420'); b.px(W - 18, 98, '#555');                                      // lever
   return b.toCanvas(1);
 }

@@ -357,20 +357,16 @@ const PIXEL_SPRITES = {
 
   /* ---------------- 3 · TWEEN ---------------- */
   backpack: {
-    // the real one: black canvas bag, notebooks stuffed in, a knitted rainbow bunny on the zip
-    w: 20, h: 21,
+    w: 18, h: 20,
     draw(b) {
-      const K = '#2e2c33', Kd = '#1f1e23', Kl = '#4a4751', zip = '#77747e';
-      b.rect(1, 2, 9, 6, '#d8b27a'); b.hline(1, 2, 9, '#c49a5e'); for (let x = 2; x < 10; x += 2) b.px(x, 2, 'G');        // kraft notebook
-      b.rect(3, 0, 9, 5, '#7a3fd6'); b.hline(3, 4, 9, 'w'); b.px(4, 1, '#a57cf0'); for (let x = 4; x < 12; x += 2) b.px(x, 0, 'G');   // purple notebook
-      b.rect(6, 3, 13, 16, K); b.px(6, 3, null); b.px(18, 3, null); b.rect(7, 2, 11, 1, K);
-      b.vline(7, 4, 13, Kl); b.vline(18, 5, 13, Kd); b.hline(8, 3, 9, zip);
-      b.rect(8, 11, 10, 7, Kd); b.hline(8, 11, 10, zip); b.px(9, 11, 'w');                         // front pocket + zip
-      b.rect(15, 15, 2, 2, 'w');                                                                     // label
-      b.rect(5, 19, 4, 1, K); b.rect(16, 19, 3, 1, K);                                               // feet of the strap
-      b.px(8, 12, 'c'); b.px(7, 13, 'c');                                                             // keyring string
-      b.grid(2, 14, ['.ww.', 'wwww', '3415', 'x531', '.w.w']);                                         // rainbow knitted bunny
-      b.px(2, 13, 'w'); b.px(5, 13, 'w');
+      b.rect(6, 0, 6, 1, 'V'); b.px(5, 1, 'V'); b.px(12, 1, 'V');
+      b.rect(1, 2, 15, 18, 'v');
+      [[1, 2], [15, 2], [1, 19], [15, 19]].forEach(([x, y]) => b.px(x, y, null));
+      b.vline(14, 3, 16, 'V'); b.vline(3, 4, 7, 'L'); b.px(3, 3, 'l');
+      b.rect(4, 11, 9, 7, 'L'); b.hline(4, 11, 9, 'l'); b.hline(5, 13, 7, 'V'); b.px(12, 13, 'Y');
+      b.px(15, 4, 'o'); b.px(16, 5, 'o');
+      b.grid(15, 6, ['.Y.', 'YYY', '.Y.']);
+      b.rect(13, 8, 2, 2, 'P');
     }
   },
   skates: {

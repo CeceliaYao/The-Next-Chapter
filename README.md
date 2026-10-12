@@ -39,7 +39,7 @@ npx serve .        # then open the printed localhost address
 | Fullscreen | **F** |
 | Skip the current chapter (for testing) | **Shift + N** |
 
-**Exhibition mode is built in.** After 2.5 minutes with no input, the game returns to the title screen for the next visitor (`IDLE_RESET_MS` in `js/data.js`). The title screen is the bedroom door from Chloee's laptop mock-up: the logo and our names on a coral door that swings open when you press **Open the door**. The CHAPTERS window next to it has six discs so visitors, or the team during the demo, can jump straight to any chapter.
+**Exhibition mode is built in.** After 2.5 minutes with no input, the game returns to the title screen for the next visitor (`IDLE_RESET_MS` in `js/data.js`). On the title screen the logo hangs on a coral bedroom door on the left (after Chloee's laptop mock-up); press **START** and the door swings open into the nursery. The window on the right has six discs so visitors, or the team during the demo, can jump straight to any chapter.
 
 ---
 
@@ -56,7 +56,7 @@ npx serve .        # then open the printed localhost address
 | # | Chapter | Year | What happens | Memories (from the shot list) |
 | --- | --- | --- | --- | --- |
 | 1 | The Nursery | 2000 | Cot, mobile, night-light, snow globe, Peter Rabbit | Teddy resting in bed (photo), snow globe (video), Peter Rabbit on the books (photo) |
-| 2 | Childhood | 2005 | Tea party, dress-ups (tutu, wings, tiara), tiny messes, brother's truck | Storybooks (photo), tea party (video), drawings (photo) |
+| 2 | Childhood | 2005 | Tea party, dress-ups (tutu, wings, tiara), tiny messes, brother's truck | Tea party (video), drawings (photo) |
 | 3 | Tween | 2010 | Backpack, skates, art, brother's controller | Backpack plonk (video), roller skates (photo), drawing (photo), family photo (photo) |
 | 4 | Teen | 2014 | Mess everywhere, posters, skating trophies, Mum nagging, old sneakers kicked under the bed | Homework (photo), clothes pile + Mum (video), heels (photo), posters (photo), trophies (photo) |
 | 5 | Young Adult | 2017 | More grown-up room; fairy lights, laptop | Faded Teddy (photo), text notes |
@@ -72,8 +72,7 @@ Until a file exists, the game shows something in its place, so nothing looks bro
 | --- | --- | --- |
 | ✅ `assets/photos/01-nursery-teddy.webp` (cut-out) | Teddy is put in the cot | Teddy, "resting" in bed. |
 | `assets/video/01-nursery-snowglobe.mp4` (✅ still: `assets/photos/01-nursery-snowglobe.jpg`) | Snow globe is put away | ♪ ♫ ♪ watching the glitter fall |
-| ✅ `assets/photos/01-nursery-storybooks.jpg` | Peter Rabbit is put down | Peter Rabbit, chilling on a shelf. |
-| ✅ `assets/photos/02-childhood-storybooks.jpg` | Storybooks are shelved | Read it again! Again! |
+| ✅ `assets/photos/01-nursery-peter-rabbit.jpg` | Peter Rabbit is put down | Peter Rabbit, chilling on a shelf. |
 | `assets/video/02-childhood-tea-party.mp4` | Tea set goes on the tea table | Tea party with the dolls and Teddy. |
 | `assets/photos/02-childhood-drawings.jpg` (pixel stand-in for now) | Drawing goes on the wall | This is my family. Teddy is the biggest. |
 | `assets/video/03-tween-backpack.mp4` (✅ still: `assets/photos/03-tween-backpack.jpg`) | Backpack is put down | "too many textbooks to carry" |

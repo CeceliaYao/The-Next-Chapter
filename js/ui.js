@@ -77,34 +77,41 @@ const UI = (() => {
     return overlay.firstElementChild;
   }
 
-  /* ---------------- title: the bedroom door ---------------- */
-  // After Chloee's laptop mock-up: the logo and our names on the door. Press start and it swings open.
+  /* ---------------- title ---------------- */
+  // The logo hangs on a door on the left; press START (or pick a disc) and the door swings open.
   function showTitle(chapters) {
     const discs = chapters.map((c, i) =>
       '<button class="disc" data-i="' + i + '"><img class="px" src="' + discURL(c.accent, 1) + '" alt=""><b>' + (i + 1) + '</b><small>' + c.year + '</small></button>').join('');
-    const names = CREDITS.map(c => c[0].replace(/\s*\(.*\)/, '')).sort().join(' · ');   // same order as the mock-up
+    const floaters = ['star', 'heart', 'sparkle', 'heart', 'star', 'sparkle', 'heart', 'star', 'sparkle', 'heart'].map((n, i) =>
+      '<span class="floater" style="left:' + (5 + i * 9.5) + '%;animation-delay:' + (-i * 1.7) + 's">' + icon(n, 4 + (i % 3) * 2) + '</span>').join('');
+    const D = DOOR_ART;
     const el = setScreen(
-      '<div class="door-scene">' +
-      '  <canvas class="px door-wall" width="320" height="180"></canvas>' +
-      '  <div class="door-leaf">' +
-      '    <canvas class="px" width="' + DOOR_ART.w + '" height="180"></canvas>' +
-      '    <img class="px door-logo" src="assets/brand/logo-stacked-pixel.png" alt="The Next Chapter">' +
-      '    <div class="door-cta"><button class="aqua big" id="startBtn">Open the door &gt;</button></div>' +
-      '    <div class="door-names">' + esc(names) + '</div>' +
+      '<div class="holo"></div><div class="floaters">' + floaters + '</div>' +
+      '<div class="title-door pop-in">' +
+      '  <canvas class="px door-frame" width="' + D.fw + '" height="' + D.fh + '"></canvas>' +
+      '  <div class="door-leaf"><canvas class="px" width="' + D.lw + '" height="' + D.lh + '"></canvas>' +
+      '    <img class="px brand-logo" src="assets/brand/logo-main-pixel.png" alt="The Next Chapter"></div>' +
+      '</div>' +
+      '<div class="win title-win pop-in">' +
+      '  <div class="titlebar"><span>THE_NEXT_CHAPTER.EXE</span><span class="tb-dots"><i>_</i><i>□</i><i>x</i></span></div>' +
+      '  <div class="win-body">' +
+      '    <p class="tagline">a little game about keeping up a room,<br>and letting go</p>' +
+      '    <button class="aqua big" id="startBtn">&gt; START</button>' +
+      '    <div class="discs">' + discs + '</div>' +
+      '    <p class="small">or pick a disc to jump to a chapter · best with sound on ♪</p>' +
       '  </div>' +
-      '  <div class="wall-note"><p>a little game about keeping up a room, and letting go.</p><p class="small">best with sound on ♪</p><p class="small course">KKB385 · A3</p></div>' +
-      '  <div class="win jump-win"><div class="titlebar"><span>CHAPTERS</span><span class="tb-dots"><i>_</i><i>x</i></span></div><div class="discs">' + discs + '</div></div>' +
-      '  <div class="door-flash"></div>' +
-      '</div>', 'title-screen');
-    const ctxOf = sel => { const c = el.querySelector(sel).getContext('2d'); c.imageSmoothingEnabled = false; return c; };
-    ctxOf('.door-wall').drawImage(drawDoorWall(), 0, 0);
-    ctxOf('.door-leaf canvas').drawImage(drawDoorLeaf(), 0, 0);
-    draggable(el.querySelector('.jump-win'));
+      '</div>' +
+      '<div class="title-foot">KKB385 · A3 · an interactive room by Isabella, Lyebin, Chloee &amp; Cecelia</div>' +
+      '<div class="door-flash"></div>', 'title-screen');
+    const paint = (sel, cv) => { const c = el.querySelector(sel).getContext('2d'); c.imageSmoothingEnabled = false; c.drawImage(cv, 0, 0); };
+    paint('.door-frame', drawDoorFrame());
+    paint('.door-leaf canvas', drawDoorLeaf());
+    draggable(el.querySelector('.title-win'));
     let opening = false;
     const open = then => {
       if (opening) return; opening = true;
       Sound.init(); Sound.door();
-      el.querySelector('.door-scene').classList.add('opening');
+      el.classList.add('opening');
       setTimeout(then, 1050);
     };
     el.querySelector('#startBtn').addEventListener('click', () => open(() => H.onStart()));

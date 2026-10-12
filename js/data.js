@@ -150,7 +150,7 @@ const CHAPTERS = [
     memories: [
       { id: 'n-teddy', items: ['teddy'], type: 'photo', src: 'assets/photos/01-nursery-teddy.webp', caption: 'Teddy, “resting” in bed.' },
       { id: 'n-globe', items: ['snowglobe'], type: 'video', src: 'assets/video/01-nursery-snowglobe.mp4', still: 'assets/photos/01-nursery-snowglobe.jpg', focus: [0.2, 0.76], caption: '♪ ♫ ♪   watching the glitter fall' },
-      { id: 'n-rabbit', items: ['rabbit'], type: 'photo', src: 'assets/photos/01-nursery-storybooks.jpg', caption: 'Peter Rabbit, chilling on a shelf.' }
+      { id: 'n-rabbit', items: ['rabbit'], type: 'photo', src: 'assets/photos/01-nursery-peter-rabbit.jpg', caption: 'Peter Rabbit, chilling on a shelf.' }
     ],
     onStart: [{ do: 'wait', ms: 1600 }, { do: 'toast', from: 'Mum', text: 'Sweet dreams, little one ♥' }],
     onPlace: {},
@@ -184,7 +184,6 @@ const CHAPTERS = [
       { id: 'truck', x: 880, y: 528, rot: -0.15 }
     ],
     memories: [
-      { id: 'c-books', items: ['picturebooks'], type: 'photo', src: 'assets/photos/02-childhood-storybooks.jpg', caption: 'Read it again! Again!' },
       { id: 'c-tea', items: ['teaset'], type: 'video', src: 'assets/video/02-childhood-tea-party.mp4', caption: 'Tea party with the dolls and Teddy.' },
       { id: 'c-draw', items: ['drawing'], type: 'photo', src: 'assets/photos/02-childhood-drawings.jpg', art: 'crayon', caption: 'This is my family. Teddy is the biggest.' }
     ],

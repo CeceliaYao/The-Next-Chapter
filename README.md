@@ -1,5 +1,7 @@
 # The Next Chapter
 
+*one room, from nursery to moving out: what we keep up, carry on, and leave behind*
+
 **KKB385 · A3.** An interactive, pixel-art Y2K game display about *upkeep*: the slow, never-finished job of looking after a room, and the things in it, while you grow up.
 
 The visitor tends one bedroom across six chapters of a suburban girl's life, from the nursery to the day she moves out. Each chapter, she unpacks, tidies and decides what to carry into the next one. Teddy comes along every time. The game is inspired by *Unpacking*, but the twist is upkeep. Mess comes back, Mum nags, and the memory box only has room for so much.

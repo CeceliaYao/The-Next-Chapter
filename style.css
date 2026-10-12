@@ -306,6 +306,7 @@ button.tile:hover { transform: translateY(-4px); }
 .mem-frame.photo .mem-media { inset: 12px; background: var(--offwhite); }
 .mem-media img, .mem-media video { width: 100%; height: 100%; object-fit: contain; display: block; }
 .mem-frame.video::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .14) 0 2px, transparent 2px 4px); }
+.mem-frame.video.real::after { display: none; }   /* real footage is shown as filmed: no scanlines */
 .cam { position: absolute; inset: 0; pointer-events: none; font-family: 'VT323', monospace; color: #fff; text-shadow: 2px 2px 0 rgba(0, 0, 0, .7); z-index: 2; }
 .cam .rec { position: absolute; left: 16px; top: 10px; font-size: 28px; color: #ff4b4b; }
 .cam .rec::before { content: ''; display: inline-block; width: 12px; height: 12px; margin-right: 6px; background: #ff4b4b; animation: blink 1s steps(2) infinite; }

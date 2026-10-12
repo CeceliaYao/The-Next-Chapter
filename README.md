@@ -75,7 +75,7 @@ Until a file exists, the game shows something in its place, so nothing looks bro
 | ✅ `assets/photos/01-nursery-peter-rabbit.jpg` | Peter Rabbit is put down | Peter Rabbit, chilling on a shelf. |
 | `assets/video/02-childhood-tea-party.mp4` | Tea set goes on the tea table | Tea party with the dolls and Teddy. |
 | `assets/photos/02-childhood-drawings.jpg` (pixel stand-in for now) | Drawing goes on the wall | This is my family. Teddy is the biggest. |
-| `assets/video/03-tween-backpack.mp4` (✅ still: `assets/photos/03-tween-backpack.jpg`) | Backpack is put down | "too many textbooks to carry" |
+| ✅ `assets/video/03-tween-backpack.mp4` (from IMG_2448) | Backpack is put down | "too many textbooks to carry" |
 | ✅ `assets/photos/03-tween-rollerskates.jpg` | Skates are put down | "I got these for my birthday! Now to learn how to brake" |
 | ✅ `assets/photos/03-tween-drawing.jpg` | Art supplies go on the desk | "Drawing is hard, but fun!" |
 | `assets/photos/03-tween-family-photo.jpg` (pixel stand-in for now) | Family photo is placed (use light glare to hide faces) | Family photo. Everybody say cheese. |

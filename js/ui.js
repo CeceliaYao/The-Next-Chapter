@@ -287,7 +287,7 @@ const UI = (() => {
       img.onload = () => {
         host.innerHTML = '';
         const sw = img.naturalWidth, sh = img.naturalHeight;
-        fitFrame(sw / sh, 0);
+        fitFrame(sw / sh, 0); frameEl.classList.add('real');
         const cv = photoCanvas(), ctx = cv.getContext('2d'); host.appendChild(cv);
         ctx.imageSmoothingEnabled = PX === 0; ctx.imageSmoothingQuality = 'high';
         const st = memState, dur = 8000, f = mem.focus || [0.5, 0.5];
@@ -325,6 +325,7 @@ const UI = (() => {
       v.addEventListener('loadeddata', () => {
         host.innerHTML = '';
         if (v.videoWidth) fitFrame(v.videoWidth / v.videoHeight, 0);   // portrait phone videos get a tall frame
+        frameEl.classList.add('real');
         if (PX > 0) {
           v.className = 'hidden-video'; host.appendChild(v);
           const cv = pixCanvas(), ctx = cv.getContext('2d'); host.appendChild(cv);

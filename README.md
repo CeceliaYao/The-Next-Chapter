@@ -13,7 +13,7 @@ The visitor tends one bedroom across six chapters of a suburban girl's life, fro
 
 ## Run it
 
-**Online:** open https://ceceliayao.github.io/The-Next-Chapter/ in Chrome. It is the same game, served by GitHub Pages straight from the `main` branch, so every push updates it within a minute or two.
+**Online:** open https://ceceliayao.github.io/The-Next-Chapter/ in Chrome. It is the same game, served by GitHub Pages. Every push to `main` is copied to the `gh-pages` branch by `.github/workflows/publish.yml`, and the site updates within a minute or two.
 
 **On the exhibition computer (recommended for the show, no Wi-Fi needed):**
 

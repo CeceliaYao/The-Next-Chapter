@@ -1,0 +1,25 @@
+# Keeps the website (GitHub Pages, served from the gh-pages branch) in step with main.
+# Every push to main is copied to gh-pages, and Pages republishes it within a minute or two.
+name: Publish site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-site
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Copy main to gh-pages
+        run: git push --force origin HEAD:refs/heads/gh-pages

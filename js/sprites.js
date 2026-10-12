@@ -10,27 +10,79 @@
 
 const PIXEL_SPRITES = {
   /* ---------------- 1 · NURSERY ---------------- */
+  /* Teddy is drawn the same way every chapter, then worn down a little more each time:
+     stage 0 = brand new (2000) … stage 5 = well loved (2018). See TEDDY_AGES in data.js. */
   teddy: {
-    rows: [
-      '..uu........uu..',
-      '.uttu......uttu.',
-      '.utuuuuuuuuuutu.',
-      '..uuuuuuuuuuuu..',
-      '..uwuuuuuuuuuu..',
-      '..uuouuuuuuouu..',
-      '..uPuttttttuPu..',
-      '..uuuttoottuuu..',
-      '...uuuttttuuU...',
-      '....uuuuuuuU....',
-      '..uuhhuPPuhhuu..',
-      '.uuuhhhPPhhhuuU.',
-      'uuuuuttttttuuuUU',
-      'uuuUttttttttUuUU',
-      '.uuuttttttttuuU.',
-      '..uuuttttttuuU..',
-      '.ttttuuuuuutttt.',
-      '.tttt......tttt.'
-    ]
+    w: 16, h: 18, variants: 6,
+    draw(b, f, v) {
+      const rows = [
+        '..DD........DD..',
+        '.DCCD......DCCD.',
+        '.DCFFFFFFFFFFCD.',
+        '..FHHFFFFFFFFFD.',
+        '..FHFFFFFFFFFFD.',
+        '..FFNFFFFFFNFFD.',
+        '..FFFFCCCCFFFFD.',
+        '..FFFCCNNCCFFFD.',
+        '..DFFCCCCCCFFD..',
+        '...DFFCCCCFFD...',
+        '..FFFDFFFFDFFF..',
+        '.FFFFFFFFFFFFFF.',
+        'FFFFFFFFFFFFFFFD',
+        'FFFFFFFFFFFFFFDD',
+        'FHFFFFFFFFFFFFDD',
+        '.FFFFFFFFFFFFFD.',
+        '.CCCFFFFFFFFCCC.',
+        '.CCC.FFFFFF.CCC.'
+      ];
+      // fur fades from chestnut to dusty tan; the organza bow fades, droops, then is lost
+      const T = [
+        { F: '#b45f2e', D: '#87401c', H: '#da8b52', C: '#fbe9cf', N: '#2b160c', B: '#2fc6aa', b: '#a6f7e2', K: '#178676' },
+        { F: '#ab6236', D: '#824426', H: '#cc8655', C: '#f3e1c7', N: '#2e1a10', B: '#47b8a2', b: '#9de4d2', K: '#2a7f72' },
+        { F: '#a0663f', D: '#7b4b30', H: '#bd8560', C: '#eadac3', N: '#342015', B: '#6aac9d', b: '#acd6ca', K: '#467b72' },
+        { F: '#966a4b', D: '#755039', H: '#b0866a', C: '#e0d2be', N: '#3a271b', B: '#88a59d', b: '#bccdc6', K: '#5d7a73' },
+        { F: '#8d6e56', D: '#6e5544', H: '#a58a74', C: '#d7cbba', N: '#3f2d21' },
+        { F: '#86705e', D: '#69574a', H: '#9b8a7a', C: '#cec4b5', N: '#433226' }
+      ][v];
+      const grid = rows.map(r => r.split(''));
+      const set = (x, y, c) => { if (grid[y] && grid[y][x] !== undefined) grid[y][x] = c; };
+      if (v <= 3) {                          // organza bow tie: two loops and a knot (limp by stage 3, lost after)
+        const loop = v < 3
+          ? [[3, 10, 'b'], [4, 10, 'B'], [5, 10, 'B'], [2, 11, 'b'], [3, 11, 'B'], [4, 11, 'K'], [5, 11, 'B'], [6, 11, 'B'], [3, 12, 'B'], [4, 12, 'B'], [5, 12, 'K']]
+          : [[3, 11, 'B'], [4, 11, 'B'], [5, 11, 'B'], [6, 11, 'B'], [3, 12, 'b'], [4, 12, 'K'], [5, 12, 'B'], [4, 13, 'B']];
+        loop.forEach(([x, y, c]) => { set(x, y, c); set(15 - x, y, c === 'b' ? 'B' : c); });
+        [[7, 10, 'B'], [8, 10, 'B'], [7, 11, 'K'], [8, 11, 'K'], [7, 12, 'B'], [8, 12, 'B']].forEach(([x, y, c]) => set(x, y, c));
+        if (v < 3) [[6, 13, 'B'], [9, 13, 'B'], [6, 14, 'K'], [9, 14, 'K']].forEach(([x, y, c]) => set(x, y, c));
+      }
+      if (v >= 5) {                          // the right ear has gone a bit floppy
+        set(11, 0, '.'); set(12, 0, '.'); set(11, 1, 'D'); set(12, 1, 'D'); set(13, 1, 'D'); set(14, 1, '.');
+        set(12, 2, 'C'); set(13, 2, 'D');
+      }
+      for (let y = 0; y < 18; y++) for (let x = 0; x < 16; x++) {
+        const k = grid[y][x];
+        if (k !== '.') b.px(x, y, T[k] || T.F);
+      }
+      const thread = '#e48aa8';
+      if (v >= 1) {                          // fur hugged flat on the tummy
+        [[5, 15], [7, 15], [6, 14], [8, 14], [10, 15]].forEach(([x, y]) => { if (b.get(x, y) === T.F) b.px(x, y, T.H); });
+      }
+      if (v >= 2) {                          // left ear sewn back on
+        b.px(1, 2, thread); b.px(2, 3, thread); b.px(3, 2, thread);
+      }
+      if (v >= 3) {                          // gingham patch on the tummy
+        for (let y = 13; y <= 15; y++) for (let x = 8; x <= 10; x++) b.px(x, y, (x + y) % 2 ? '#7fb2d9' : '#e2eff8');
+        b.px(7, 13, thread); b.px(11, 15, thread);
+      }
+      if (v >= 4) {                          // a button where an eye used to be, and a mended leg seam
+        b.px(11, 5, '#3a5a9a'); b.px(12, 5, '#3a5a9a'); b.px(11, 4, '#7d9ad0');
+        b.px(5, 16, thread); b.px(6, 17, thread); b.px(7, 16, thread);
+      }
+      if (v >= 5) {                          // worn-through fur, a patched paw and a loose thread
+        [[3, 4], [6, 3], [12, 14], [2, 13], [9, 2], [13, 6]].forEach(([x, y]) => b.px(x, y, T.D));
+        b.px(1, 16, '#f2a8b9'); b.px(2, 16, '#ffd0de'); b.px(1, 17, '#ffd0de'); b.px(2, 17, '#f2a8b9');
+        b.px(15, 15, thread); b.px(15, 16, thread);
+      }
+    }
   },
   blanket: {
     rows: [
@@ -56,28 +108,31 @@ const PIXEL_SPRITES = {
     }
   },
   snowglobe: {
-    w: 13, h: 15, frames: 4,
+    w: 13, h: 16, frames: 4,
     draw(b, f) {
       b.grid(0, 0, [
         '....bbbbb....',
         '..bbwwbbbbb..',
-        '.bbwbbbbbbbb.',
-        '.bwbbbbbbbbb.',
-        'bbbbubbbubbbb',
-        'bbbbuuuuubbbb',
-        'bbbbbuuubbbbb',
-        '.bbbuuuuubbb.',
-        '.wwwwwwwwwww.',
-        '..wwwwwwwww..',
-        '....wwwww....',
-        '...RRRRRRR...',
-        '..RhhhhhhhR..',
-        '.RRRRRRRRRRR.',
-        '.QQQQQQQQQQQ.'
+        '.bbwbbYbbbbb.',
+        '.bwbbbYbbbbb.',
+        'bbbwwwYwwwbbb',
+        'bbwwwwYwwwwbb',
+        'bbbbwbYbwbbbb',
+        'bbbwbbYbbwbbb',
+        '.bbbbbYbbbbb.',
+        '.bbYYYYYYYbb.',
+        '..bbbbbbbbb..',
+        '...ppppppp...',
+        '..pPpxpPpxp..',
+        '.ppppppppppp.',
+        '.BBBBBBBBBBB.',
+        '.ppppppppppp.'
       ]);
+      // the horse bobs up and down on its pole, glitter swirls
+      if (f % 2) { [[3, 4], [4, 4], [5, 4], [7, 4], [8, 4], [9, 4]].forEach(([x, y]) => b.px(x, y, 'b')); [[3, 6], [4, 6], [5, 6], [7, 6], [8, 6], [9, 6]].forEach(([x, y]) => b.px(x, y, 'w')); }
       const cols = ['h', 'Y', 'w', 'L'];
       for (let i = 0; i < 4; i++) {
-        const x = 2 + ((f * 3 + i * 5) % 9), y = 1 + ((f * 2 + i * 3) % 6);
+        const x = 1 + ((f * 3 + i * 5) % 11), y = 1 + ((f * 2 + i * 3) % 8);
         if (b.get(x, y) === 'b') b.px(x, y, cols[i]);
       }
     }
@@ -99,6 +154,32 @@ const PIXEL_SPRITES = {
       'BBBocccoeeeoPPP.hhh',
       'BBBocccoeeeoPPP.hhh'
     ]
+  },
+  rabbit: {
+    rows: [
+      '..TT...TT.....',
+      '.TWT..TWT.....',
+      '.TWT..TWT.....',
+      '.TWT..TWT.....',
+      '.TWT.TWT......',
+      '..TTTTTT......',
+      '.TTTTTTTT.....',
+      'TTnTTTTnTT....',
+      'TTTTCCTTTT....',
+      '.TTCpCCTT.....',
+      '..TTCCTT......',
+      '.JJJCCJJJ.....',
+      'JJJJCCJJJJJ...',
+      'TJJYCCJJJJJTT.',
+      'TJJJCCYJJJ.TT.',
+      '.JJJCCJJJJ....',
+      '.JJJYCJJJJ....',
+      '..TTTTTTTT....',
+      '.TTTTTTTTTT...',
+      'WWWTTTTTTWWW..',
+      'WWW......WWW..'
+    ],
+    pal: { T: '#cfa475', W: '#fbf3e6', C: '#f3e2c4', J: '#7cc4ea', Y: '#e0aa2a', n: '#2b1d14', p: '#e3a0a0' }
   },
   nightlight: {
     rows: [
@@ -218,6 +299,16 @@ const PIXEL_SPRITES = {
       'ppp.ppp.ppp.ppp.ppp.'
     ]
   },
+  tiara: {
+    rows: [
+      '.....33.....',
+      '..w..33..w..',
+      '.wgw.ww.wgw.',
+      '.gwgwggwgwg.',
+      'wggggggggggw',
+      'gggggggggggg'
+    ]
+  },
   wings: {
     w: 22, h: 17,
     draw(b) {
@@ -281,16 +372,16 @@ const PIXEL_SPRITES = {
   skates: {
     w: 21, h: 14,
     draw(b) {
-      const skate = (ox, oy, c, dark) => {
-        b.rect(ox, oy, 5, 9, c); b.rect(ox, oy + 5, 11, 4, c); b.px(ox + 11, oy + 7, c); b.px(ox + 11, oy + 8, c);
-        b.vline(ox + 4, oy + 1, 4, dark);
-        b.px(ox + 2, oy + 1, 'w'); b.px(ox + 2, oy + 3, 'w'); b.px(ox + 6, oy + 6, 'w');
-        b.hline(ox, oy + 9, 12, 'w');
-        [1, 4, 7, 10].forEach(wx => b.rect(ox + wx, oy + 10, 2, 2, 'A'));
-        b.px(ox + 12, oy + 9, 'h');
+      const skate = (ox, oy) => {
+        b.rect(ox, oy, 5, 9, 'w'); b.rect(ox, oy + 5, 11, 4, 'w'); b.px(ox + 11, oy + 7, 'w'); b.px(ox + 11, oy + 8, 'w');
+        b.vline(ox + 4, oy + 1, 4, 'c'); b.vline(ox, oy + 1, 7, 'c');
+        [[2, 2], [3, 4], [5, 6], [7, 6]].forEach(([x, y]) => b.px(ox + x, oy + y, 't'));   // laces
+        b.hline(ox, oy + 9, 12, 'R'); b.rect(ox, oy + 8, 3, 1, 'r');                        // sole + heel
+        [1, 4, 7, 10].forEach(wx => { b.rect(ox + wx, oy + 10, 2, 2, 'y'); b.px(ox + wx, oy + 10, 'Y'); });
+        b.rect(ox + 12, oy + 9, 1, 2, 'R');                                                 // toe stop
       };
-      skate(0, 0, 'L', 'v');
-      skate(8, 2, 'P', 'h');
+      skate(0, 0);
+      skate(8, 2);
     }
   },
   artsupplies: {
@@ -409,6 +500,15 @@ const PIXEL_SPRITES = {
       b.grid(6, 5, ['..w..', '.www.', 'wwwww', '.w.w.']);
     }
   },
+  sneakers: {
+    w: 20, h: 8,
+    draw(b) {
+      // one trainer the right way up, one kicked over onto its side
+      b.grid(0, 1, ['...wwww......', '..wwwhwww....', '.wwwhwhwww...', 'wwwwwwwwwwww.', 'cccccccccccc.', 'GGGGGGGGGGGG.']);
+      b.px(2, 3, 'G'); b.px(9, 4, 'w');
+      b.grid(11, 0, ['..GG.....', '.Gwwhw...', 'Gwwwhwww.', 'Gwwwwwwww', 'Gcwwwwwww', '.Gcccccc.', '..GGGG...']);
+    }
+  },
   heels: {
     w: 18, h: 10,
     draw(b) {
@@ -448,30 +548,31 @@ const PIXEL_SPRITES = {
   trophy: {
     w: 12, h: 18,
     draw(b) {
-      b.ring(0.5, 4.5, 1.6, 2.5, 'k'); b.ring(11.5, 4.5, 1.6, 2.5, 'k');
-      b.rect(1, 0, 10, 2, 'Y'); b.poly([[1, 2], [11, 2], [9, 10], [3, 10]], 'Y');
-      b.vline(3, 2, 6, 'y'); b.vline(9, 2, 7, 'k');
-      b.ell(6, 5, 2, 2, 'w'); b.px(6, 5, 'G'); b.px(5, 4, 'G');
-      b.rect(5, 10, 2, 3, 'k');
-      b.rect(2, 13, 8, 2, 'Q'); b.rect(1, 15, 10, 3, 'R'); b.hline(4, 16, 4, 'Y');
+      b.poly([[1, 0], [5, 2], [6, 0], [11, 0], [9, 9], [3, 9]], 'g');
+      b.line(2, 2, 9, 7, 'N'); b.line(3, 2, 10, 6, 'n'); b.vline(4, 1, 6, 'w');
+      b.ell(6, 5, 1.6, 1.6, 'w'); b.px(6, 5, 'x');
+      b.rect(5, 9, 2, 3, 'G'); b.rect(3, 12, 6, 2, 'n'); b.hline(3, 12, 6, 'B');
+      b.rect(2, 14, 8, 1, 'G'); b.rect(1, 15, 10, 3, 'z'); b.rect(3, 16, 6, 1, 'Y');
     }
   },
   medal: {
-    w: 10, h: 15,
+    w: 13, h: 16,
     draw(b) {
-      b.poly([[1, 0], [4, 0], [6, 7], [3, 7]], 'x'); b.poly([[6, 0], [9, 0], [7, 7], [4, 7]], 'w');
-      b.ell(5, 10.5, 4, 4, 'Y'); b.ell(5, 10.5, 2.5, 2.5, 'k');
-      b.grid(4, 9, ['.y.', 'yyy', '.y.']); b.px(3, 8, 'w');
+      b.poly([[0, 1], [3, 1], [6, 9], [5, 11], [4, 11]], 'g'); b.line(1, 1, 5, 9, 'w');
+      b.ell(5, 3.5, 3, 3, 'w'); b.ring(5, 3.5, 2, 3, 'G'); b.px(5, 3, 'x'); b.px(4, 4, 'N');
+      const star = (cx, cy, R, c) => { const p = []; for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? R * 0.45 : R; p.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]); } b.poly(p, c); };
+      star(10, 3, 2.6, 'N'); star(8.5, 7.5, 2.2, 'N'); star(6.8, 10.5, 1.8, 'N');
+      b.rect(4, 11, 3, 1, 'G'); b.rect(3, 12, 5, 2, 'n'); b.hline(3, 12, 5, 'w');
+      b.rect(2, 14, 7, 2, 'w'); b.hline(2, 15, 7, 'g');
     }
   },
   award: {
-    w: 14, h: 16,
+    w: 12, h: 16,
     draw(b) {
-      const pts = [];
-      for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? 3 : 6.6; pts.push([7 + Math.cos(a) * rr, 6.5 + Math.sin(a) * rr]); }
-      b.poly(pts, 'L'); b.px(5, 4, 'l'); b.px(6, 3, 'l'); b.px(5, 5, 'w');
-      b.rect(6, 11, 2, 2, 'L');
-      b.rect(1, 12, 12, 4, 'N'); b.rect(4, 13, 6, 2, 'Y');
+      b.poly([[3, 11], [1, 6], [3, 1], [6, 0], [5, 3], [8, 1], [7, 4], [11, 3], [8, 7], [9, 11]], 'Y');
+      b.ell(6, 7, 2.6, 2.6, 'k'); b.ell(6, 7, 1.4, 1.4, 'z'); b.line(3, 2, 2, 7, 'y'); b.px(6, 1, 'y');
+      b.rect(5, 11, 2, 2, 'k');
+      b.rect(2, 13, 8, 3, 'w'); b.hline(2, 15, 8, 'g');
     }
   },
   guitar: {
@@ -584,24 +685,33 @@ function buildSprites() {
   Object.keys(PIXEL_SPRITES).forEach(id => {
     const def = PIXEL_SPRITES[id];
     const w = def.rows ? def.rows[0].length : def.w, h = def.rows ? def.rows.length : def.h;
-    const frames = [];
-    for (let f = 0; f < (def.frames || 1); f++) {
-      const b = new PixBuf(w, h, 2);
-      if (def.rows) b.grid(0, 0, def.rows); else def.draw(b, f);
-      b.outline('o');
-      frames.push({
-        normal: b.toCanvas(1),
-        hover: b.clone().halo('w').toCanvas(1),
-        ghost: b.map((c, x, y) => ((x + y) % 2 ? null : c)).toCanvas(1),
-        buf: b
-      });
+    const variants = [];
+    for (let v = 0; v < (def.variants || 1); v++) {
+      const frames = [];
+      for (let f = 0; f < (def.frames || 1); f++) {
+        const b = new PixBuf(w, h, 2);
+        if (def.rows) b.grid(0, 0, def.rows); else def.draw(b, f, v);
+        if (def.pal) b.d = b.d.map(c => (c && def.pal[c]) || c);
+        b.outline('o');
+        frames.push({
+          normal: b.toCanvas(1),
+          hover: b.clone().halo('w').toCanvas(1),
+          ghost: b.map((c, x, y) => ((x + y) % 2 ? null : c)).toCanvas(1),
+          buf: b
+        });
+      }
+      variants.push(frames);
     }
-    SPR[id] = { w: w + 2, h: h + 2, frames, frameMs: def.frameMs || (id === 'snowglobe' ? 260 : 520) };
+    SPR[id] = { w: w + 2, h: h + 2, frames: variants[0], variants, frameMs: def.frameMs || (id === 'snowglobe' ? 260 : 520) };
     if (ITEM_DEFS[id]) { ITEM_DEFS[id].w = (w + 2) * ART; ITEM_DEFS[id].h = (h + 2) * ART; }
   });
 }
 
-function spriteFrame(id, t) {
+/* Some sprites change between chapters (Teddy gets older). game.js sets SPRITE_VARIANT.teddy. */
+const SPRITE_VARIANT = {};
+function spriteFrame(id, t, v) {
   const s = SPR[id];
-  return s.frames.length === 1 ? s.frames[0] : s.frames[Math.floor(t / s.frameMs) % s.frames.length];
+  const vv = Math.min(s.variants.length - 1, v != null ? v : (SPRITE_VARIANT[id] || 0));
+  const frames = s.variants[vv];
+  return frames.length === 1 ? frames[0] : frames[Math.floor(t / s.frameMs) % frames.length];
 }

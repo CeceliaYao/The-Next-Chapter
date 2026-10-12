@@ -18,9 +18,19 @@ const CREDITS = [
   ['Lyebin Cho', 'Film & Photo']
 ];
 
+/* Teddy gets a little older every chapter (the sprite changes too, see sprites.js). */
+const TEDDY_AGES = [
+  'brand new, bow and all',
+  'well hugged',
+  'one ear sewn back on',
+  'patched up, bow gone floppy',
+  'lost the bow, and an eye (button now)',
+  'faded, floppy, still here'
+];
+
 /* Surface tags an object can "fit" on:
    bed · shelf · desk · sill · table · floor · wall · hook · mobile · socket · lights
-   bins (object disappears into them): door · toybox · basket · box               */
+   bins (object disappears into them): door · toybox · basket · underbed · box    */
 const CARRY_FITS = ['shelf', 'desk', 'bed', 'sill', 'floor'];
 
 /* Each object's size comes from its pixel sprite in sprites.js. */
@@ -30,7 +40,8 @@ const ITEM_DEFS = {
   blanket:      { name: 'Baby blanket', fits: ['bed'], hint: 'Blankets go in the cot.' },
   mobile:       { name: 'Star mobile', fits: ['mobile'], hint: 'The mobile hangs from the hook above the cot.' },
   snowglobe:    { name: 'Snow globe music box', fits: ['shelf', 'desk', 'sill'], hint: 'Somewhere up high: the shelf or the change table.' },
-  rabbitbooks:  { name: 'Peter Rabbit books', fits: ['shelf', 'desk', 'sill'], hint: 'Books live on the shelf.' },
+  rabbit:       { name: 'Peter Rabbit', fits: ['shelf', 'desk', 'sill', 'bed'], hint: 'Peter Rabbit likes chilling on a shelf.' },
+  rabbitbooks:  { name: 'Board books', fits: ['shelf', 'desk', 'sill'], hint: 'Books live on the shelf.' },
   nightlight:   { name: 'Night-light', fits: ['socket'], hint: 'Plug it into the wall socket next to the cot.' },
   rattle:       { name: 'Rattle', fits: ['bed', 'desk', 'shelf', 'floor'], hint: 'Rattles go in the cot.' },
   bottle:       { name: 'Bottle', fits: ['desk', 'shelf', 'sill'], hint: 'The bottle goes on the change table or a shelf.' },
@@ -40,12 +51,13 @@ const ITEM_DEFS = {
   doll:         { name: 'Doll', fits: ['table', 'bed', 'shelf'], hint: 'Dolls sit at the tea table, on the bed or on a shelf.' },
   tutu:         { name: 'Tutu', fits: ['hook'], hint: 'Dress-ups hang on the hooks above the bed.' },
   wings:        { name: 'Fairy wings', fits: ['hook'], hint: 'Dress-ups hang on the hooks above the bed.' },
+  tiara:        { name: 'Tiara', fits: ['hook', 'shelf', 'bed'], hint: 'Dress-ups hang on the hooks above the bed.' },
   drawing:      { name: 'Crayon drawing', fits: ['wall'], hint: 'Stick drawings on the wall. Any bare wall works!' },
   crayons:      { name: 'Crayons', fits: ['toybox'], hint: 'Crayons go back in the toy box.', keep: false },
   truck:        { name: "Brother's truck", fits: ['door'], hint: "That's your brother's! Take it to the door.", keep: false, owner: 'brother' },
   // 3 · tween
   backpack:     { name: 'School backpack', fits: ['floor'], hint: 'Just plonk it on the floor.' },
-  skates:       { name: 'Roller skates', fits: ['floor'], hint: 'Skates go on the floor.' },
+  skates:       { name: 'Roller skates', fits: ['floor', 'underbed'], hint: 'Skates go on the floor (or under the bed).' },
   artsupplies:  { name: 'Art supplies', fits: ['desk', 'shelf'], hint: 'Art supplies live on the desk.' },
   sketch:       { name: 'Anime sketch', fits: ['wall', 'desk'], hint: 'Pin it on the wall above the bed, or keep it on the desk.' },
   familyphoto:  { name: 'Family photo', fits: ['wall', 'shelf', 'desk'], hint: 'Frames go on a wall, shelf or desk.' },
@@ -59,11 +71,12 @@ const ITEM_DEFS = {
   jeans:        { name: 'Jeans', fits: ['basket'], hint: 'Clothes go in the laundry basket.', keep: false },
   tee:          { name: 'T-shirt', fits: ['basket'], hint: 'Clothes go in the laundry basket.', keep: false },
   heels:        { name: "Mum's heels", fits: ['floor'], hint: 'Shoes go on the floor.' },
+  sneakers:     { name: 'Old sneakers', fits: ['underbed'], hint: 'Kick them under the bed. Out of sight, out of mind.', keep: false },
   posterband:   { name: 'Band poster', fits: ['wall'], hint: 'Posters go on the wall above the bed.' },
   postermovie:  { name: 'Movie poster', fits: ['wall'], hint: 'Posters go on the wall above the bed.' },
-  trophy:       { name: 'Volleyball trophy', fits: ['shelf'], hint: 'Trophies go on the shelf above the desk.' },
-  medal:        { name: 'Karate medal', fits: ['shelf', 'wall'], hint: 'Medals go on the shelf or the wall.' },
-  award:        { name: 'Academic award', fits: ['shelf', 'desk'], hint: 'Awards go on the shelf above the desk.' },
+  trophy:       { name: 'Skating trophy (1st)', fits: ['shelf', 'desk'], hint: 'Trophies go on the shelf above the desk.' },
+  medal:        { name: 'Star trophy (2nd)', fits: ['shelf', 'desk'], hint: 'Trophies go on the shelf above the desk.' },
+  award:        { name: 'Gold trophy', fits: ['shelf', 'desk'], hint: 'Trophies go on the shelf above the desk.' },
   guitar:       { name: 'Guitar', fits: ['floor', 'bed'], hint: 'Lean the guitar on the floor or the bed.' },
   // 5 · young adult
   laptop:       { name: 'Laptop', fits: ['desk'], hint: 'The laptop goes on the desk.' },
@@ -132,12 +145,12 @@ const CHAPTERS = [
       SILL,
       { id: 'floor', tag: 'floor', type: 'area', x1: 60, x2: 1220, y1: 490, y2: 558 }
     ],
-    tray: ['teddy', 'blanket', 'mobile', 'rabbitbooks', 'snowglobe', 'nightlight', 'rattle', 'bottle'],
+    tray: ['teddy', 'blanket', 'mobile', 'rabbit', 'rabbitbooks', 'snowglobe', 'nightlight', 'rattle', 'bottle'],
     mess: [],
     memories: [
       { id: 'n-teddy', items: ['teddy'], type: 'photo', src: 'assets/photos/01-nursery-teddy.jpg', caption: 'Teddy, “resting” in bed.' },
-      { id: 'n-globe', items: ['snowglobe'], type: 'video', src: 'assets/video/01-nursery-snowglobe.mp4', caption: '♪ ♫ ♪   watching the glitter fall' },
-      { id: 'n-books', items: ['rabbitbooks'], type: 'photo', src: 'assets/photos/01-nursery-storybooks.jpg', caption: 'Peter Rabbit, chilling on a shelf.' }
+      { id: 'n-globe', items: ['snowglobe'], type: 'video', src: 'assets/video/01-nursery-snowglobe.mp4', still: 'assets/photos/01-nursery-snowglobe.jpg', caption: '♪ ♫ ♪   watching the glitter fall' },
+      { id: 'n-rabbit', items: ['rabbit'], type: 'photo', src: 'assets/photos/01-nursery-storybooks.jpg', caption: 'Peter Rabbit, chilling on a shelf.' }
     ],
     onStart: [{ do: 'wait', ms: 1600 }, { do: 'toast', from: 'Mum', text: 'Sweet dreams, little one ♥' }],
     onPlace: {},
@@ -165,7 +178,7 @@ const CHAPTERS = [
       { id: 'floorB', tag: 'floor', type: 'area', x1: 820, x2: 1222, y1: 492, y2: 558 },
       { id: 'floorC', tag: 'floor', type: 'area', x1: 460, x2: 820, y1: 548, y2: 558 }
     ],
-    tray: ['picturebooks', 'teaset', 'doll', 'tutu', 'wings', 'drawing'],
+    tray: ['picturebooks', 'teaset', 'doll', 'tutu', 'wings', 'tiara', 'drawing'],
     mess: [
       { id: 'crayons', x: 330, y: 535, rot: 0.2 },
       { id: 'truck', x: 880, y: 528, rot: -0.15 }
@@ -173,7 +186,7 @@ const CHAPTERS = [
     memories: [
       { id: 'c-books', items: ['picturebooks'], type: 'photo', src: 'assets/photos/02-childhood-storybooks.jpg', caption: 'Read it again! Again!' },
       { id: 'c-tea', items: ['teaset'], type: 'video', src: 'assets/video/02-childhood-tea-party.mp4', caption: 'Tea party with the dolls and Teddy.' },
-      { id: 'c-draw', items: ['drawing'], type: 'photo', src: 'assets/photos/02-childhood-drawings.jpg', caption: 'This is my family. Teddy is the biggest.' }
+      { id: 'c-draw', items: ['drawing'], type: 'photo', src: 'assets/photos/02-childhood-drawings.jpg', art: 'crayon', caption: 'This is my family. Teddy is the biggest.' }
     ],
     onStart: [{ do: 'wait', ms: 1800 }, { do: 'toast', from: 'Mum', text: 'Tidy up before dinner, sweetheart ♥' }],
     onPlace: {
@@ -205,7 +218,7 @@ const CHAPTERS = [
       { id: 't-bag', items: ['backpack'], type: 'video', src: 'assets/video/03-tween-backpack.mp4', caption: '“too many textbooks to carry”' },
       { id: 't-skates', items: ['skates'], type: 'photo', src: 'assets/photos/03-tween-rollerskates.jpg', caption: '“I got these for my birthday! Now to learn how to brake”' },
       { id: 't-art', items: ['artsupplies'], type: 'photo', src: 'assets/photos/03-tween-drawing.jpg', caption: '“Drawing is hard, but fun!”' },
-      { id: 't-family', items: ['familyphoto'], type: 'photo', src: 'assets/photos/03-tween-family-photo.jpg', caption: 'Family photo. Everybody say cheese.' }
+      { id: 't-family', items: ['familyphoto'], type: 'photo', src: 'assets/photos/03-tween-family-photo.jpg', art: 'familyphoto', caption: 'Family photo. Everybody say cheese.' }
     ],
     onStart: [{ do: 'wait', ms: 1800 }, { do: 'toast', from: 'Little bro', text: 'have u seen my controller??' }],
     onPlace: {
@@ -226,6 +239,7 @@ const CHAPTERS = [
       { id: 'shelf', tag: 'shelf', type: 'line', x1: 806, x2: 984, y: 200 },
       SILL,
       { id: 'basket', tag: 'basket', type: 'bin', x1: 496, y1: 420, x2: 594, y2: 542, label: 'laundry' },
+      { id: 'underbed', tag: 'underbed', type: 'bin', x1: 210, y1: 392, x2: 470, y2: 472, label: 'under the bed' },
       DOOR_BIN,
       { id: 'floorA', tag: 'floor', type: 'area', x1: 60, x2: 494, y1: 492, y2: 558 },
       { id: 'floorB', tag: 'floor', type: 'area', x1: 596, x2: 1220, y1: 492, y2: 558 },
@@ -236,14 +250,15 @@ const CHAPTERS = [
       { id: 'hoodie', x: 300, y: 528, rot: -0.25 },
       { id: 'jeans', x: 410, y: 534, rot: 0.3 },
       { id: 'homework1', x: 700, y: 540, rot: 0.18 },
-      { id: 'homework2', x: 860, y: 535, rot: -0.3 }
+      { id: 'homework2', x: 860, y: 535, rot: -0.3 },
+      { id: 'sneakers', x: 1080, y: 540, rot: 0.12 }
     ],
     memories: [
       { id: 'te-homework', items: ['homework1', 'homework2'], type: 'photo', src: 'assets/photos/04-teen-homework.jpg', caption: '“this is my life now.”' },
       { id: 'te-clothes', items: [], type: 'video', src: 'assets/video/04-teen-clothes-pile.mp4', caption: 'One more on the pile… “CLEAN. YOUR. ROOM.”' },
       { id: 'te-heels', items: ['heels'], type: 'photo', src: 'assets/photos/04-teen-high-heels.jpg', caption: '“stole these from mum”' },
-      { id: 'te-posters', items: ['posterband', 'postermovie'], type: 'photo', src: 'assets/photos/04-teen-posters.jpg', caption: 'Walls = personality.' },
-      { id: 'te-trophy', items: ['trophy', 'medal', 'award'], type: 'photo', src: 'assets/photos/04-teen-trophies.jpg', caption: 'Volleyball, karate, and one academic award.' }
+      { id: 'te-posters', items: ['posterband', 'postermovie'], type: 'photo', src: 'assets/photos/04-teen-posters.jpg', art: 'posters', caption: 'Walls = personality.' },
+      { id: 'te-trophy', items: ['trophy', 'medal', 'award'], type: 'photo', src: 'assets/photos/04-teen-trophies.jpg', caption: 'Solo dance: 2nd, 2nd… then 1st! (Still learning to brake.)' }
     ],
     onStart: [{ do: 'wait', ms: 1500 }, { do: 'toast', from: 'Mum', text: 'This room is a DISASTER. Clean it before dinner!!', nudge: true }],
     onPlace: {
@@ -271,6 +286,7 @@ const CHAPTERS = [
     tray: ['laptop', 'fairylights', 'plant', 'mug', 'novel', 'polaroids'],
     mess: [],
     memories: [
+      { id: 'y-teddy', items: ['teddy'], type: 'photo', src: 'assets/photos/05-youngadult-teddy.jpg', caption: 'Still here. A bit faded, a lot loved.' },
       { id: 'y-polaroids', items: ['polaroids'], type: 'text', title: 'polaroids.txt', caption: 'Friends I hadn’t met yet when I was twelve.' },
       { id: 'y-lights', items: ['fairylights'], type: 'text', title: 'status.txt', caption: 'current mood: fairy lights & no curfew ✦' }
     ],
@@ -300,7 +316,7 @@ const CHAPTERS = [
         id: 'm-letter', items: ['uniletter'], type: 'letter', title: 'acceptance_letter.txt',
         caption: 'Dear student,\n\nCongratulations! We are delighted to offer you a place in our Bachelor of Design, commencing next semester.\n\nWelcome to your next chapter.\n\nOffice of Admissions'
       },
-      { id: 'm-boxes', items: [], type: 'video', src: 'assets/video/06-moving-out-boxes.mp4', caption: 'Teddy, the family photo, and some clothes. That’s the important stuff.' }
+      { id: 'm-boxes', items: [], type: 'video', src: 'assets/video/06-moving-out-boxes.mp4', still: 'assets/photos/06-moving-out-boxes.jpg', caption: 'Teddy, the family photo, and some clothes. That’s the important stuff.' }
     ],
     onStart: [{ do: 'wait', ms: 1500 }, { do: 'toast', from: 'Mum', text: 'There’s mail for you on your desk! The car’s packed, take your time x' }],
     onPlace: {},

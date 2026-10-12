@@ -94,7 +94,7 @@ function goChapter(i) {
   setBlur(true);
   Sound.stopAmbience();
   UI.clearToasts();
-  UI.showIntro(G.ch, i, beginChapter);
+  UI.showIntro(G.ch, i, beginChapter, { thumb: getThumb('teddy'), label: TEDDY_AGES[i] });
 }
 
 function beginChapter() {
@@ -113,6 +113,7 @@ function beginChapter() {
 
 function setupChapter(i) {
   G.idx = i; G.ch = CHAPTERS[i];
+  SPRITE_VARIANT.teddy = i;          // Teddy looks a little older every chapter
   G.items = []; G.particles = []; G.queue = []; G.running = false; G.timers = [];
   G.fired = new Set(); G.everTidy = new Set(); G.drag = null; G.press = null; G.hover = null;
   G.boxClose = 0; G.packed = []; G.gift = false; G.helpFlash = null;
@@ -222,7 +223,7 @@ function showKeep() {
   });
   UI.showKeep({
     chapter: G.ch, candidates, box, capacity: MEMORY_BOX_SIZE,
-    thumb: getThumb, names: id => ITEM_DEFS[id].name,
+    thumb: id => getThumb(id), names: id => ITEM_DEFS[id].name, teddyLabel: TEDDY_AGES[G.idx],
     sinceLabel: id => 'since ' + CHAPTERS[G.since[id] || 0].year,
     onDone: sel => {
       box.filter(id => !sel.includes(id)).forEach(id => G.letGo.push({ id, year: G.ch.year }));
@@ -247,7 +248,8 @@ function goEnding() {
   const memTotal = CHAPTERS.reduce((n, c) => n + c.memories.length, 0);
   UI.showEnding({
     packed, letGo: G.letGo.map(l => ({ id: l.id, label: 'let go ' + l.year })),
-    memSeen: G.seen.size, memTotal, credits: CREDITS, thumb: getThumb, names: id => ITEM_DEFS[id].name
+    memSeen: G.seen.size, memTotal, credits: CREDITS, thumb: id => getThumb(id), names: id => ITEM_DEFS[id].name,
+    teddy: CHAPTERS.map((c, k) => ({ thumb: getThumb('teddy', k), year: c.year, label: TEDDY_AGES[k] }))
   }, goTitle);
 }
 
@@ -939,6 +941,12 @@ function drawFront() {
     const n = binCount('basket', G.items), cols = ['L', 'n', 'P'], k = ch.layout.basket;
     for (let i = 0; i < n; i++) { const x = q(k.x1) + 2 + i * 7, y = q(k.y1) - 3 - (i % 2); arect(x - 1, y - 1, 8, 4, 'o'); arect(x, y, 6, 2, cols[i % 3]); }
   }
+  if (ch.id === 'teen' && binCount('underbed', G.items)) {
+    const bed = ch.layout.bed, y = q(bed.bottom) - 2, x0 = q(bed.x1) + 14;
+    const under = G.items.filter(i => i.state === 'binned' && i.surface === 'underbed').map(i => i.id);
+    if (under.includes('sneakers')) { arect(x0 - 1, y - 2, 8, 4, 'o'); arect(x0, y - 1, 6, 2, 'w'); apx(x0 + 1, y - 1, 'h'); }
+    if (under.includes('skates')) { [0, 4].forEach(dx => { arect(x0 + 22 + dx, y - 1, 3, 3, 'o'); apx(x0 + 23 + dx, y, 'y'); }); arect(x0 + 21, y - 2, 9, 1, 'R'); }
+  }
   if (ch.id === 'childhood' && binCount('toybox', G.items)) {
     const t = ch.layout.toybox;
     ['x', 'n', 'Y'].forEach((c, i) => { arect(q(t.x1) + 6 + i * 3, q(t.y1) - 4 - i, 2, 5, c); });
@@ -1039,14 +1047,15 @@ function drawTooltip(ctx) {
   ctx.drawImage(t, x + 8, y + 6, t.width * 2, t.height * 2);
 }
 
-function getThumb(id) {
-  if (thumbCache[id]) return thumbCache[id];
-  const cv = spriteFrame(id, 0).normal, size = 120;
+function getThumb(id, v) {
+  const vv = v != null ? v : (SPRITE_VARIANT[id] || 0), key = id + ':' + vv;
+  if (thumbCache[key]) return thumbCache[key];
+  const cv = spriteFrame(id, 0, vv).normal, size = 120;
   const k = Math.max(1, Math.floor(Math.min(108 / cv.width, 108 / cv.height)));
   const out = document.createElement('canvas'); out.width = size; out.height = size;
   const ctx = out.getContext('2d'); ctx.imageSmoothingEnabled = false;
   ctx.drawImage(cv, Math.round((size - cv.width * k) / 2), Math.round((size - cv.height * k) / 2), cv.width * k, cv.height * k);
-  return (thumbCache[id] = out.toDataURL('image/png'));
+  return (thumbCache[key] = out.toDataURL('image/png'));
 }
 
 /* ---------- pixel placeholder for photos / videos that haven't been added yet ---------- */

@@ -13,6 +13,7 @@ const UI = (() => {
   const bandsFor = c => ['#ffffff', mix(c, '#ffffff', 0.7), mix(c, '#ffffff', 0.35), c, c, mix(c, '#221a13', 0.25), mix(c, '#ffffff', 0.6), '#ffffff'];
   const logoImg = (text, scale, opts, cls) => { const L = logoURL(text, Object.assign({ font: 'Silkscreen', size: 8 }, opts || {})); return '<img class="px ' + (cls || '') + '" src="' + L.url + '" alt="' + esc(text) + '" style="width:' + L.w * scale + 'px;height:' + L.h * scale + 'px">'; };
   const icon = (name, scale) => { const b = iconBuf(name); return '<img class="px icon" src="' + iconURL(name, 1) + '" alt="" style="width:' + b.W * scale + 'px;height:' + b.H * scale + 'px">'; };
+  const DEV = /[?&]dev\b/.test(location.search);   // add ?dev to the URL to see which media files are missing
   let H = {};                // handlers from game.js
   let overlay, modal, hud, hintEl, toasts;
   let memState = null;
@@ -102,7 +103,7 @@ const UI = (() => {
   }
 
   /* ---------------- chapter card ---------------- */
-  function showIntro(ch, idx, onBegin) {
+  function showIntro(ch, idx, onBegin, teddy) {
     const el = setScreen(
       '<div class="card pop-in" style="--accent:' + ch.accent + '">' +
       '  <div class="card-disc"><img class="px" src="' + discURL(ch.accent, 1) + '" alt=""><span>' + (idx + 1) + '</span></div>' +
@@ -110,6 +111,7 @@ const UI = (() => {
       '  <div class="card-title">' + logoImg(ch.title.toUpperCase(), 5, { bands: bandsFor(ch.accent) }) + '</div>' +
       '  <div class="lcd">' + ch.year + '</div>' +
       '  <p class="card-text" id="typed"></p>' +
+      (teddy ? '  <div class="card-teddy"><img class="px" src="' + teddy.thumb + '" alt="Teddy"><span>Teddy: <b>' + esc(teddy.label) + '</b></span></div>' : '') +
       '  <button class="aqua" id="beginBtn">' + (ch.moving ? 'Start packing &gt;' : 'Open the box &gt;') + '</button>' +
       '</div>', 'intro-screen');
     typeText(el.querySelector('#typed'), ch.intro);
@@ -220,27 +222,63 @@ const UI = (() => {
     const host = modal.querySelector('.mem-media');
     const showPlaceholder = () => {
       host.innerHTML = '';
-      modal.querySelector('.missing').classList.remove('hidden');
+      if (DEV) modal.querySelector('.missing').classList.remove('hidden');
       opts.mountPlaceholder(host, mem);
       if (mem.type === 'video') fakePlayback();
     };
     const PX = typeof MEDIA_PIXEL === 'number' ? MEDIA_PIXEL : 0;
-    const pixCanvas = () => { const cv = document.createElement('canvas'); cv.width = Math.max(1, Math.round(host.clientWidth / PX)); cv.height = Math.max(1, Math.round(host.clientHeight / PX)); cv.className = 'pixel-canvas'; return cv; };
+    const frameEl = modal.querySelector('.mem-frame');
+    // photos keep their own shape: portrait photos get a tall frame instead of being cropped
+    const fitFrame = ratio => {
+      const a = Math.min(1.8, Math.max(0.7, ratio)), MW = 576, MH = 400;
+      const w = a >= MW / MH ? MW : Math.round(MH * a), h = a >= MW / MH ? Math.round(MW / a) : MH;
+      frameEl.style.width = (w + 24) + 'px'; frameEl.style.height = (h + 24) + 'px';
+    };
+    const showArt = () => {
+      host.innerHTML = '';
+      const cv = pixCanvas(), art = MEMORY_ART[mem.art](cv.width, cv.height);
+      const c2 = cv.getContext('2d'); c2.imageSmoothingEnabled = false; c2.drawImage(art.toCanvas(1), 0, 0);
+      host.appendChild(cv);
+    };
+    const showStill = () => {          // a video that hasn't been added yet, but there's a photo: slow camcorder zoom over it
+      const img = new Image();
+      img.onerror = showPlaceholder;
+      img.onload = () => {
+        host.innerHTML = '';
+        const cv = pixCanvas(), ctx = cv.getContext('2d'); host.appendChild(cv);
+        const st = memState, dur = 8000;
+        fakePlayback(dur);
+        const loop = () => {
+          if (memState !== st || !cv.isConnected) return;
+          const t = Math.min(1, fakeTime() / dur), e = t * t * (3 - 2 * t);
+          const sw = img.naturalWidth, sh = img.naturalHeight, k = Math.max(cv.width / sw, cv.height / sh) * (1 + 0.14 * e);
+          const w = cv.width / k, h = cv.height / k;
+          const portrait = sh / sw > cv.height / cv.width;
+          const cx = sw / 2, cy = portrait ? h / 2 + (sh - h) * (0.15 + 0.6 * e) : sh / 2;
+          ctx.drawImage(img, Math.max(0, Math.min(sw - w, cx - w / 2)), Math.max(0, Math.min(sh - h, cy - h / 2)), w, h, 0, 0, cv.width, cv.height);
+          requestAnimationFrame(loop);
+        };
+        loop();
+      };
+      img.src = mem.still;
+    };
+    const pixCanvas = () => { const k = PX || 1, cv = document.createElement('canvas'); cv.width = Math.max(1, Math.round(host.clientWidth / k)); cv.height = Math.max(1, Math.round(host.clientHeight / k)); cv.className = 'pixel-canvas'; return cv; };
     const cover = (ctx, src, sw, sh, cv) => { const k = Math.max(cv.width / sw, cv.height / sh), w = cv.width / k, h = cv.height / k; ctx.drawImage(src, (sw - w) / 2, (sh - h) / 2, w, h, 0, 0, cv.width, cv.height); };
     if (mem.type === 'photo') {
       const img = new Image();
       img.alt = mem.caption || '';
       img.onload = () => {
         host.innerHTML = '';
+        fitFrame(img.naturalWidth / img.naturalHeight);
         if (PX > 0) { const cv = pixCanvas(); cover(cv.getContext('2d'), img, img.naturalWidth, img.naturalHeight, cv); host.appendChild(cv); }
         else host.appendChild(img);
       };
-      img.onerror = showPlaceholder;
+      img.onerror = () => (mem.art && typeof MEMORY_ART !== 'undefined' && MEMORY_ART[mem.art]) ? showArt() : showPlaceholder();
       img.src = mem.src;
     } else {
       const v = document.createElement('video');
       v.playsInline = true; v.preload = 'auto';
-      v.addEventListener('error', showPlaceholder, { once: true });
+      v.addEventListener('error', () => (mem.still ? showStill() : showPlaceholder()), { once: true });
       v.addEventListener('loadeddata', () => {
         host.innerHTML = '';
         if (PX > 0) {
@@ -269,8 +307,14 @@ const UI = (() => {
   function setPlayIcon(playing) { const b = document.getElementById('memPlay'); if (b) b.textContent = playing ? '||' : '>'; }
 
   /* placeholder "playback" for videos that haven't been added yet */
-  function fakePlayback() {
-    const dur = 7000;
+  function fakeTime() {
+    const f = memState && memState.fakeT;
+    if (!f) return memState && memState.fakeDur ? memState.fakeDur : 0;
+    return f.paused ? f.acc : f.acc + (performance.now() - f.start);
+  }
+  function fakePlayback(d) {
+    const dur = d || 7000;
+    memState.fakeDur = dur;
     memState.fakeT = { start: performance.now(), paused: false, acc: 0 };
     const step = () => {
       if (!memState || !memState.fakeT) return;
@@ -298,7 +342,7 @@ const UI = (() => {
     memState.timers.forEach(clearTimeout); memState.timers = [];
     const v = memState.video;
     if (v && v.isConnected) { v.currentTime = 0; v.play(); return; }
-    fakePlayback();
+    fakePlayback(memState.fakeDur);
   }
 
   function closeMemory(silent) {
@@ -345,7 +389,7 @@ const UI = (() => {
         '<div class="titlebar"><span>' + icon('floppy', 2) + ' SAVE TO MEMORY BOX (A:)</span><span class="tb-dots"><i>_</i><i>□</i><i>x</i></span></div>' +
         '<div class="keep-body">' +
         '  <p class="keep-lead">Pack a memory box for the next chapter. <b>Teddy always comes.</b> There’s room for ' + o.capacity + ' more things.</p>' +
-        '  <div class="keep-row box-row"><div class="tile locked"><img src="' + o.thumb('teddy') + '" alt=""><span>Teddy</span><em>always</em></div>' + slots.join('') + '</div>' +
+        '  <div class="keep-row box-row"><div class="tile locked"><img src="' + o.thumb('teddy') + '" alt=""><span>Teddy' + (o.teddyLabel ? '<small>' + esc(o.teddyLabel) + '</small>' : '') + '</span><em>always</em></div>' + slots.join('') + '</div>' +
         '  <div class="keep-label">From this chapter: click to keep</div>' +
         '  <div class="keep-row">' + (fresh.length ? fresh.map(id => tile(id, 'out')).join('') : '<span class="keep-none">nothing left to choose</span>') + '</div>' +
         (goingAway.length ? '<div class="keep-label">Letting go: click to rescue</div><div class="keep-row">' + goingAway.map(id => tile(id, 'out gone', 'let go')).join('') + '</div>' : '') +
@@ -371,12 +415,13 @@ const UI = (() => {
       '<div class="win end-win pop-in">' +
       '  <div class="titlebar"><span>THE_NEXT_CHAPTER.EXE : COMPLETE</span><span class="tb-dots"><i>_</i><i>□</i><i>x</i></span></div>' +
       '  <div class="end-body">' +
-      '    <div class="logo"><img class="px brand-logo" src="assets/brand/logo-liner-pixel.png" alt="The Next Chapter" style="width:480px;height:86px"></div>' +
+      '    <div class="logo"><img class="px brand-logo" src="assets/brand/logo-liner-pixel.png" alt="The Next Chapter" style="width:320px;height:58px"></div>' +
       '    <p class="end-lead">She packed Teddy last. She always does.</p>' +
       '    <div class="end-cols">' +
       '      <div><div class="keep-label">Packed for uni</div><div class="keep-row">' + tiles(s.packed) + '</div></div>' +
       (s.letGo.length ? '<div><div class="keep-label">Let go along the way</div><div class="keep-row">' + tiles(s.letGo, 'gone') + '</div></div>' : '') +
       '    </div>' +
+      (s.teddy ? '    <div class="teddy-row"><div class="keep-label">Teddy through<br>the years</div><div class="teddy-years">' + s.teddy.map(t => '<div class="ty"><img class="px" src="' + t.thumb + '" alt="" title="' + esc(t.label) + '"><span>' + t.year + '</span></div>').join('<i>›</i>') + '</div></div>' : '') +
       '    <p class="end-stat">memories found: ' + s.memSeen + ' / ' + s.memTotal + '</p>' +
       '    <div class="credits">' + s.credits.map(c => '<span><b>' + esc(c[0]) + '</b> · ' + esc(c[1]) + '</span>').join('') + '</div>' +
       '    <button class="aqua big" id="replayBtn">&lt;&lt; Play again</button>' +

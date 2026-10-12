@@ -50,45 +50,47 @@ npx serve .        # then open the printed localhost address
 3. **Memories.** Putting certain objects away plays a photo or a video (the team's footage) in a Y2K "Memory Player" with a camcorder date stamp. Photos and videos get a pixel filter so they match the game (see *Formats* below to turn it off).
 4. **Siblings.** Your little brother's things turn up in your room. Drop them on the **door** to give them back.
 5. **Memory box.** Between chapters you choose what to carry forward. Teddy always comes, plus 3 more things. Anything you drop is "let go" and listed on the ending screen.
+   **Teddy gets older.** Each chapter Teddy looks a little more worn: brand new with his organza bow (2000), well hugged, an ear sewn back on, a gingham patch and a limp bow, the bow lost and a button for an eye, then faded and floppy but still here (2018). The chapter card, the memory box and the ending ("Teddy through the years") all show it. The wording lives in `TEDDY_AGES` in `js/data.js`; the drawing is `teddy` in `js/sprites.js`.
 6. **Moving out.** The box at the bottom flips around. Now you *pack* the room into it. Read the uni letter, then pack Teddy last.
 
 | # | Chapter | Year | What happens | Memories (from the shot list) |
 | --- | --- | --- | --- | --- |
-| 1 | The Nursery | 2000 | Cot, mobile, night-light, snow globe | Teddy resting in bed (photo), snow globe (video), Peter Rabbit books (photo) |
-| 2 | Childhood | 2005 | Tea party, dress-ups, tiny messes, brother's truck | Storybooks (photo), tea party (video), drawings (photo) |
+| 1 | The Nursery | 2000 | Cot, mobile, night-light, snow globe, Peter Rabbit | Teddy resting in bed (photo), snow globe (video), Peter Rabbit on the books (photo) |
+| 2 | Childhood | 2005 | Tea party, dress-ups (tutu, wings, tiara), tiny messes, brother's truck | Storybooks (photo), tea party (video), drawings (photo) |
 | 3 | Tween | 2010 | Backpack, skates, art, brother's controller | Backpack plonk (video), roller skates (photo), drawing (photo), family photo (photo) |
-| 4 | Teen | 2014 | Mess everywhere, posters, trophies, Mum nagging | Homework (photo), clothes pile + Mum (video), heels (photo), posters (photo), trophies (photo) |
-| 5 | Young Adult | 2017 | More grown-up room; fairy lights, laptop | Text notes |
+| 4 | Teen | 2014 | Mess everywhere, posters, skating trophies, Mum nagging, old sneakers kicked under the bed | Homework (photo), clothes pile + Mum (video), heels (photo), posters (photo), trophies (photo) |
+| 5 | Young Adult | 2017 | More grown-up room; fairy lights, laptop | Faded Teddy (photo), text notes |
 | 6 | Moving Out | 2018 | Pack the box, uni acceptance letter | Letter (text), boxes with Teddy / family photo / clothes (video) |
 
 ---
 
 ## Adding the real photos & videos
 
-Until a file exists, the game shows a styled placeholder with the filename it is waiting for, so nothing looks broken. To add footage, **save it with exactly these names**:
+Until a file exists, the game shows something in its place, so nothing looks broken: a pixel stand-in for the printed props (family photo, posters, the childhood drawing), the photo with a slow camcorder zoom for the snow globe and moving-out videos, or the object itself bobbing in a little scene. Open the game with `?dev` on the end of the address (e.g. `index.html?dev`) to see which filename each one is waiting for. To add footage, **save it with exactly these names**. Files marked ✅ are already in the game (from the team's photos):
 
 | File | Plays when… | Caption on screen |
 | --- | --- | --- |
-| `assets/photos/01-nursery-teddy.jpg` | Teddy is put in the cot | Teddy, "resting" in bed. |
-| `assets/video/01-nursery-snowglobe.mp4` | Snow globe is put away | ♪ ♫ ♪ watching the glitter fall |
-| `assets/photos/01-nursery-storybooks.jpg` | Peter Rabbit books are shelved | Peter Rabbit, chilling on a shelf. |
-| `assets/photos/02-childhood-storybooks.jpg` | Storybooks are shelved | Read it again! Again! |
+| ✅ `assets/photos/01-nursery-teddy.jpg` | Teddy is put in the cot | Teddy, "resting" in bed. |
+| `assets/video/01-nursery-snowglobe.mp4` (✅ still: `assets/photos/01-nursery-snowglobe.jpg`) | Snow globe is put away | ♪ ♫ ♪ watching the glitter fall |
+| ✅ `assets/photos/01-nursery-storybooks.jpg` | Peter Rabbit is put down | Peter Rabbit, chilling on a shelf. |
+| ✅ `assets/photos/02-childhood-storybooks.jpg` | Storybooks are shelved | Read it again! Again! |
 | `assets/video/02-childhood-tea-party.mp4` | Tea set goes on the tea table | Tea party with the dolls and Teddy. |
-| `assets/photos/02-childhood-drawings.jpg` | Drawing goes on the wall | This is my family. Teddy is the biggest. |
+| `assets/photos/02-childhood-drawings.jpg` (pixel stand-in for now) | Drawing goes on the wall | This is my family. Teddy is the biggest. |
 | `assets/video/03-tween-backpack.mp4` | Backpack is put down | "too many textbooks to carry" |
-| `assets/photos/03-tween-rollerskates.jpg` | Skates are put down | "I got these for my birthday! Now to learn how to brake" |
-| `assets/photos/03-tween-drawing.jpg` | Art supplies go on the desk | "Drawing is hard, but fun!" |
-| `assets/photos/03-tween-family-photo.jpg` | Family photo is placed (use light glare to hide faces) | Family photo. Everybody say cheese. |
+| ✅ `assets/photos/03-tween-rollerskates.jpg` | Skates are put down | "I got these for my birthday! Now to learn how to brake" |
+| ✅ `assets/photos/03-tween-drawing.jpg` | Art supplies go on the desk | "Drawing is hard, but fun!" |
+| `assets/photos/03-tween-family-photo.jpg` (pixel stand-in for now) | Family photo is placed (use light glare to hide faces) | Family photo. Everybody say cheese. |
 | `assets/photos/04-teen-homework.jpg` | Homework goes on the desk | "this is my life now." |
 | `assets/video/04-teen-clothes-pile.mp4` | Both clothes go in the basket (then Mum scolds) | One more on the pile… "CLEAN. YOUR. ROOM." |
 | `assets/photos/04-teen-high-heels.jpg` | Heels are put down | "stole these from mum" |
-| `assets/photos/04-teen-posters.jpg` | First poster goes up | Walls = personality. |
-| `assets/photos/04-teen-trophies.jpg` | First trophy / medal / award is shelved | Volleyball, karate, and one academic award. |
-| `assets/video/06-moving-out-boxes.mp4` | Teddy is packed (the finale) | Teddy, the family photo, and some clothes. |
+| `assets/photos/04-teen-posters.jpg` (pixel stand-in for now) | First poster goes up | Walls = personality. |
+| ✅ `assets/photos/04-teen-trophies.jpg` | First trophy is shelved | Solo dance: 2nd, 2nd… then 1st! (Still learning to brake.) |
+| ✅ `assets/photos/05-youngadult-teddy.jpg` | Teddy is put down in the young adult room | Still here. A bit faded, a lot loved. |
+| `assets/video/06-moving-out-boxes.mp4` (✅ still: `assets/photos/06-moving-out-boxes.jpg`) | Teddy is packed (the finale) | Teddy, the family photo, and some clothes. |
 
 **Formats**
 
-- **Photos:** `.jpg` (or `.png`, but then change the extension in `js/data.js`). Landscape, about 1200 × 730 px; the frame crops to fill.
+- **Photos:** `.jpg` (or `.png`, but then change the extension in `js/data.js`). About 1280 px on the long side is plenty. Portrait or landscape both work: the photo frame takes the shape of the photo. Strip location data (phone photos carry GPS) by exporting a copy rather than using the original.
 - **Videos:** **MP4, H.264**. Phone footage is often HEVC `.mov`, which many browsers can't play. In Premiere: *Export → H.264 → Match Source*. Keep clips short (5–20 s) and landscape 16:9. The player closes itself shortly after a video ends.
 - **Pixel filter:** `MEDIA_PIXEL` in `js/data.js` sets how chunky the photos and videos look (3 by default). Set it to `0` to show them exactly as filmed.
 - Captions, filenames, Mum's messages and chapter text all live in **`js/data.js`**. Change them freely; it's plain text.
@@ -118,7 +120,8 @@ The logo files are in `assets/brand/`. `logo-main.png` is the original; the `-pi
 ```
 index.html        page shell + HUD
 style.css         the pixel Y2K skin (pixel windows, bevelled buttons, messenger pop-ups)
-js/data.js        ← edit me: chapters, objects, where things go, captions, file names
+js/data.js        ← edit me: chapters, objects, where things go, captions, file names, Teddy's ages
+js/memory-art.js  pixel stand-ins for the printed props until their photos are taken
 js/pixel.js       the pixel engine: palette, crisp shapes, outlines, dithering, pixel text
 js/sprites.js     every object as pixel art (grids of palette letters, or pixel shapes)
 js/room.js        the bedroom for each chapter as pixel art (walls, window, furniture)

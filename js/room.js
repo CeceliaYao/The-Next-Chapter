@@ -35,7 +35,7 @@ function stamp(b, x, y, rows, c, clip) {
 
 function roomShell(b, th) {
   const { LX, RX, CY, WX1, WX2, WY1, WY2, FY } = RA;
-  b.rect(0, 0, ART_W, ART_H, '#fff1cc'); b.dither(0, 0, ART_W, ART_H, '#ffe2c4', 6);
+  b.rect(0, 0, ART_W, ART_H, '#fff6ea'); b.dither(0, 0, ART_W, ART_H, '#ffe3c8', 6);
   b.poly([[LX, CY], [RX + 1, CY], [WX2 + 1, WY1], [WX1, WY1]], th.ceil);
   b.poly([[LX, CY], [WX1, WY1], [WX1, WY2 + 1], [LX, FY + 1]], th.side);
   b.poly([[WX2 + 1, WY1], [RX + 1, CY], [RX + 1, FY + 1], [WX2 + 1, WY2 + 1]], th.side2 || th.side);
@@ -365,4 +365,48 @@ function bgMovingOut(b, L) {
   drawDesk(b, L.desk, { col: 'c', chair: 'R', drawer: 'g' });
   drawBed(b, L.bed, 'bare');
   drawStackedBoxes(b);
+}
+
+/* ---------- title screen: the bedroom door (after Chloee's laptop mock-up) ---------- */
+const DOOR_ART = { x: 84, w: 152 };        // door leaf position on the 320 x 180 art grid
+function drawDoorWall() {
+  const b = new PixBuf(ART_W, ART_H, 0), x1 = DOOR_ART.x, x2 = DOOR_ART.x + DOOR_ART.w;
+  b.rect(0, 0, ART_W, ART_H, '#c9b496');
+  for (let x = 0; x < ART_W; x += 6) b.vline(x, 0, ART_H, '#c2ad8e');
+  b.dither(0, 0, ART_W, ART_H, '#b8a284', 3);
+  // the light from the room behind the door (seen when it opens)
+  skyGrad(b, x1, 0, DOOR_ART.w, ART_H, ['#fff6ea', '#ffe6b8', '#ffc98a']);
+  b.ell(x1 + DOOR_ART.w / 2, 70, 60, 70, '#fffaf2');
+  // door casing, two shades of beige
+  [[x1 - 12, 12], [x2, 12]].forEach(([x, w]) => {
+    b.rect(x, 0, w, ART_H, '#e6d6b8'); b.vline(x, 0, ART_H, '#f3e8d2'); b.vline(x + w - 1, 0, ART_H, '#bfa985');
+    b.vline(x + 3, 0, ART_H, '#d8c5a2');
+  });
+  b.rect(x1 - 2, 0, 2, ART_H, '#7a5a40'); b.rect(x2, 0, 1, ART_H, '#7a5a40');
+  // hinges
+  [30, 150].forEach(y => { b.rect(x1 - 3, y, 3, 8, '#b08a3e'); b.px(x1 - 2, y + 2, '#e8c46a'); });
+  return b.toCanvas(1);
+}
+function drawDoorLeaf() {
+  const W = DOOR_ART.w, H = ART_H, b = new PixBuf(W, H, 0);
+  const base = '#d9604f', dark = '#b8483a', groove = '#c4523f', hi = '#ec8a75';
+  b.rect(0, 0, W, H, base);
+  for (let x = 6; x < W; x += 5) b.vline(x, 0, H, groove);
+  b.dither(0, 0, W, H, '#cf5646', 4);
+  const panel = (x, y, w, h) => {
+    b.rect(x, y, w, h, '#d35a49');
+    for (let i = x + 4; i < x + w - 2; i += 6) b.vline(i, y + 3, h - 6, dark);
+    b.hline(x, y, w, dark); b.vline(x, y, h, dark); b.hline(x, y + h - 1, w, hi); b.vline(x + w - 1, y, h, hi);
+    b.hline(x + 2, y + 2, w - 4, groove); b.vline(x + 2, y + 2, h - 4, groove);
+  };
+  panel(12, 18, W - 24, 104);
+  panel(12, 134, W - 24, 52);
+  b.vline(0, 0, H, dark); b.vline(W - 1, 0, H, '#a8402f');
+  // peephole
+  b.ell(W / 2, 9, 2.6, 2.6, '#c9a24a'); b.px(Math.floor(W / 2), 9, '#3a2a1a');
+  // deadbolt + lever handle
+  b.ell(W - 13, 92, 3.4, 3.4, '#c9a24a'); b.ell(W - 13, 92, 1.6, 1.6, '#7a5a2a');
+  b.rect(W - 16, 100, 6, 18, '#2a2420'); b.rect(W - 15, 101, 4, 16, '#3a322c');
+  b.rect(W - 16, 104, 2, 3, '#555'); b.rect(W - 22, 104, 8, 3, '#2a2420'); b.px(W - 22, 104, '#555');
+  return b.toCanvas(1);
 }

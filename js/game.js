@@ -780,7 +780,7 @@ function buildBg() {
 function buildTray() {
   const b = new PixBuf(312, 35, 0);
   for (let y = 0; y < 35; y++) { b.rect(0, y, 312, 1, '#fff6dc'); b.dither(0, y, 312, 1, '#ffe2b8', Math.round(y / 34 * 12)); }
-  ['1', '3', '4', '5', '2'].forEach((c, i) => b.rect(1 + i * 62, 1, i === 4 ? 61 : 62, 2, c));
+  ['2', '#ff8f3a', '2', '#ff8f3a', '1'].forEach((c, i) => b.rect(1 + i * 62, 1, i === 4 ? 61 : 62, 2, c));   // orange base, one cool accent
   b.hline(3, 4, 306, 'w'); b.dither(3, 5, 306, 2, 'w', 8);
   b.rect(0, 0, 312, 1, 'o'); b.rect(0, 34, 312, 1, 'o'); b.rect(0, 0, 1, 35, 'o'); b.rect(311, 0, 1, 35, 'o');
   [[0, 0], [311, 0], [0, 34], [311, 34]].forEach(([x, y]) => b.px(x, y, null));

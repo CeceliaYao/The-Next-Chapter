@@ -9,7 +9,7 @@
 
 const MEMORY_BOX_SIZE = 3;          // how many things (besides Teddy) carry over between chapters
 const IDLE_RESET_MS = 150000;       // exhibition: return to title after 2.5 min of no input
-const MEDIA_PIXEL = 3;              // photos & videos get a pixel filter (size of each pixel). 0 = show them as filmed
+const MEDIA_PIXEL = 0;              // 0 = photos & videos are shown exactly as shot. Set to 3 for a chunky pixel filter
 
 const CREDITS = [
   ['Qinxi (Cecelia) Yao', 'Main Coder'],
@@ -148,8 +148,8 @@ const CHAPTERS = [
     tray: ['teddy', 'blanket', 'mobile', 'rabbit', 'rabbitbooks', 'snowglobe', 'nightlight', 'rattle', 'bottle'],
     mess: [],
     memories: [
-      { id: 'n-teddy', items: ['teddy'], type: 'photo', src: 'assets/photos/01-nursery-teddy.jpg', caption: 'Teddy, “resting” in bed.' },
-      { id: 'n-globe', items: ['snowglobe'], type: 'video', src: 'assets/video/01-nursery-snowglobe.mp4', still: 'assets/photos/01-nursery-snowglobe.jpg', caption: '♪ ♫ ♪   watching the glitter fall' },
+      { id: 'n-teddy', items: ['teddy'], type: 'photo', src: 'assets/photos/01-nursery-teddy.webp', caption: 'Teddy, “resting” in bed.' },
+      { id: 'n-globe', items: ['snowglobe'], type: 'video', src: 'assets/video/01-nursery-snowglobe.mp4', still: 'assets/photos/01-nursery-snowglobe.jpg', focus: [0.2, 0.76], caption: '♪ ♫ ♪   watching the glitter fall' },
       { id: 'n-rabbit', items: ['rabbit'], type: 'photo', src: 'assets/photos/01-nursery-storybooks.jpg', caption: 'Peter Rabbit, chilling on a shelf.' }
     ],
     onStart: [{ do: 'wait', ms: 1600 }, { do: 'toast', from: 'Mum', text: 'Sweet dreams, little one ♥' }],
@@ -215,7 +215,7 @@ const CHAPTERS = [
       { id: 'sketch', x: 640, y: 518, rot: -0.35 }
     ],
     memories: [
-      { id: 't-bag', items: ['backpack'], type: 'video', src: 'assets/video/03-tween-backpack.mp4', caption: '“too many textbooks to carry”' },
+      { id: 't-bag', items: ['backpack'], type: 'video', src: 'assets/video/03-tween-backpack.mp4', still: 'assets/photos/03-tween-backpack.jpg', focus: [0.55, 0.5], caption: '“too many textbooks to carry”' },
       { id: 't-skates', items: ['skates'], type: 'photo', src: 'assets/photos/03-tween-rollerskates.jpg', caption: '“I got these for my birthday! Now to learn how to brake”' },
       { id: 't-art', items: ['artsupplies'], type: 'photo', src: 'assets/photos/03-tween-drawing.jpg', caption: '“Drawing is hard, but fun!”' },
       { id: 't-family', items: ['familyphoto'], type: 'photo', src: 'assets/photos/03-tween-family-photo.jpg', art: 'familyphoto', caption: 'Family photo. Everybody say cheese.' }
@@ -286,7 +286,7 @@ const CHAPTERS = [
     tray: ['laptop', 'fairylights', 'plant', 'mug', 'novel', 'polaroids'],
     mess: [],
     memories: [
-      { id: 'y-teddy', items: ['teddy'], type: 'photo', src: 'assets/photos/05-youngadult-teddy.jpg', caption: 'Still here. A bit faded, a lot loved.' },
+      { id: 'y-teddy', items: ['teddy'], type: 'photo', src: 'assets/photos/05-youngadult-teddy.webp', caption: 'Still here. A bit faded, a lot loved.' },
       { id: 'y-polaroids', items: ['polaroids'], type: 'text', title: 'polaroids.txt', caption: 'Friends I hadn’t met yet when I was twelve.' },
       { id: 'y-lights', items: ['fairylights'], type: 'text', title: 'status.txt', caption: 'current mood: fairy lights & no curfew ✦' }
     ],
@@ -316,7 +316,7 @@ const CHAPTERS = [
         id: 'm-letter', items: ['uniletter'], type: 'letter', title: 'acceptance_letter.txt',
         caption: 'Dear student,\n\nCongratulations! We are delighted to offer you a place in our Bachelor of Design, commencing next semester.\n\nWelcome to your next chapter.\n\nOffice of Admissions'
       },
-      { id: 'm-boxes', items: [], type: 'video', src: 'assets/video/06-moving-out-boxes.mp4', still: 'assets/photos/06-moving-out-boxes.jpg', caption: 'Teddy, the family photo, and some clothes. That’s the important stuff.' }
+      { id: 'm-boxes', items: [], type: 'video', src: 'assets/video/06-moving-out-boxes.mp4', still: 'assets/photos/06-moving-out-boxes.jpg', focus: [0.5, 0.45], caption: 'Teddy, the family photo, and some clothes. That’s the important stuff.' }
     ],
     onStart: [{ do: 'wait', ms: 1500 }, { do: 'toast', from: 'Mum', text: 'There’s mail for you on your desk! The car’s packed, take your time x' }],
     onPlace: {},

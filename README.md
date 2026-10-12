@@ -39,7 +39,7 @@ npx serve .        # then open the printed localhost address
 | Fullscreen | **F** |
 | Skip the current chapter (for testing) | **Shift + N** |
 
-**Exhibition mode is built in.** After 2.5 minutes with no input, the game returns to the title screen for the next visitor (`IDLE_RESET_MS` in `js/data.js`). The title screen has six "discs" so visitors, or the team during the demo, can jump straight to any chapter.
+**Exhibition mode is built in.** After 2.5 minutes with no input, the game returns to the title screen for the next visitor (`IDLE_RESET_MS` in `js/data.js`). The title screen is the bedroom door from Chloee's laptop mock-up: the logo and our names on a coral door that swings open when you press **Open the door**. The CHAPTERS window next to it has six discs so visitors, or the team during the demo, can jump straight to any chapter.
 
 ---
 
@@ -47,7 +47,7 @@ npx serve .        # then open the printed localhost address
 
 1. **Unpack.** Things arrive in the box at the bottom. Drag each one into the room. While you drag, the places it can go flash with blue pixel dashes, and a dithered ghost shows exactly where it will land.
 2. **Upkeep.** Some chapters start messy (crayons, clothes, homework). The **UPKEEP** meter fills as the room gets tidy. In the teen room, Mum throws another shirt on the pile after you've cleaned up.
-3. **Memories.** Putting certain objects away plays a photo or a video (the team's footage) in a Y2K "Memory Player" with a camcorder date stamp. Photos and videos get a pixel filter so they match the game (see *Formats* below to turn it off).
+3. **Memories.** Putting certain objects away plays a photo or a video (the team's footage) in a Y2K "Memory Player" with a camcorder date stamp. The team's photos and videos are shown exactly as shot: no filter, no cropping (portrait photos get a tall frame).
 4. **Siblings.** Your little brother's things turn up in your room. Drop them on the **door** to give them back.
 5. **Memory box.** Between chapters you choose what to carry forward. Teddy always comes, plus 3 more things. Anything you drop is "let go" and listed on the ending screen.
    **Teddy gets older.** Each chapter Teddy looks a little more worn: brand new with his organza bow (2000), well hugged, an ear sewn back on, a gingham patch and a limp bow, the bow lost and a button for an eye, then faded and floppy but still here (2018). The chapter card, the memory box and the ending ("Teddy through the years") all show it. The wording lives in `TEDDY_AGES` in `js/data.js`; the drawing is `teddy` in `js/sprites.js`.
@@ -70,13 +70,13 @@ Until a file exists, the game shows something in its place, so nothing looks bro
 
 | File | Plays when… | Caption on screen |
 | --- | --- | --- |
-| ✅ `assets/photos/01-nursery-teddy.jpg` | Teddy is put in the cot | Teddy, "resting" in bed. |
+| ✅ `assets/photos/01-nursery-teddy.webp` (cut-out) | Teddy is put in the cot | Teddy, "resting" in bed. |
 | `assets/video/01-nursery-snowglobe.mp4` (✅ still: `assets/photos/01-nursery-snowglobe.jpg`) | Snow globe is put away | ♪ ♫ ♪ watching the glitter fall |
 | ✅ `assets/photos/01-nursery-storybooks.jpg` | Peter Rabbit is put down | Peter Rabbit, chilling on a shelf. |
 | ✅ `assets/photos/02-childhood-storybooks.jpg` | Storybooks are shelved | Read it again! Again! |
 | `assets/video/02-childhood-tea-party.mp4` | Tea set goes on the tea table | Tea party with the dolls and Teddy. |
 | `assets/photos/02-childhood-drawings.jpg` (pixel stand-in for now) | Drawing goes on the wall | This is my family. Teddy is the biggest. |
-| `assets/video/03-tween-backpack.mp4` | Backpack is put down | "too many textbooks to carry" |
+| `assets/video/03-tween-backpack.mp4` (✅ still: `assets/photos/03-tween-backpack.jpg`) | Backpack is put down | "too many textbooks to carry" |
 | ✅ `assets/photos/03-tween-rollerskates.jpg` | Skates are put down | "I got these for my birthday! Now to learn how to brake" |
 | ✅ `assets/photos/03-tween-drawing.jpg` | Art supplies go on the desk | "Drawing is hard, but fun!" |
 | `assets/photos/03-tween-family-photo.jpg` (pixel stand-in for now) | Family photo is placed (use light glare to hide faces) | Family photo. Everybody say cheese. |
@@ -85,33 +85,34 @@ Until a file exists, the game shows something in its place, so nothing looks bro
 | `assets/photos/04-teen-high-heels.jpg` | Heels are put down | "stole these from mum" |
 | `assets/photos/04-teen-posters.jpg` (pixel stand-in for now) | First poster goes up | Walls = personality. |
 | ✅ `assets/photos/04-teen-trophies.jpg` | First trophy is shelved | Solo dance: 2nd, 2nd… then 1st! (Still learning to brake.) |
-| ✅ `assets/photos/05-youngadult-teddy.jpg` | Teddy is put down in the young adult room | Still here. A bit faded, a lot loved. |
+| ✅ `assets/photos/05-youngadult-teddy.webp` (cut-out) | Teddy is put down in the young adult room | Still here. A bit faded, a lot loved. |
 | `assets/video/06-moving-out-boxes.mp4` (✅ still: `assets/photos/06-moving-out-boxes.jpg`) | Teddy is packed (the finale) | Teddy, the family photo, and some clothes. |
 
 **Formats**
 
-- **Photos:** `.jpg` (or `.png`, but then change the extension in `js/data.js`). About 1280 px on the long side is plenty. Portrait or landscape both work: the photo frame takes the shape of the photo. Strip location data (phone photos carry GPS) by exporting a copy rather than using the original.
+- **Photos:** `.jpg` (or `.png` / `.webp` for cut-outs with a transparent background; change the extension in `js/data.js`). About 1600 px on the long side is plenty. Portrait or landscape both work: the photo frame takes the shape of the photo, nothing is cropped. Strip location data (phone photos carry GPS) by exporting a copy rather than using the original.
 - **Videos:** **MP4, H.264**. Phone footage is often HEVC `.mov`, which many browsers can't play. In Premiere: *Export → H.264 → Match Source*. Keep clips short (5–20 s) and landscape 16:9. The player closes itself shortly after a video ends.
-- **Pixel filter:** `MEDIA_PIXEL` in `js/data.js` sets how chunky the photos and videos look (3 by default). Set it to `0` to show them exactly as filmed.
+- **Pixel filter:** off by default (`MEDIA_PIXEL = 0` in `js/data.js`), so footage is shown as filmed. Set it to `3` if you ever want the chunky pixel look on photos and videos too.
+- **Stills for videos:** a video memory can have a `still` photo and a `focus` point (e.g. `focus: [0.2, 0.76]` = 20% across, 76% down). Until the video file exists, the still plays with a slow camcorder zoom towards that point.
 - Captions, filenames, Mum's messages and chapter text all live in **`js/data.js`**. Change them freely; it's plain text.
 
 ---
 
 ## Brand
 
-The look follows the team's identity board: the *The Next Chapter* logo and its six colours, warm muted rooms (like *Unpacking*), and bright "point colours" on the frames, buttons and title bars, in a Windows 98-style desktop where the windows can be dragged around.
+The look follows the team's identity board and our colour decision: **orange (two shades) + off-white as the base**, with black and white, and **pink and blue as the cooler accents**. The rooms are warm and muted (like *Unpacking*) and shift colour from stage to stage; the interface is a Windows 98-style desktop where the windows can be dragged around.
 
 | Colour | Hex | Used for |
 | --- | --- | --- |
+| Orange | `#ff5400` | title bars, main buttons, counters (base) |
+| Light orange | `#ff8f3a` | title bar band, MEM tag (base) |
+| Off-white | `#fff6ea` | windows, HUD, background (base) |
 | Ink | `#221a13` | outlines, text |
-| Blue | `#00b5ff` | drop guides, second buttons, title bars |
-| Orange | `#ff5400` | main buttons, counters |
-| Pink | `#ff84e4` | hearts, Mum's messages, title bars |
-| Yellow | `#ffc700` | MEM tag, title bars |
-| Lime | `#8de328` | UPKEEP meter, title bars |
-| Cream | `#f6e680` | window bevels, paper |
+| Blue | `#00b5ff` | accent: drop guides, second buttons, messages |
+| Pink | `#ff84e4` | accent: hearts, Mum's messages |
+| Yellow / Lime | `#ffc700` / `#8de328` | the logo, chapter titles, UPKEEP meter |
 
-The logo files are in `assets/brand/`. `logo-main.png` is the original; the `-pixel` versions were redrawn on a pixel grid in the brand colours so they match the game. To use a new logo, replace those files and keep the same names.
+The logo files are in `assets/brand/`. `logo-main.png` is the original; the `-pixel` versions (main, stacked for the door, liner for the ending) were redrawn on a pixel grid in the brand colours so they match the game. To use a new logo, replace those files and keep the same names.
 
 ---
 

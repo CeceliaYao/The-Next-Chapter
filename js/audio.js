@@ -75,7 +75,12 @@ const Sound = (() => {
     },
     sparkle() { [96, 100, 103].forEach((n, i) => tone(mtof(n), 0.18, { vol: 0.035, delay: i * 0.05 })); },
     boxClose() { noise(0.12, { from: 400, vol: 0.2 }); noise(0.5, { from: 3000, to: 1200, vol: 0.08, delay: 0.15 }); },
-    page() { noise(0.18, { from: 3000, to: 5000, filter: 'highpass', vol: 0.05 }); }
+    page() { noise(0.18, { from: 3000, to: 5000, filter: 'highpass', vol: 0.05 }); },
+    door() {                                  // latch click, a little creak, then a warm chord
+      tone(900, 0.03, { type: 'square', vol: 0.05 }); tone(500, 0.05, { type: 'square', vol: 0.04, delay: 0.05 });
+      tone(240, 0.55, { type: 'sawtooth', vol: 0.025, slideTo: 330, delay: 0.12 });
+      [67, 71, 74, 79].forEach((n, i) => tone(mtof(n), 0.9, { type: 'triangle', vol: 0.09, delay: 0.45 + i * 0.07 }));
+    }
   };
 
   /* soft music-box ambience, one note every couple of seconds */

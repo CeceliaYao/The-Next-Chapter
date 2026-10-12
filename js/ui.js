@@ -77,28 +77,38 @@ const UI = (() => {
     return overlay.firstElementChild;
   }
 
-  /* ---------------- title ---------------- */
+  /* ---------------- title: the bedroom door ---------------- */
+  // After Chloee's laptop mock-up: the logo and our names on the door. Press start and it swings open.
   function showTitle(chapters) {
     const discs = chapters.map((c, i) =>
       '<button class="disc" data-i="' + i + '"><img class="px" src="' + discURL(c.accent, 1) + '" alt=""><b>' + (i + 1) + '</b><small>' + c.year + '</small></button>').join('');
-    const floaters = ['star', 'heart', 'sparkle', 'heart', 'star', 'sparkle', 'heart', 'star', 'sparkle', 'heart'].map((n, i) =>
-      '<span class="floater" style="left:' + (5 + i * 9.5) + '%;animation-delay:' + (-i * 1.7) + 's">' + icon(n, 4 + (i % 3) * 2) + '</span>').join('');
+    const names = CREDITS.map(c => c[0].replace(/\s*\(.*\)/, '')).sort().join(' · ');   // same order as the mock-up
     const el = setScreen(
-      '<div class="holo"></div><div class="floaters">' + floaters + '</div>' +
-      '<div class="logo pop-in"><img class="px brand-logo" src="assets/brand/logo-main-pixel.png" alt="The Next Chapter" style="width:510px;height:354px"></div>' +
-      '<div class="win title-win pop-in">' +
-      '  <div class="titlebar"><span>THE_NEXT_CHAPTER.EXE</span><span class="tb-dots"><i>_</i><i>□</i><i>x</i></span></div>' +
-      '  <div class="win-body">' +
-      '    <p class="tagline">a little game about keeping up a room,<br>and letting go</p>' +
-      '    <button class="aqua big" id="startBtn">&gt; START</button>' +
-      '    <div class="discs">' + discs + '</div>' +
-      '    <p class="small">or pick a disc to jump to a chapter · best with sound on ♪</p>' +
+      '<div class="door-scene">' +
+      '  <canvas class="px door-wall" width="320" height="180"></canvas>' +
+      '  <div class="door-leaf">' +
+      '    <canvas class="px" width="' + DOOR_ART.w + '" height="180"></canvas>' +
+      '    <img class="px door-logo" src="assets/brand/logo-stacked-pixel.png" alt="The Next Chapter">' +
+      '    <div class="door-cta"><button class="aqua big" id="startBtn">Open the door &gt;</button></div>' +
+      '    <div class="door-names">' + esc(names) + '</div>' +
       '  </div>' +
-      '</div>' +
-      '<div class="title-foot">KKB385 · A3 · an interactive room by Isabella, Lyebin, Chloee &amp; Cecelia</div>', 'title-screen');
-    draggable(el.querySelector('.title-win'));
-    el.querySelector('#startBtn').addEventListener('click', () => H.onStart());
-    el.querySelectorAll('.disc').forEach(b => b.addEventListener('click', () => H.onJump(+b.dataset.i)));
+      '  <div class="wall-note"><p>a little game about keeping up a room, and letting go.</p><p class="small">best with sound on ♪</p><p class="small course">KKB385 · A3</p></div>' +
+      '  <div class="win jump-win"><div class="titlebar"><span>CHAPTERS</span><span class="tb-dots"><i>_</i><i>x</i></span></div><div class="discs">' + discs + '</div></div>' +
+      '  <div class="door-flash"></div>' +
+      '</div>', 'title-screen');
+    const ctxOf = sel => { const c = el.querySelector(sel).getContext('2d'); c.imageSmoothingEnabled = false; return c; };
+    ctxOf('.door-wall').drawImage(drawDoorWall(), 0, 0);
+    ctxOf('.door-leaf canvas').drawImage(drawDoorLeaf(), 0, 0);
+    draggable(el.querySelector('.jump-win'));
+    let opening = false;
+    const open = then => {
+      if (opening) return; opening = true;
+      Sound.init(); Sound.door();
+      el.querySelector('.door-scene').classList.add('opening');
+      setTimeout(then, 1050);
+    };
+    el.querySelector('#startBtn').addEventListener('click', () => open(() => H.onStart()));
+    el.querySelectorAll('.disc').forEach(b => b.addEventListener('click', () => open(() => H.onJump(+b.dataset.i))));
     showHUD(false); hideHint();
   }
 
@@ -228,33 +238,46 @@ const UI = (() => {
     };
     const PX = typeof MEDIA_PIXEL === 'number' ? MEDIA_PIXEL : 0;
     const frameEl = modal.querySelector('.mem-frame');
-    // photos keep their own shape: portrait photos get a tall frame instead of being cropped
-    const fitFrame = ratio => {
-      const a = Math.min(1.8, Math.max(0.7, ratio)), MW = 576, MH = 400;
+    // photos and stills keep their own shape (portrait photos get a tall frame, nothing is cropped)
+    const fitFrame = (ratio, inset) => {
+      const a = Math.min(1.9, Math.max(0.6, ratio)), MW = 576, MH = 420;
       const w = a >= MW / MH ? MW : Math.round(MH * a), h = a >= MW / MH ? Math.round(MW / a) : MH;
-      frameEl.style.width = (w + 24) + 'px'; frameEl.style.height = (h + 24) + 'px';
+      frameEl.style.width = (w + inset) + 'px'; frameEl.style.height = (h + inset) + 'px';
     };
+    // canvas for real footage: full resolution for the screen it's on (the stage may be scaled up)
+    const photoCanvas = () => {
+      const s = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s')) || 1;
+      const k = PX > 0 ? PX : 1 / Math.min(3, s * (window.devicePixelRatio || 1));
+      const cv = document.createElement('canvas');
+      cv.width = Math.max(1, Math.round(host.clientWidth / k)); cv.height = Math.max(1, Math.round(host.clientHeight / k));
+      cv.className = PX > 0 ? 'pixel-canvas' : 'photo-canvas';
+      return cv;
+    };
+    // the stand-in illustrations are pixel art on purpose, always 3 screen px per pixel
+    const artCanvas = () => { const cv = document.createElement('canvas'); cv.width = Math.round(host.clientWidth / 3); cv.height = Math.round(host.clientHeight / 3); cv.className = 'pixel-canvas'; return cv; };
     const showArt = () => {
       host.innerHTML = '';
-      const cv = pixCanvas(), art = MEMORY_ART[mem.art](cv.width, cv.height);
+      const cv = artCanvas(), art = MEMORY_ART[mem.art](cv.width, cv.height);
       const c2 = cv.getContext('2d'); c2.imageSmoothingEnabled = false; c2.drawImage(art.toCanvas(1), 0, 0);
       host.appendChild(cv);
     };
-    const showStill = () => {          // a video that hasn't been added yet, but there's a photo: slow camcorder zoom over it
+    const showStill = () => {          // the video isn't in yet, but there's a photo: a slow camcorder zoom towards the subject
       const img = new Image();
       img.onerror = showPlaceholder;
       img.onload = () => {
         host.innerHTML = '';
-        const cv = pixCanvas(), ctx = cv.getContext('2d'); host.appendChild(cv);
-        const st = memState, dur = 8000;
+        const sw = img.naturalWidth, sh = img.naturalHeight;
+        fitFrame(sw / sh, 0);
+        const cv = photoCanvas(), ctx = cv.getContext('2d'); host.appendChild(cv);
+        ctx.imageSmoothingEnabled = PX === 0; ctx.imageSmoothingQuality = 'high';
+        const st = memState, dur = 8000, f = mem.focus || [0.5, 0.5];
         fakePlayback(dur);
         const loop = () => {
           if (memState !== st || !cv.isConnected) return;
           const t = Math.min(1, fakeTime() / dur), e = t * t * (3 - 2 * t);
-          const sw = img.naturalWidth, sh = img.naturalHeight, k = Math.max(cv.width / sw, cv.height / sh) * (1 + 0.14 * e);
+          const k = Math.max(cv.width / sw, cv.height / sh) * (1 + 0.22 * e);
           const w = cv.width / k, h = cv.height / k;
-          const portrait = sh / sw > cv.height / cv.width;
-          const cx = sw / 2, cy = portrait ? h / 2 + (sh - h) * (0.15 + 0.6 * e) : sh / 2;
+          const cx = sw * (0.5 + (f[0] - 0.5) * e), cy = sh * (0.5 + (f[1] - 0.5) * e);
           ctx.drawImage(img, Math.max(0, Math.min(sw - w, cx - w / 2)), Math.max(0, Math.min(sh - h, cy - h / 2)), w, h, 0, 0, cv.width, cv.height);
           requestAnimationFrame(loop);
         };
@@ -262,14 +285,14 @@ const UI = (() => {
       };
       img.src = mem.still;
     };
-    const pixCanvas = () => { const k = PX || 1, cv = document.createElement('canvas'); cv.width = Math.max(1, Math.round(host.clientWidth / k)); cv.height = Math.max(1, Math.round(host.clientHeight / k)); cv.className = 'pixel-canvas'; return cv; };
+    const pixCanvas = photoCanvas;
     const cover = (ctx, src, sw, sh, cv) => { const k = Math.max(cv.width / sw, cv.height / sh), w = cv.width / k, h = cv.height / k; ctx.drawImage(src, (sw - w) / 2, (sh - h) / 2, w, h, 0, 0, cv.width, cv.height); };
     if (mem.type === 'photo') {
       const img = new Image();
       img.alt = mem.caption || '';
       img.onload = () => {
         host.innerHTML = '';
-        fitFrame(img.naturalWidth / img.naturalHeight);
+        fitFrame(img.naturalWidth / img.naturalHeight, 24);
         if (PX > 0) { const cv = pixCanvas(); cover(cv.getContext('2d'), img, img.naturalWidth, img.naturalHeight, cv); host.appendChild(cv); }
         else host.appendChild(img);
       };
@@ -281,6 +304,7 @@ const UI = (() => {
       v.addEventListener('error', () => (mem.still ? showStill() : showPlaceholder()), { once: true });
       v.addEventListener('loadeddata', () => {
         host.innerHTML = '';
+        if (v.videoWidth) fitFrame(v.videoWidth / v.videoHeight, 0);   // portrait phone videos get a tall frame
         if (PX > 0) {
           v.className = 'hidden-video'; host.appendChild(v);
           const cv = pixCanvas(), ctx = cv.getContext('2d'); host.appendChild(cv);

@@ -1,385 +1,368 @@
 /* =========================================================
-   room.js — the one bedroom, redrawn for every chapter.
-   These functions paint the static background (walls,
-   window, furniture). They're cached into an image once per
-   chapter, so they can be as detailed as we like.
+   room.js: the one bedroom, redrawn as pixel art for every
+   chapter. Each background is painted once into a 320 x 180
+   pixel buffer and cached. Layout numbers come from data.js
+   (1280-wide world) and are divided by 4 into art pixels.
    ========================================================= */
 'use strict';
 
-const ROOM = { wallX1: 170, wallX2: 1110, wallY1: 64, wallY2: 420, floorY: 566, left: 20, right: 1260, ceil: 44 };
+const RA = { LX: 5, RX: 315, CY: 11, WX1: 42, WX2: 277, WY1: 16, WY2: 105, FY: 141 };
+const q = v => Math.round(v / ART);
 
-function rgba(hex, a) {
-  const n = parseInt(hex.slice(1), 16);
-  return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')';
+/* fill a polygon with an ordered-dither of colour c */
+function polyDither(b, pts, c, level) {
+  const mask = new PixBuf(b.W, b.H, 0);
+  mask.poly(pts, 'w');
+  for (let y = 0; y < b.H; y++) for (let x = 0; x < b.W; x++)
+    if (mask.d[y * b.W + x] && BAYER4[(y & 3) * 4 + (x & 3)] < level) b.px(x, y, c);
 }
 
-function vGradient(g, x, y, w, h, stops) {
-  const ctx = g.drawingContext, gr = ctx.createLinearGradient(0, y, 0, y + h);
-  stops.forEach(([o, c]) => gr.addColorStop(o, c));
-  ctx.fillStyle = gr; ctx.fillRect(x, y, w, h);
+/* vertical gradient between 3 colours using ordered dithering */
+function skyGrad(b, x, y, w, h, cols) {
+  for (let j = 0; j < h; j++) {
+    const t = j / Math.max(1, h - 1);
+    const [a, c, k] = t < 0.5 ? [cols[0], cols[1], t * 2] : [cols[1], cols[2], (t - 0.5) * 2];
+    b.rect(x, y + j, w, 1, a);
+    b.dither(x, y + j, w, 1, c, Math.round(k * 16));
+  }
 }
 
-function clipRect(g, x, y, w, h, fn) {
-  const ctx = g.drawingContext;
-  ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
-  fn(); ctx.restore();
+function stamp(b, x, y, rows, c, clip) {
+  rows.forEach((r, j) => { for (let i = 0; i < r.length; i++) if (r[i] === '#' && (!clip || clip(x + i, y + j))) b.px(x + i, y + j, c); });
 }
 
 /* ---------- walls, floor & wallpaper ---------- */
 
-function roomShell(g, th) {
-  const R = ROOM;
-  g.noStroke();
-  g.fill(th.ceil); g.quad(R.left, R.ceil, R.right, R.ceil, R.wallX2, R.wallY1, R.wallX1, R.wallY1);
-  g.fill(th.side); g.quad(R.left, R.ceil, R.wallX1, R.wallY1, R.wallX1, R.wallY2, R.left, R.floorY);
-  g.fill(th.side2 || th.side); g.quad(R.wallX2, R.wallY1, R.right, R.ceil, R.right, R.floorY, R.wallX2, R.wallY2);
-  g.fill(th.wall); g.rect(R.wallX1, R.wallY1, R.wallX2 - R.wallX1, R.wallY2 - R.wallY1);
-  clipRect(g, R.wallX1, R.wallY1, R.wallX2 - R.wallX1, R.wallY2 - R.wallY1, () => wallpaper(g, th));
+function roomShell(b, th) {
+  const { LX, RX, CY, WX1, WX2, WY1, WY2, FY } = RA;
+  b.rect(0, 0, ART_W, ART_H, '#eadcff'); b.dither(0, 0, ART_W, ART_H, '#ffe3f4', 6);
+  b.poly([[LX, CY], [RX + 1, CY], [WX2 + 1, WY1], [WX1, WY1]], th.ceil);
+  b.poly([[LX, CY], [WX1, WY1], [WX1, WY2 + 1], [LX, FY + 1]], th.side);
+  b.poly([[WX2 + 1, WY1], [RX + 1, CY], [RX + 1, FY + 1], [WX2 + 1, WY2 + 1]], th.side2 || th.side);
+  b.dither(LX, CY, 12, FY - CY, th.sideShade || th.side, 6);
+  b.rect(WX1, WY1, WX2 - WX1 + 1, WY2 - WY1 + 1, th.wall);
+  wallpaper(b, th);
   // floor + planks in perspective
-  g.fill(th.floor); g.quad(R.wallX1, R.wallY2, R.wallX2, R.wallY2, R.right, R.floorY, R.left, R.floorY);
-  g.stroke(th.floor2); g.strokeWeight(2);
-  const spread = (R.right - R.left) / (R.wallX2 - R.wallX1);
-  for (let x = R.wallX1; x <= R.wallX2 + 1; x += 47) g.line(x, R.wallY2, 640 + (x - 640) * spread, R.floorY);
-  for (let y of [452, 492, 536]) {
-    const k = (y - R.wallY2) / (R.floorY - R.wallY2);
-    g.line(R.wallX1 + (R.left - R.wallX1) * k, y, R.wallX2 + (R.right - R.wallX2) * k, y);
+  b.poly([[WX1, WY2 + 1], [WX2 + 1, WY2 + 1], [RX + 1, FY + 1], [LX, FY + 1]], th.floor);
+  const xl = y => WX1 + (LX - WX1) * (y - WY2) / (FY - WY2), xr = y => WX2 + (RX - WX2) * (y - WY2) / (FY - WY2);
+  const rows = [WY2 + 1, 110, 116, 123, 131, 141];
+  rows.slice(1, -1).forEach(y => b.hline(Math.ceil(xl(y)), y, Math.floor(xr(y)) - Math.ceil(xl(y)) + 1, th.floor2));
+  const spread = (RX - LX) / (WX2 - WX1);
+  for (let k = 0; k < rows.length - 1; k++) {
+    for (let xb = WX1 + (k % 2 ? 22 : 8); xb < WX2; xb += 30) {
+      const xf = 160 + (xb - 160) * spread, at = y => xb + (xf - xb) * (y - WY2) / (FY - WY2);
+      b.line(at(rows[k] + 1), rows[k] + 1, at(rows[k + 1] - 1), rows[k + 1] - 1, th.floor2);
+    }
   }
-  // skirting board + room edges
-  ink(g, 2.5); g.fill(th.base); g.rect(R.wallX1, R.wallY2 - 14, R.wallX2 - R.wallX1, 14);
-  g.line(R.wallX1, R.wallY1, R.wallX1, R.wallY2); g.line(R.wallX2, R.wallY1, R.wallX2, R.wallY2);
-  g.line(R.wallX1, R.wallY2, R.left, R.floorY); g.line(R.wallX2, R.wallY2, R.right, R.floorY);
-  g.line(R.wallX1, R.wallY1, R.left, R.ceil); g.line(R.wallX2, R.wallY1, R.right, R.ceil);
-  g.line(R.wallX1, R.wallY1, R.wallX2, R.wallY1);
-  g.noFill(); g.strokeWeight(4); g.line(R.left, R.floorY, R.right, R.floorY);
+  b.dither(LX, WY2 + 1, RX - LX + 1, 4, th.floor2, 4);
+  // skirting board
+  b.rect(WX1, WY2 - 2, WX2 - WX1 + 1, 3, th.base || 'w'); b.hline(WX1, WY2 - 3, WX2 - WX1 + 1, 'o');
+  // room edges (dollhouse cut-away)
+  b.vline(WX1, WY1, WY2 - WY1 + 1, 'o'); b.vline(WX2, WY1, WY2 - WY1 + 1, 'o');
+  b.hline(WX1, WY1, WX2 - WX1 + 1, 'o');
+  b.line(WX1, WY2, LX, FY, 'o'); b.line(WX2, WY2, RX, FY, 'o');
+  b.line(WX1, WY1, LX, CY, 'o'); b.line(WX2, WY1, RX, CY, 'o');
+  b.rect(LX - 1, CY - 1, RX - LX + 3, 1, 'o'); b.rect(LX - 1, CY - 1, 1, FY - CY + 3, 'o'); b.rect(RX + 1, CY - 1, 1, FY - CY + 3, 'o');
+  b.rect(LX - 1, FY + 1, RX - LX + 3, 2, 'o');
 }
 
-function wallpaper(g, th) {
-  const R = ROOM;
-  g.noStroke();
+function wallpaper(b, th) {
+  const { WX1, WX2, WY1, WY2 } = RA;
+  const clip = (x, y) => x > WX1 && x < WX2 && y > WY1 && y < WY2 - 3;
+  const STAR = ['.#.', '###', '.#.'], MOON = ['.##', '#..', '.##'], HEART = ['##.##', '#####', '.###.', '..#..'],
+    FLY = ['##.##', '#####', '.###.', '##.##'], DOT = ['##', '##'], TINY = ['#'];
   if (th.pattern === 'stars') {
-    for (let y = R.wallY1 + 20, r = 0; y < R.wallY2; y += 46, r++) {
-      for (let x = R.wallX1 + (r % 2 ? 30 : 6); x < R.wallX2; x += 52) {
-        if ((x + y) % 3 < 1.5) star5(g, x, y, 6, th.dots, 0.45);
-        else { g.fill(th.dots); g.arc(x, y, 12, 12, Math.PI * 0.4, Math.PI * 1.6, 'chord'); }
-      }
-    }
+    for (let y = WY1 + 4, r = 0; y < WY2; y += 11, r++) for (let x = WX1 + 3 + (r % 2 ? 6 : 0), k = 0; x < WX2; x += 12, k++) stamp(b, x, y, (k + r) % 3 ? STAR : MOON, th.dots, clip);
   } else if (th.pattern === 'dots') {
-    for (let y = R.wallY1 + 14, r = 0; y < R.wallY2; y += 34, r++) {
-      for (let x = R.wallX1 + (r % 2 ? 22 : 4); x < R.wallX2; x += 38) {
-        if ((r + Math.round(x / 38)) % 4 === 0) heart(g, x, y, 5, th.dots2);
-        else { g.fill(th.dots); g.ellipse(x, y, 10, 10); }
-      }
+    for (let y = WY1 + 4, r = 0; y < WY2; y += 9, r++) for (let x = WX1 + 3 + (r % 2 ? 5 : 0), k = 0; x < WX2; x += 10, k++) {
+      if ((k + r * 2) % 5 === 0) stamp(b, x - 1, y - 1, HEART, th.dots2, clip); else stamp(b, x, y, DOT, th.dots, clip);
     }
   } else if (th.pattern === 'butterflies') {
-    for (let y = R.wallY1 + 26, r = 0; y < R.wallY2; y += 52, r++) {
-      for (let x = R.wallX1 + (r % 2 ? 40 : 10); x < R.wallX2; x += 66) {
-        g.fill((r + x) % 2 ? th.dots : th.dots2);
-        g.ellipse(x - 5, y - 3, 10, 12); g.ellipse(x + 5, y - 3, 10, 12);
-        g.ellipse(x - 4, y + 5, 7, 8); g.ellipse(x + 4, y + 5, 7, 8);
-      }
-    }
+    for (let y = WY1 + 5, r = 0; y < WY2; y += 13, r++) for (let x = WX1 + 4 + (r % 2 ? 8 : 0), k = 0; x < WX2; x += 16, k++) stamp(b, x, y, FLY, (k + r) % 2 ? th.dots : th.dots2, clip);
   } else if (th.pattern === 'stripes') {
-    for (let x = R.wallX1; x < R.wallX2; x += 40) { g.fill(th.dots); g.rect(x, R.wallY1, 18, R.wallY2 - R.wallY1); }
-    for (let y = R.wallY1 + 30; y < R.wallY2; y += 70) for (let x = R.wallX1 + 29; x < R.wallX2; x += 80) star4(g, x, y + (x % 160 ? 0 : 35), 4, th.dots2);
+    for (let x = WX1 + 1; x < WX2; x += 10) b.rect(x, WY1 + 1, 5, WY2 - WY1 - 4, th.dots);
+    for (let y = WY1 + 8, r = 0; y < WY2 - 6; y += 18, r++) for (let x = WX1 + 7 + (r % 2 ? 10 : 0); x < WX2; x += 20) stamp(b, x - 1, y - 1, STAR, th.dots2, clip);
   } else {
-    for (let x = R.wallX1; x < R.wallX2; x += 24) { g.fill(th.dots); g.rect(x, R.wallY1, 2, R.wallY2 - R.wallY1); }
+    for (let x = WX1 + 3; x < WX2; x += 6) b.vline(x, WY1 + 1, WY2 - WY1 - 4, th.dots);
+    for (let y = WY1 + 6; y < WY2 - 4; y += 12) for (let x = WX1 + 6; x < WX2; x += 24) stamp(b, x, y, TINY, th.dots2 || th.dots, clip);
   }
 }
 
-function drawWindow(g, sky, curtain) {
-  const x1 = 545, x2 = 735, y1 = 100, y2 = 270;
-  const skies = {
-    night: [[0, '#1f1a5c'], [1, '#5a4bb0']],
-    day: [[0, '#7fd0ff'], [1, '#d8f4ff']],
-    afternoon: [[0, '#9fc4ff'], [0.6, '#ffd6b8'], [1, '#ffe9b0']],
-    dusk: [[0, '#4a3a9c'], [0.55, '#c77dd9'], [1, '#ffab7a']],
-    morning: [[0, '#bfe6ff'], [1, '#fff6e0']]
-  };
-  vGradient(g, x1, y1, x2 - x1, y2 - y1, skies[sky]);
-  clipRect(g, x1, y1, x2 - x1, y2 - y1, () => {
-    g.noStroke();
-    if (sky === 'night') {
-      g.fill('#fff6c9'); g.ellipse(690, 140, 34, 34); g.fill('#3a3190'); g.ellipse(700, 134, 30, 30);
-      [[575, 130], [610, 175], [655, 120], [600, 230], [700, 215], [640, 200]].forEach(([x, y], i) => star4(g, x, y, i % 2 ? 4 : 6, '#fff6c9'));
-    } else if (sky === 'day' || sky === 'morning') {
-      g.fill('#ffe066'); g.ellipse(690, 140, 40, 40);
-      g.fill(255, 255, 255, 230); g.ellipse(590, 160, 50, 22); g.ellipse(612, 152, 36, 22); g.ellipse(660, 210, 60, 20);
-      g.fill('#9be59b'); g.ellipse(600, 280, 160, 60); g.ellipse(710, 286, 160, 60);
-    } else if (sky === 'afternoon') {
-      g.fill('#ffd27a'); g.ellipse(600, 210, 46, 46);
-      g.fill('#8fd88f'); g.ellipse(620, 282, 200, 60); g.fill('#6cc77a'); g.rect(700, 210, 18, 60); g.ellipse(709, 205, 44, 50);
-    } else if (sky === 'dusk') {
-      g.fill('#ffcf8a'); g.ellipse(640, 262, 70, 70);
-      g.fill('#2f2468'); g.rect(560, 236, 30, 40); g.rect(600, 220, 24, 60); g.rect(690, 230, 36, 50);
-      star4(g, 580, 130, 4, '#fff6c9'); star4(g, 700, 118, 5, '#fff6c9');
-    }
-  });
-  ink(g, 3); g.noFill(); g.rect(x1, y1, x2 - x1, y2 - y1);
-  g.fill(255); g.rect(x1 - 8, y1 - 8, x2 - x1 + 16, 10, 3);
-  g.rect(636, y1, 8, y2 - y1); g.rect(x1, 181, x2 - x1, 8);
-  g.fill(255); g.rect(x1 - 14, y2, x2 - x1 + 28, 12, 3);
+const SKIES = {
+  night: ['#231d63', '#3d3398', '#6a52c0'],
+  day: ['#6cc8ff', '#9fdcff', '#dff6ff'],
+  afternoon: ['#9fc4ff', '#ffc8b8', '#ffe7a8'],
+  dusk: ['#3d2f8f', '#b56bd0', '#ffa070'],
+  morning: ['#b7e3ff', '#e2f3ff', '#fff4dc']
+};
+
+function drawWindow(b, sky, curtain) {
+  const x1 = 136, x2 = 183, y1 = 25, y2 = 67;
+  skyGrad(b, x1 + 2, y1 + 2, x2 - x1 - 3, y2 - y1 - 3, SKIES[sky]);
+  const inSky = (x, y) => x > x1 + 1 && x < x2 - 1 && y > y1 + 1 && y < y2 - 1;
+  const put = (x, y, c) => { if (inSky(x, y)) b.px(x, y, c); };
+  const disc = (cx, cy, r, c) => { for (let y = cy - r; y <= cy + r; y++) for (let x = cx - r; x <= cx + r; x++) if ((x - cx) ** 2 + (y - cy) ** 2 <= r * r + 0.5) put(x, y, c); };
+  if (sky === 'night') {
+    disc(172, 34, 5, 'y'); disc(174, 33, 4, SKIES.night[0]);
+    [[142, 31], [151, 40], [163, 29], [146, 55], [170, 52], [156, 60], [178, 44]].forEach(([x, y], i) => { put(x, y, 'w'); if (i % 3 === 0) { put(x - 1, y, 'b'); put(x + 1, y, 'b'); put(x, y - 1, 'b'); put(x, y + 1, 'b'); } });
+  } else if (sky === 'day' || sky === 'morning') {
+    disc(172, 34, 5, 'Y'); disc(172, 34, 3, 'y');
+    [[144, 37, 6, 2], [150, 35, 4, 2], [160, 52, 7, 2]].forEach(([cx, cy, rx, ry]) => { for (let y = cy - ry; y <= cy + ry; y++) for (let x = cx - rx; x <= cx + rx; x++) if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1) put(x, y, 'w'); });
+    for (let x = x1; x <= x2; x++) for (let y = 58; y < y2; y++) if (((x - 148) / 22) ** 2 + ((y - 70) / 10) ** 2 <= 1 || ((x - 176) / 20) ** 2 + ((y - 71) / 9) ** 2 <= 1) put(x, y, (x + y) % 5 ? 'E' : 'e');
+  } else if (sky === 'afternoon') {
+    disc(150, 52, 6, 'k'); disc(150, 52, 4, 'Y');
+    for (let x = x1; x <= x2; x++) for (let y = 56; y < y2; y++) if (((x - 160) / 30) ** 2 + ((y - 70) / 10) ** 2 <= 1) put(x, y, 'E');
+    for (let y = 44; y < 62; y++) put(176, y, 'Q');
+    disc(176, 44, 5, 'F'); disc(175, 42, 3, 'E');
+  } else if (sky === 'dusk') {
+    disc(160, 64, 8, 'y'); disc(160, 64, 6, 'Y');
+    [[140, 54, 6], [148, 49, 5], [166, 52, 6], [174, 46, 6]].forEach(([x, y, w]) => { for (let yy = y; yy < y2; yy++) for (let xx = x; xx < x + w; xx++) put(xx, yy, '#2b2160'); put(x + 2, y + 3, 'y'); });
+    put(145, 33, 'w'); put(171, 30, 'w');
+  }
+  // frame, mullions, sill
+  b.rect(x1, y1, x2 - x1 + 1, 2, 'w'); b.rect(x1, y2 - 1, x2 - x1 + 1, 2, 'w');
+  b.rect(x1, y1, 2, y2 - y1 + 1, 'w'); b.rect(x2 - 1, y1, 2, y2 - y1 + 1, 'w');
+  b.rect(159, y1, 2, y2 - y1, 'w'); b.rect(x1, 45, x2 - x1, 2, 'w');
+  b.hline(x1 - 1, y1 - 1, x2 - x1 + 3, 'o'); b.vline(x1 - 1, y1 - 1, y2 - y1 + 2, 'o'); b.vline(x2 + 1, y1 - 1, y2 - y1 + 2, 'o');
+  b.box(x1 - 4, 68, x2 - x1 + 9, 3, 'w');
   if (curtain) {
-    g.fill(curtain); ink(g, 2.5);
-    g.beginShape(); g.vertex(x1 - 30, y1 - 14); g.vertex(x1 + 26, y1 - 14); g.bezierVertex(x1 + 14, 170, x1 + 30, 230, x1 + 6, 290); g.vertex(x1 - 30, 290); g.endShape('close');
-    g.beginShape(); g.vertex(x2 + 30, y1 - 14); g.vertex(x2 - 26, y1 - 14); g.bezierVertex(x2 - 14, 170, x2 - 30, 230, x2 - 6, 290); g.vertex(x2 + 30, 290); g.endShape('close');
-    g.fill(255); g.rect(x1 - 40, y1 - 20, x2 - x1 + 80, 8, 4);
-  }
-}
-
-function lightBeam(g, a) {
-  g.noStroke(); g.fill(255, 250, 220, a || 34);
-  g.quad(545, 270, 735, 270, 860, 560, 560, 560);
-}
-
-function drawDoor(g, col, deco) {
-  const x1 = 1010, x2 = 1095, y1 = 190, y2 = 420;
-  ink(g, 3); g.fill('#ffffff'); g.rect(x1 - 7, y1 - 7, x2 - x1 + 14, y2 - y1 + 7, 3);
-  g.fill(col); g.rect(x1, y1, x2 - x1, y2 - y1);
-  ink(g, 2); g.noFill(); g.rect(x1 + 12, y1 + 14, x2 - x1 - 24, 86, 3); g.rect(x1 + 12, y1 + 116, x2 - x1 - 24, 96, 3);
-  g.fill('#ffd35c'); g.ellipse(x1 + 14, 316, 11, 11);
-  g.noStroke();
-  if (deco === 'baby') { g.fill(255); g.rect(1025, 236, 56, 24, 12); g.fill(INK); g.textFont('Sniglet'); g.textSize(13); g.textAlign('center', 'center'); g.text('shh ☾', 1053, 247); }
-  if (deco === 'letters') { ['#ff6f7d', '#7f9de8', '#ffcc33', '#5fc46a'].forEach((c, i) => { g.fill(c); g.ellipse(1028 + i * 13, 246, 13, 13); }); }
-  if (deco === 'butterfly') { g.fill('#c7a8ff'); g.ellipse(1046, 246, 16, 18); g.ellipse(1062, 246, 16, 18); g.fill('#86f0e6'); g.ellipse(1048, 258, 11, 11); g.ellipse(1060, 258, 11, 11); }
-  if (deco === 'keepout') {
-    g.push(); g.translate(1053, 250); g.rotate(-0.06);
-    ink(g, 2); g.fill('#fff27a'); g.rect(-34, -18, 68, 36, 3);
-    g.noStroke(); g.fill('#ff3f7f'); g.textFont('Rubik Bubbles'); g.textSize(13); g.textAlign('center', 'center'); g.text('KEEP', 0, -6); g.text('OUT!!', 0, 8);
-    g.pop();
-  }
-  if (deco === 'wreath') { ink(g, 3); g.noFill(); g.stroke('#7ed9a0'); g.ellipse(1053, 248, 30, 30); g.noStroke(); g.fill('#ff9fd2'); g.ellipse(1053, 262, 8, 8); }
-}
-
-/* ---------- furniture ---------- */
-
-function shelfPlank(g, x1, x2, y, col) {
-  ink(g, 2.5); g.fill(col || PAL.wood);
-  g.triangle(x1 + 14, y + 10, x1 + 14, y + 36, x1 + 34, y + 10);
-  g.triangle(x2 - 14, y + 10, x2 - 14, y + 36, x2 - 34, y + 10);
-  g.rect(x1 - 6, y, x2 - x1 + 12, 11, 3);
-}
-
-function drawCot(g, x1, x2, top, bottom) {
-  const col = '#fff0f6';
-  ink(g, 2.5); g.fill(col);
-  g.rect(x1 + 10, top - 62, x2 - x1 - 20, 8, 3);
-  for (let x = x1 + 24; x < x2 - 14; x += 18) g.rect(x, top - 56, 6, 56, 2);
-  g.fill('#cfe9ff'); g.rect(x1 + 6, top, x2 - x1 - 12, 24, 6);
-  g.noStroke(); g.fill(255, 255, 255, 170); for (let x = x1 + 14; x < x2 - 14; x += 22) g.rect(x, top + 4, 10, 16, 3);
-  ink(g, 2.5); g.fill(PAL.blush);
-  g.beginShape(); g.vertex(x1 + 6, top + 24); g.vertex(x2 - 6, top + 24);
-  for (let x = x2 - 6; x > x1 + 6; x -= 26) g.bezierVertex(x - 4, top + 52, x - 22, top + 52, x - 26, top + 24);
-  g.endShape();
-  g.fill(col);
-  g.rect(x1, top - 80, 16, bottom - top + 80, 4); g.rect(x2 - 16, top - 80, 16, bottom - top + 80, 4);
-  g.fill(PAL.pink); g.ellipse(x1 + 8, top - 86, 18, 18); g.ellipse(x2 - 8, top - 86, 18, 18);
-  gloss(g, x1 + 5, top - 90, 6, 5);
-}
-
-function drawBed(g, x1, x2, top, bottom, style) {
-  const s = {
-    flowers: { frame: '#fff0f6', duvet: '#ffb3d9', pattern: 'flowers', pillow: '#ffffff' },
-    butterflies: { frame: '#e9ddff', duvet: '#b8f2ea', pattern: 'butterflies', pillow: '#fff7d6' },
-    messy: { frame: '#5b4a9c', duvet: '#9a7cf0', pattern: 'messy', pillow: '#e2d6ff' },
-    linen: { frame: '#c8a27a', duvet: '#f4f1ea', pattern: 'linen', pillow: '#ffffff' },
-    bare: { frame: '#c8a27a', duvet: '#e9e4f6', pattern: 'ticking', pillow: null }
-  }[style];
-  ink(g, 2.5); g.fill(s.frame);
-  g.rect(x1, top - 86, 22, bottom - top + 86, 6);
-  g.rect(x2 - 16, top - 26, 16, bottom - top + 26, 4);
-  g.fill('#ffffff'); g.rect(x1 + 18, top + 6, x2 - x1 - 32, 22, 4);
-  g.fill(s.duvet);
-  if (style === 'messy') {
-    g.beginShape(); g.vertex(x1 + 70, top + 2); g.bezierVertex(x1 + 120, top - 10, x1 + 180, top + 14, x2 - 16, top);
-    g.vertex(x2 - 10, top + 56); g.bezierVertex(x2 - 80, top + 74, x1 + 120, top + 50, x1 + 60, top + 66); g.endShape('close');
-  } else {
-    g.rect(x1 + 60, top, x2 - x1 - 70, 46, 6, 6, 10, 10);
-    g.rect(x1 + 60, top + 40, x2 - x1 - 70, 30, 0, 0, 10, 10);
-  }
-  g.noStroke();
-  if (s.pattern === 'flowers') for (let x = x1 + 80; x < x2 - 20; x += 40) { g.fill(255); for (let k = 0; k < 5; k++) g.ellipse(x + Math.cos(k * 1.256) * 6, top + 22 + Math.sin(k * 1.256) * 6, 8, 8); g.fill('#ffd35c'); g.ellipse(x, top + 22, 6, 6); }
-  if (s.pattern === 'butterflies') for (let x = x1 + 84; x < x2 - 20; x += 46) { g.fill('#c7a8ff'); g.ellipse(x - 5, top + 20, 10, 12); g.ellipse(x + 5, top + 20, 10, 12); }
-  if (s.pattern === 'linen') { g.fill('#d9d4e8'); g.rect(x1 + 60, top + 10, x2 - x1 - 70, 6); }
-  if (s.pattern === 'ticking') { g.fill('#c9c3e3'); for (let x = x1 + 70; x < x2 - 14; x += 14) g.rect(x, top + 2, 4, 66); }
-  if (s.pattern === 'messy') { g.stroke(INK); g.strokeWeight(1.5); g.noFill(); g.bezier(x1 + 100, top + 20, x1 + 140, top + 10, x1 + 170, top + 34, x1 + 220, top + 24); }
-  if (s.pillow) { ink(g, 2.5); g.fill(s.pillow); g.rect(x1 + 24, top - 16, 64, 24, 10); }
-  ink(g, 2.5); g.fill(s.frame); g.rect(x1 + 30, bottom - 10, 10, 10); g.rect(x2 - 40, bottom - 10, 10, 10);
-}
-
-function drawDresser(g, x1, x2, top, bottom, col) {
-  ink(g, 2.5); g.fill(col);
-  g.rect(x1, top + 10, x2 - x1, bottom - top - 18, 4);
-  g.fill('#ffffff'); g.rect(x1 - 8, top, x2 - x1 + 16, 12, 4);
-  const h = (bottom - top - 30) / 3;
-  for (let i = 0; i < 3; i++) {
-    g.fill(col); g.rect(x1 + 10, top + 16 + i * h, x2 - x1 - 20, h - 6, 4);
-    g.fill(PAL.hot); g.ellipse((x1 + x2) / 2, top + 13 + i * h + h / 2, 10, 10);
-  }
-  g.fill(col); g.rect(x1 + 8, bottom - 8, 12, 8); g.rect(x2 - 20, bottom - 8, 12, 8);
-}
-
-function drawBookshelf(g, x1, x2, top, mid, low, bottom, col) {
-  ink(g, 2.5); g.fill(col); g.rect(x1, top, x2 - x1, bottom - top, 4);
-  g.fill(rgba('#3a2a5c', 0.12)); g.noStroke(); g.rect(x1 + 10, top + 10, x2 - x1 - 20, bottom - top - 22);
-  ink(g, 2.5); g.fill(col); g.rect(x1, mid, x2 - x1, 10); g.rect(x1, low, x2 - x1, 10);
-  g.fill('#ffffff'); g.rect(x1 - 6, top - 4, x2 - x1 + 12, 10, 3);
-}
-
-function drawDesk(g, x1, x2, top, bottom, opts) {
-  opts = opts || {};
-  const col = opts.col || '#ffffff';
-  ink(g, 2.5); g.fill(col);
-  g.rect(x1 + 6, top + 10, 12, bottom - top - 10);
-  g.rect(x2 - 80, top + 10, 74, bottom - top - 10, 3);
-  g.fill(opts.drawer || PAL.lilac);
-  g.rect(x2 - 72, top + 20, 58, 30, 3); g.rect(x2 - 72, top + 58, 58, 30, 3);
-  g.fill(PAL.gold); g.ellipse(x2 - 43, top + 35, 8, 8); g.ellipse(x2 - 43, top + 73, 8, 8);
-  g.fill(col); g.rect(x1 - 6, top, x2 - x1 + 12, 13, 3);
-  // chair, tucked in on the left
-  g.fill(opts.chair || PAL.pink);
-  g.rect(x1 + 30, top + 26, 70, 52, 12);
-  g.rect(x1 + 26, top + 74, 80, 12, 5);
-  g.line(x1 + 36, top + 86, x1 + 34, bottom); g.line(x1 + 96, top + 86, x1 + 98, bottom);
-  if (opts.lamp) {
-    const lx = x2 - 22;
-    g.fill(opts.lamp); g.ellipse(lx, top - 3, 30, 8);
-    g.strokeWeight(4); g.line(lx, top - 4, lx - 12, top - 46); g.line(lx - 12, top - 46, lx + 4, top - 70);
-    ink(g, 2.5); g.fill(opts.lamp); g.arc(lx + 10, top - 62, 40, 34, Math.PI * 0.95, Math.PI * 1.95, 'chord');
-  }
-  if (opts.papers) {
-    [[x1 + 60, -0.2], [x1 + 110, 0.15], [x1 + 160, -0.05]].forEach(([px, a]) => {
-      g.push(); g.translate(px, top - 2); g.rotate(a); ink(g, 1.5); g.fill(255); g.rect(-20, -4, 40, 5, 1); g.pop();
+    b.box(x1 - 13, 19, x2 - x1 + 27, 3, 'w');
+    const left = [[x1 - 10, 22], [x1 + 6, 22], [x1 + 3, 40], [x1 + 7, 60], [x1 + 3, 74], [x1 - 10, 74]];
+    const right = left.map(([x, y]) => [x1 + x2 - x, y]);
+    [left, right].forEach(pts => {
+      b.poly(pts, curtain);
+      const xs = pts.map(p => p[0]), mx = (Math.min(...xs) + Math.max(...xs)) / 2;
+      b.vline(Math.round(mx) - 2, 24, 48, 'o'); b.vline(Math.round(mx) + 3, 26, 46, 'o');
+      for (let i = 0; i < pts.length; i++) { const [ax, ay] = pts[i], [bx, by] = pts[(i + 1) % pts.length]; b.line(ax, ay, bx, by, 'o'); }
     });
   }
 }
 
-function drawRug(g, cx, cy, w, h, c1, c2) {
-  ink(g, 2.5); g.fill(c1); g.ellipse(cx, cy, w, h);
-  g.noFill(); g.stroke(c2); g.strokeWeight(5); g.ellipse(cx, cy, w - 30, h - 14);
-  g.stroke(255); g.strokeWeight(2); g.drawingContext.setLineDash([6, 8]); g.ellipse(cx, cy, w - 60, h - 26); g.drawingContext.setLineDash([]);
+function lightBeam(b, level) { polyDither(b, [[138, 72], [182, 72], [214, 141], [142, 141]], 'w', level || 3); }
+
+function drawDoor(b, col, deco) {
+  const x1 = 253, x2 = 274, y1 = 48, y2 = 105;
+  b.box(x1 - 2, y1 - 2, x2 - x1 + 5, y2 - y1 + 3, 'w');
+  b.box(x1, y1, x2 - x1 + 1, y2 - y1 + 1, col);
+  b.box(x1 + 3, y1 + 4, x2 - x1 - 5, 20, col); b.box(x1 + 3, y1 + 28, x2 - x1 - 5, 24, col);
+  b.box(x1 + 2, 79, 3, 3, 'Y');
+  if (deco === 'baby') { b.box(x1 + 3, 58, 16, 7, 'w'); miniText(b, x1 + 5, 59, 'SHH', 'v'); }
+  if (deco === 'letters') ['x', 'n', 'Y', 'E'].forEach((c, i) => b.box(x1 + 3 + i * 4, 60, 3, 3, c));
+  if (deco === 'butterfly') stamp(b, x1 + 9, 58, ['##.##', '#####', '.###.', '##.##'], 'L');
+  if (deco === 'keepout') { b.box(x1 + 1, 56, 20, 14, 'Y'); miniText(b, x1 + 3, 57, 'KEEP', 'h'); miniText(b, x1 + 3, 63, 'OUT!', 'h'); }
+  if (deco === 'wreath') { b.ring(x1 + 11, 62, 5, 5, 'E'); b.ring(x1 + 11, 62, 4, 4, 'F'); b.px(x1 + 11, 67, 'h'); }
 }
 
-function drawToyBox(g, x1, y1, x2, y2) {
-  ink(g, 2.5); g.fill('#ffd35c');
-  g.quad(x1 + 4, y1 - 2, x2 - 4, y1 - 2, x2 + 6, y1 - 40, x1 + 14, y1 - 46);
-  g.fill('#7fb6ff'); g.rect(x1, y1, x2 - x1, y2 - y1, 6);
-  g.noStroke(); g.fill(255); g.textFont('Rubik Bubbles'); g.textSize(20); g.textAlign('center', 'center');
-  g.text('TOYS', (x1 + x2) / 2, (y1 + y2) / 2 + 2);
-  star4(g, x1 + 14, y1 + 12, 6, '#fff2a8'); star4(g, x2 - 14, y2 - 12, 5, '#fff2a8');
+/* ---------- furniture ---------- */
+
+function shelfPlank(b, x1, x2, y, col) {
+  b.box(x1 - 1, y, x2 - x1 + 3, 3, col);
+  [x1 + 4, x2 - 4].forEach((x, i) => { b.vline(x, y + 3, 5, 'o'); b.line(x, y + 7, x + (i ? -4 : 4), y + 3, 'o'); });
 }
 
-function drawBasket(g, x1, y1, x2, y2) {
-  ink(g, 2.5); g.fill('#f0d6a8'); g.rect(x1, y1, x2 - x1, y2 - y1, 6, 6, 12, 12);
-  g.stroke('#c9a26e'); g.strokeWeight(2);
-  for (let y = y1 + 12; y < y2 - 4; y += 12) g.line(x1 + 4, y, x2 - 4, y);
-  for (let x = x1 + 12; x < x2 - 4; x += 14) g.line(x, y1 + 4, x, y2 - 6);
-  ink(g, 2.5); g.noFill(); g.rect(x1, y1, x2 - x1, y2 - y1, 6, 6, 12, 12);
-  g.fill('#f0d6a8'); g.rect(x1 - 4, y1 - 4, x2 - x1 + 8, 10, 4);
+function drawCot(b, c) {
+  const x1 = q(c.x1), x2 = q(c.x2), top = q(c.top), bot = q(c.bottom);
+  b.box(x1 + 2, top - 16, x2 - x1 - 3, 3, 'w');
+  for (let x = x1 + 6; x < x2 - 4; x += 5) { b.rect(x, top - 13, 2, 13, 'w'); b.vline(x + 2, top - 13, 13, 'g'); }
+  b.box(x1 + 2, top, x2 - x1 - 3, 6, 'b');
+  for (let x = x1 + 5; x < x2 - 3; x += 5) b.vline(x, top + 1, 4, 'w');
+  b.rect(x1 + 3, top + 6, x2 - x1 - 5, 4, 'p');
+  for (let x = x1 + 3; x < x2 - 2; x += 4) { b.px(x, top + 10, 'p'); b.px(x + 1, top + 10, 'p'); b.px(x + 1, top + 11, 'o'); b.px(x + 3, top + 10, 'o'); }
+  b.box(x1 - 1, top - 20, 4, bot - top + 20, 'w'); b.box(x2 - 3, top - 20, 4, bot - top + 20, 'w');
+  b.ell(x1 + 1, top - 22, 2.5, 2.5, 'P'); b.ell(x2 - 1, top - 22, 2.5, 2.5, 'P');
+  b.px(x1, top - 23, 'w'); b.px(x2 - 2, top - 23, 'w');
 }
 
-function drawHookRail(g, x1, x2, y) {
-  ink(g, 2.5); g.fill(PAL.wood); g.rect(x1 - 10, y - 18, x2 - x1 + 20, 12, 4);
-  for (let x = x1 + 20; x < x2; x += 58) { g.fill(PAL.hot); g.ellipse(x, y - 4, 10, 10); }
+function drawBed(b, bed, style) {
+  const s = {
+    flowers: { frame: 'p', duvet: 'P', dark: 'h', pillow: 'w' },
+    butterflies: { frame: 'l', duvet: 'a', dark: 'A', pillow: 'y' },
+    messy: { frame: 'V', duvet: 'v', dark: 'V', pillow: 'l' },
+    linen: { frame: 'R', duvet: 'c', dark: 'g', pillow: 'w' },
+    bare: { frame: 'R', duvet: 'g', dark: 'G', pillow: null }
+  }[style];
+  const x1 = q(bed.x1), x2 = q(bed.x2), top = q(bed.top), bot = q(bed.bottom);
+  b.box(x1, top - 21, 6, bot - top + 21, s.frame); b.px(x1, top - 21, null); b.px(x1 + 5, top - 21, null);
+  b.box(x2 - 4, top - 7, 5, bot - top + 7, s.frame);
+  b.box(x1 + 5, top + 2, x2 - x1 - 8, 7, 'w');
+  b.rect(x1 + 6, top + 9, x2 - x1 - 10, bot - top - 12, s.frame); b.hline(x1 + 6, bot - 3, x2 - x1 - 10, 'o');
+  b.rect(x1 + 9, bot - 2, 2, 2, 'o'); b.rect(x2 - 11, bot - 2, 2, 2, 'o');
+  if (style === 'bare') {
+    b.box(x1 + 5, top, x2 - x1 - 8, 10, s.duvet);
+    for (let x = x1 + 8; x < x2 - 4; x += 4) b.vline(x, top + 1, 8, 'G');
+    return;
+  }
+  if (s.pillow) b.box(x1 + 6, top - 4, 17, 7, s.pillow);
+  if (style === 'messy') {
+    b.poly([[x1 + 18, top], [x1 + 40, top - 1], [x1 + 60, top + 2], [x2 - 3, top], [x2 - 2, top + 15], [x1 + 50, top + 17], [x1 + 30, top + 13], [x1 + 16, top + 16]], s.duvet);
+    b.line(x1 + 26, top + 5, x1 + 46, top + 8, 'V'); b.line(x1 + 50, top + 4, x1 + 64, top + 6, 'V');
+    b.line(x1 + 18, top, x1 + 16, top + 16, 'o'); b.line(x1 + 16, top + 16, x1 + 30, top + 13, 'o'); b.line(x1 + 30, top + 13, x1 + 50, top + 17, 'o'); b.line(x1 + 50, top + 17, x2 - 2, top + 15, 'o');
+    b.hline(x1 + 18, top, x2 - x1 - 20, 'o');
+    return;
+  }
+  b.box(x1 + 15, top, x2 - x1 - 18, 13, s.duvet);
+  b.rect(x1 + 16, top + 9, x2 - x1 - 20, 3, s.dark);
+  if (style === 'flowers') for (let x = x1 + 20, k = 0; x < x2 - 6; x += 9, k++) { const y = top + 3 + (k % 2) * 2; stamp(b, x, y, ['.#.', '#.#', '.#.'], 'w'); b.px(x + 1, y + 1, 'Y'); }
+  if (style === 'butterflies') for (let x = x1 + 20, k = 0; x < x2 - 6; x += 10, k++) stamp(b, x, top + 3 + (k % 2), ['#.#', '###', '#.#'], k % 2 ? 'L' : 'h');
+  if (style === 'linen') { b.hline(x1 + 16, top + 3, x2 - x1 - 20, 'g'); b.hline(x1 + 16, top + 5, x2 - x1 - 20, 'L'); }
 }
 
-function drawSocket(g, x, y) { ink(g, 2); g.fill(255); g.rect(x - 9, y - 12, 18, 24, 3); g.noStroke(); g.fill(INK); g.rect(x - 4, y - 6, 2, 6); g.rect(x + 2, y - 6, 2, 6); }
-
-function drawTeaTable(g, cx, top, w, bottom) {
-  ink(g, 2.5); g.fill('#ffffff');
-  g.rect(cx - w / 2 + 20, top + 10, 12, bottom - top - 10, 3); g.rect(cx + w / 2 - 32, top + 10, 12, bottom - top - 10, 3);
-  g.fill('#ffd1e8'); g.ellipse(cx, top + 6, w, 22);
-  g.fill('#ffffff'); g.rect(cx - w / 2 + 4, top + 6, w - 8, 14, 0, 0, 8, 8);
-  g.noStroke(); g.fill('#ff9fd2'); for (let x = cx - w / 2 + 16; x < cx + w / 2 - 8; x += 18) g.ellipse(x, top + 15, 7, 7);
-  // tiny stools
-  ink(g, 2.5); g.fill('#b9f5d0'); g.ellipse(cx - w / 2 - 34, bottom - 22, 46, 14); g.line(cx - w / 2 - 34, bottom - 16, cx - w / 2 - 34, bottom + 6);
-  g.fill('#fff2a8'); g.ellipse(cx + w / 2 + 34, bottom - 22, 46, 14); g.line(cx + w / 2 + 34, bottom - 16, cx + w / 2 + 34, bottom + 6);
+function drawDresser(b, d, col) {
+  const x1 = q(d.x1), x2 = q(d.x2), top = q(d.top), bot = q(d.bottom);
+  b.box(x1 - 2, top, x2 - x1 + 5, 3, 'w');
+  b.box(x1, top + 3, x2 - x1 + 1, bot - top - 5, col);
+  const h = Math.floor((bot - top - 9) / 3);
+  for (let i = 0; i < 3; i++) { b.box(x1 + 3, top + 6 + i * h, x2 - x1 - 5, h - 1, col); b.rect(Math.round((x1 + x2) / 2) - 1, top + 6 + i * h + Math.floor(h / 2) - 1, 2, 2, 'h'); }
+  b.rect(x1 + 2, bot - 2, 3, 2, 'o'); b.rect(x2 - 4, bot - 2, 3, 2, 'o');
 }
 
-function drawStackedBoxes(g) {
-  const boxes = [[1124, 470, 120, 84, 'BOOKS'], [1138, 392, 100, 78, 'CLOTHES'], [1150, 326, 78, 66, 'MISC ♥']];
-  boxes.forEach(([x, y, w, h, label]) => {
-    ink(g, 2.5); g.fill('#e7b886'); g.rect(x, y, w, h, 3);
-    g.noStroke(); g.fill(255, 240, 170, 200); g.rect(x + w / 2 - 9, y, 18, h);
-    g.fill(INK); g.textFont('Sniglet'); g.textSize(13); g.textAlign('center', 'center'); g.text(label, x + w / 2, y + h / 2 + 8);
+function drawBookshelf(b, s, col) {
+  const x1 = q(s.x1), x2 = q(s.x2), top = q(s.top - 4), mid = q(s.mid), low = q(s.low), bot = q(s.bottom);
+  b.box(x1, top + 3, x2 - x1 + 1, bot - top - 3, col);
+  b.rect(x1 + 2, top + 4, x2 - x1 - 3, bot - top - 6, '#f2d98e');
+  b.vline(x1 + 2, top + 4, bot - top - 6, '#e2c070');
+  b.box(x1, mid, x2 - x1 + 1, 3, col); b.box(x1, low, x2 - x1 + 1, 3, col);
+  b.box(x1 - 2, top, x2 - x1 + 5, 3, 'w');
+}
+
+function drawDesk(b, d, o) {
+  o = o || {};
+  const x1 = q(d.x1), x2 = q(d.x2), top = q(d.top), bot = q(d.bottom), col = o.col || 'w';
+  b.box(x1 + 1, top + 3, 3, bot - top - 3, col);
+  b.box(x2 - 19, top + 3, 19, bot - top - 3, col);
+  b.box(x2 - 17, top + 6, 15, 10, o.drawer || 'L'); b.box(x2 - 17, top + 18, 15, 10, o.drawer || 'L');
+  b.rect(x2 - 11, top + 10, 3, 2, 'Y'); b.rect(x2 - 11, top + 22, 3, 2, 'Y');
+  b.box(x1 - 2, top, x2 - x1 + 5, 3, col);
+  b.box(x1 + 8, top + 6, 17, 13, o.chair || 'P'); b.box(x1 + 6, top + 18, 21, 4, o.chair || 'P');
+  b.vline(x1 + 8, top + 22, bot - top - 22, 'o'); b.vline(x1 + 24, top + 22, bot - top - 22, 'o');
+  if (o.lamp) {
+    const lx = x2 - 4;
+    b.box(lx - 4, top - 2, 8, 2, o.lamp);
+    b.line(lx, top - 3, lx - 3, top - 12, 'o'); b.line(lx - 3, top - 12, lx + 1, top - 17, 'o');
+    b.poly([[lx - 2, top - 17], [lx + 6, top - 21], [lx + 9, top - 14]], o.lamp);
+    b.line(lx - 2, top - 17, lx + 6, top - 21, 'o'); b.line(lx + 6, top - 21, lx + 9, top - 14, 'o'); b.line(lx + 9, top - 14, lx - 2, top - 17, 'o');
+  }
+  if (o.papers) [[x1 + 4, 'w'], [x1 + 14, 'g'], [x1 + 24, 'w']].forEach(([x, c]) => { b.rect(x, top - 1, 8, 1, c); b.hline(x, top - 2, 8, 'o'); });
+}
+
+function drawRug(b, cx, cy, rx, ry, c1, c2) {
+  b.ell(cx, cy, rx, ry, c1);
+  b.ring(cx, cy, rx - 4, ry - 2.5, c2);
+  b.ring(cx, cy, rx, ry, 'o');
+}
+
+function drawToyBox(b, t) {
+  const x1 = q(t.x1), y1 = q(t.y1), x2 = q(t.x2), y2 = q(t.y2);
+  b.poly([[x1 + 1, y1], [x2, y1], [x2 + 2, y1 - 10], [x1 + 3, y1 - 12]], 'Y');
+  b.line(x1 + 1, y1, x1 + 3, y1 - 12, 'o'); b.line(x1 + 3, y1 - 12, x2 + 2, y1 - 10, 'o'); b.line(x2 + 2, y1 - 10, x2, y1, 'o');
+  b.box(x1, y1, x2 - x1 + 1, y2 - y1 + 1, 'B');
+  miniText(b, Math.round((x1 + x2) / 2) - 7, y1 + 8, 'TOYS', 'w');
+  stamp(b, x1 + 3, y1 + 3, ['.#.', '###', '.#.'], 'y'); stamp(b, x2 - 6, y2 - 6, ['.#.', '###', '.#.'], 'y');
+}
+
+function drawBasket(b, k) {
+  const x1 = q(k.x1), y1 = q(k.y1), x2 = q(k.x2), y2 = q(k.y2);
+  b.box(x1, y1, x2 - x1 + 1, y2 - y1 + 1, 'r');
+  for (let y = y1 + 2; y < y2; y += 3) for (let x = x1 + 1 + (y % 2); x < x2; x += 3) b.px(x, y, 'R');
+  b.box(x1 - 1, y1 - 1, x2 - x1 + 3, 3, 't');
+}
+
+function drawHookRail(b, h) {
+  const x1 = q(h.x1) - 3, x2 = q(h.x2) + 3, y = q(h.y);
+  b.box(x1, y - 5, x2 - x1, 4, 'R');
+  for (let x = x1 + 6; x < x2 - 2; x += 14) b.box(x, y - 1, 3, 3, 'h');
+}
+
+function drawSocket(b, x, y) { b.box(x - 3, y - 3, 6, 7, 'w'); b.vline(x - 1, y - 1, 2, 'o'); b.vline(x + 1, y - 1, 2, 'o'); }
+
+function drawTeaTable(b, cx, top, w, bot) {
+  cx = q(cx); const half = q(w) / 2, ty = q(top), by = q(bot);
+  b.box(cx - half + 4, ty + 4, 3, by - ty - 4, 'w'); b.box(cx + half - 7, ty + 4, 3, by - ty - 4, 'w');
+  b.box(cx - half, ty, half * 2 + 1, 5, 'p');
+  for (let x = cx - half + 3; x < cx + half - 1; x += 5) b.px(x, ty + 2, 'w');
+  [[cx - half - 9, 'e'], [cx + half + 9, 'y']].forEach(([sx, c]) => { b.box(sx - 6, by - 6, 13, 3, c); b.vline(sx, by - 3, 4, 'o'); });
+}
+
+function drawStackedBoxes(b) {
+  [[281, 118, 30, 22, 'BOOKS'], [284, 97, 26, 21, 'STUFF'], [287, 80, 21, 17, 'MISC']].forEach(([x, y, w, h, label]) => {
+    b.box(x, y, w, h, 'r'); b.rect(x + Math.floor(w / 2) - 1, y + 1, 3, h - 2, 'y');
+    miniText(b, x + Math.round((w - miniWidth(label)) / 2), y + Math.floor(h / 2) - 2, label, 'o');
   });
 }
 
-function glowStarsOnCeiling(g) {
-  [[260, 52], [420, 50], [600, 54], [820, 50], [980, 53]].forEach(([x, y], i) => star5(g, x, y, i % 2 ? 5 : 7, 'rgba(225,255,170,0.9)'));
-}
+function ceilingStars(b) { [[70, 13], [110, 12], [150, 13], [200, 12], [240, 13]].forEach(([x, y]) => stamp(b, x - 1, y - 1, ['.#.', '###', '.#.'], 'e')); }
+
+function hangString(b, x, toY) { b.vline(x, RA.WY1, Math.max(1, toY - RA.WY1), 'o'); }
 
 /* ---------- one background per chapter ---------- */
 
-function bgNursery(g, L) {
-  roomShell(g, { ceil: '#fff7dc', side: '#f6e2a8', side2: '#f2dc9c', wall: '#fff1c1', dots: '#d9c4ff', floor: '#e9c79c', floor2: '#d7b384', base: '#ffffff', pattern: 'stars' });
-  g.noStroke(); glowStarsOnCeiling(g);
-  drawWindow(g, 'night', '#cfe9ff');
-  drawDoor(g, '#ffe7f3', 'baby');
-  shelfPlank(g, L.shelf.x1, L.shelf.x2, L.shelf.y, '#ffffff');
-  drawDresser(g, L.dresser.x1, L.dresser.x2, L.dresser.top, L.dresser.bottom, '#cfe9ff');
-  drawSocket(g, L.socket.x, L.socket.y + 6);
-  drawRug(g, 640, 515, 400, 70, '#b9f5d0', '#ffffff');
-  drawCot(g, L.cot.x1, L.cot.x2, L.cot.top, L.cot.bottom);
-  ink(g, 1.6); g.line(L.mobile.x, ROOM.ceil + 20, L.mobile.x, L.mobile.y - 60);
-  g.noFill(); g.ellipse(L.mobile.x, L.mobile.y - 60, 8, 8);
-  // night tint
-  g.noStroke(); g.fill(60, 40, 140, 26); g.rect(0, 0, 1280, 570);
+function bgNursery(b, L) {
+  roomShell(b, { ceil: '#fff8dc', side: '#f6e2a8', side2: '#f0d896', sideShade: '#e8cc88', wall: '#fff1c1', dots: '#d9c4ff', floor: '#e9c79c', floor2: '#d4ad80', pattern: 'stars' });
+  ceilingStars(b);
+  drawWindow(b, 'night', 'b');
+  drawDoor(b, 'p', 'baby');
+  shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'w');
+  drawDresser(b, L.dresser, 'b');
+  drawSocket(b, q(L.socket.x), q(L.socket.y) + 2);
+  drawRug(b, 160, 129, 50, 9, 'e', 'w');
+  drawCot(b, L.cot);
+  hangString(b, q(L.mobile.x), Math.round((L.mobile.y - ITEM_DEFS.mobile.h / 2) / ART));
 }
 
-function bgChildhood(g, L) {
-  roomShell(g, { ceil: '#fff0f7', side: '#ffbfdc', side2: '#ffb6d6', wall: '#ffd1e8', dots: '#ffffff', dots2: '#ff9fd2', floor: '#e8bf92', floor2: '#d6aa7a', base: '#ffffff', pattern: 'dots' });
-  lightBeam(g, 30);
-  drawWindow(g, 'day', '#ffffff');
-  drawDoor(g, '#fff6fb', 'letters');
-  drawHookRail(g, L.hooks.x1, L.hooks.x2, L.hooks.y);
-  drawBookshelf(g, L.shelf.x1, L.shelf.x2, L.shelf.top, L.shelf.mid, L.shelf.low, L.shelf.bottom, '#fff2a8');
-  drawRug(g, 640, 522, 440, 70, '#c7a8ff', '#ffffff');
-  drawBed(g, L.bed.x1, L.bed.x2, L.bed.top, L.bed.bottom, 'flowers');
-  drawTeaTable(g, 640, L.table.y, 240, 530);
-  drawToyBox(g, L.toybox.x1, L.toybox.y1, L.toybox.x2, L.toybox.y2);
+function bgChildhood(b, L) {
+  roomShell(b, { ceil: '#fff0f7', side: '#ffbfdc', side2: '#ffb3d4', sideShade: '#ff9fc8', wall: '#ffd1e8', dots: 'w', dots2: 'P', floor: '#e8bf92', floor2: '#d2a676', pattern: 'dots' });
+  lightBeam(b, 2);
+  drawWindow(b, 'day', 'w');
+  drawDoor(b, 'w', 'letters');
+  drawHookRail(b, L.hooks);
+  drawBookshelf(b, L.shelf, 'y');
+  drawRug(b, 160, 130, 55, 9, 'L', 'w');
+  drawBed(b, L.bed, 'flowers');
+  drawTeaTable(b, 640, 476, 240, 530);
+  drawToyBox(b, L.toybox);
 }
 
-function bgTween(g, L) {
-  roomShell(g, { ceil: '#f6f0ff', side: '#d2c0ff', side2: '#cbb6ff', wall: '#e3d4ff', dots: '#b9a2ff', dots2: '#8fe3d9', floor: '#dcb38a', floor2: '#c99e74', base: '#ffffff', pattern: 'butterflies' });
-  lightBeam(g, 36);
-  drawWindow(g, 'afternoon', '#fff2a8');
-  drawDoor(g, '#f4eeff', 'butterfly');
-  shelfPlank(g, L.shelf.x1, L.shelf.x2, L.shelf.y, '#ffffff');
-  drawRug(g, 640, 520, 360, 64, '#86f0e6', '#ffffff');
-  drawDesk(g, L.desk.x1, L.desk.x2, L.desk.top, L.desk.bottom, { lamp: '#ff9fd2', chair: '#86f0e6', drawer: '#c7a8ff' });
-  drawBed(g, L.bed.x1, L.bed.x2, L.bed.top, L.bed.bottom, 'butterflies');
+function bgTween(b, L) {
+  roomShell(b, { ceil: '#f6f0ff', side: '#d2c0ff', side2: '#c8b2ff', sideShade: '#b9a0f5', wall: '#e3d4ff', dots: 'L', dots2: 'A', floor: '#dcb38a', floor2: '#c69a70', pattern: 'butterflies' });
+  lightBeam(b, 2);
+  drawWindow(b, 'afternoon', 'y');
+  drawDoor(b, 'l', 'butterfly');
+  shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'w');
+  drawRug(b, 160, 130, 45, 8, 'a', 'w');
+  drawDesk(b, L.desk, { lamp: 'P', chair: 'A', drawer: 'L' });
+  drawBed(b, L.bed, 'butterflies');
 }
 
-function bgTeen(g, L) {
-  roomShell(g, { ceil: '#eafbf8', side: '#8fd9cf', side2: '#86d2c8', wall: '#b8f0e6', dots: '#a2e6db', dots2: '#ffffff', floor: '#c9a27c', floor2: '#b58f6a', base: '#ffffff', pattern: 'stripes' });
-  lightBeam(g, 22);
-  drawWindow(g, 'dusk', '#9a7cf0');
-  drawDoor(g, '#ffffff', 'keepout');
-  shelfPlank(g, L.shelf.x1, L.shelf.x2, L.shelf.y, '#3a2a5c');
-  drawRug(g, 700, 522, 300, 60, '#ff9fd2', '#3a2a5c');
-  drawDesk(g, L.desk.x1, L.desk.x2, L.desk.top, L.desk.bottom, { lamp: '#3a2a5c', chair: '#9a7cf0', drawer: '#86f0e6', papers: true });
-  drawBed(g, L.bed.x1, L.bed.x2, L.bed.top, L.bed.bottom, 'messy');
-  drawBasket(g, L.basket.x1, L.basket.y1, L.basket.x2, L.basket.y2);
+function bgTeen(b, L) {
+  roomShell(b, { ceil: '#eafbf8', side: '#8fd9cf', side2: '#80d0c5', sideShade: '#6ec2b6', wall: '#b8f0e6', dots: '#a0e4d9', dots2: 'w', floor: '#c9a27c', floor2: '#b28b66', pattern: 'stripes' });
+  lightBeam(b, 2);
+  drawWindow(b, 'dusk', 'v');
+  drawDoor(b, 'w', 'keepout');
+  shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'V');
+  drawRug(b, 175, 130, 38, 8, 'P', 'o');
+  drawDesk(b, L.desk, { lamp: 'V', chair: 'v', drawer: 'A', papers: true });
+  drawBed(b, L.bed, 'messy');
+  drawBasket(b, L.basket);
 }
 
-function bgYoungAdult(g, L) {
-  roomShell(g, { ceil: '#fffdf6', side: '#e7e1cf', side2: '#e2dbc6', wall: '#f3efe2', dots: '#ebe5d2', floor: '#d8b896', floor2: '#c7a682', base: '#ffffff', pattern: 'plain' });
-  lightBeam(g, 40);
-  drawWindow(g, 'morning', null);
-  drawDoor(g, '#ffffff', 'wreath');
-  shelfPlank(g, L.shelf.x1, L.shelf.x2, L.shelf.y, '#c8a27a');
-  drawRug(g, 640, 520, 420, 66, '#e9e4f6', '#c7a8ff');
-  drawDesk(g, L.desk.x1, L.desk.x2, L.desk.top, L.desk.bottom, { col: '#f7f2e8', chair: '#c8a27a', drawer: '#e9e4f6' });
-  drawBed(g, L.bed.x1, L.bed.x2, L.bed.top, L.bed.bottom, 'linen');
+function bgYoungAdult(b, L) {
+  roomShell(b, { ceil: '#fffdf6', side: '#e7e1cf', side2: '#dfd8c2', sideShade: '#d6cdb4', wall: '#f3efe2', dots: '#e8e2cf', dots2: '#d9c9f5', floor: '#d8b896', floor2: '#c3a07e', pattern: 'plain' });
+  lightBeam(b, 3);
+  drawWindow(b, 'morning', null);
+  drawDoor(b, 'w', 'wreath');
+  shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'R');
+  drawRug(b, 160, 130, 52, 9, 'g', 'L');
+  drawDesk(b, L.desk, { col: 'c', chair: 'R', drawer: 'g' });
+  drawBed(b, L.bed, 'linen');
 }
 
-function bgMovingOut(g, L) {
-  roomShell(g, { ceil: '#fffdf6', side: '#e7e1cf', side2: '#e2dbc6', wall: '#f3efe2', dots: '#ebe5d2', floor: '#d8b896', floor2: '#c7a682', base: '#ffffff', pattern: 'plain' });
-  lightBeam(g, 52);
-  drawWindow(g, 'morning', null);
-  drawDoor(g, '#ffffff', null);
-  shelfPlank(g, L.shelf.x1, L.shelf.x2, L.shelf.y, '#c8a27a');
-  drawDesk(g, L.desk.x1, L.desk.x2, L.desk.top, L.desk.bottom, { col: '#f7f2e8', chair: '#c8a27a', drawer: '#e9e4f6' });
-  drawBed(g, L.bed.x1, L.bed.x2, L.bed.top, L.bed.bottom, 'bare');
-  drawStackedBoxes(g);
+function bgMovingOut(b, L) {
+  roomShell(b, { ceil: '#fffdf6', side: '#e7e1cf', side2: '#dfd8c2', sideShade: '#d6cdb4', wall: '#f3efe2', dots: '#e8e2cf', dots2: '#d9c9f5', floor: '#d8b896', floor2: '#c3a07e', pattern: 'plain' });
+  lightBeam(b, 4);
+  drawWindow(b, 'morning', null);
+  drawDoor(b, 'w', null);
+  shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'R');
+  drawDesk(b, L.desk, { col: 'c', chair: 'R', drawer: 'g' });
+  drawBed(b, L.bed, 'bare');
+  drawStackedBoxes(b);
 }

@@ -1,5 +1,5 @@
 /* =========================================================
-   ui.js — the Y2K "operating system" layered over the room:
+   ui.js: the Y2K pixel "operating system" over the room:
    title screen, chapter cards, HUD, Mum's messenger pop-ups,
    the Memory Player (photos / videos), the memory box and
    the ending. Plain DOM + CSS, so it's easy to restyle.
@@ -9,6 +9,10 @@
 const UI = (() => {
   const $ = sel => document.querySelector(sel);
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const mix = (a, b, t) => { const p = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); const A = p(a), B = p(b); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join(''); };
+  const bandsFor = c => ['#ffffff', mix(c, '#ffffff', 0.7), mix(c, '#ffffff', 0.35), c, c, mix(c, '#3b2350', 0.25), mix(c, '#ffffff', 0.6), '#ffffff'];
+  const logoImg = (text, scale, opts, cls) => { const L = logoURL(text, Object.assign({ font: 'Silkscreen', size: 8 }, opts || {})); return '<img class="px ' + (cls || '') + '" src="' + L.url + '" alt="' + esc(text) + '" style="width:' + L.w * scale + 'px;height:' + L.h * scale + 'px">'; };
+  const icon = (name, scale) => { const b = iconBuf(name); return '<img class="px icon" src="' + iconURL(name, 1) + '" alt="" style="width:' + b.W * scale + 'px;height:' + b.H * scale + 'px">'; };
   let H = {};                // handlers from game.js
   let overlay, modal, hud, hintEl, toasts;
   let memState = null;
@@ -24,7 +28,7 @@ const UI = (() => {
 
   function refreshMute() {
     const b = $('#muteBtn');
-    if (b) { b.textContent = Sound.isMuted() ? '♪̸' : '♪'; b.title = Sound.isMuted() ? 'Sound off' : 'Sound on'; b.classList.toggle('off', Sound.isMuted()); }
+    if (b) { b.textContent = Sound.isMuted() ? 'x' : '♪'; b.title = Sound.isMuted() ? 'Sound off' : 'Sound on'; b.classList.toggle('off', Sound.isMuted()); }
   }
 
   function setScreen(html, cls) {
@@ -35,17 +39,17 @@ const UI = (() => {
   /* ---------------- title ---------------- */
   function showTitle(chapters) {
     const discs = chapters.map((c, i) =>
-      '<button class="disc" data-i="' + i + '" style="--accent:' + c.accent + '"><span class="disc-shine"></span><b>' + (i + 1) + '</b><small>' + c.year + '</small></button>').join('');
-    const floaters = ['★', '♥', '✦', '☾', '✿', '★', '♥', '✦', '✧', '♡'].map((s, i) =>
-      '<span class="floater" style="left:' + (5 + i * 9.5) + '%;animation-delay:' + (-i * 1.7) + 's;font-size:' + (18 + (i % 3) * 10) + 'px">' + s + '</span>').join('');
+      '<button class="disc" data-i="' + i + '"><img class="px" src="' + discURL(c.accent, 1) + '" alt=""><b>' + (i + 1) + '</b><small>' + c.year + '</small></button>').join('');
+    const floaters = ['star', 'heart', 'sparkle', 'heart', 'star', 'sparkle', 'heart', 'star', 'sparkle', 'heart'].map((n, i) =>
+      '<span class="floater" style="left:' + (5 + i * 9.5) + '%;animation-delay:' + (-i * 1.7) + 's">' + icon(n, 4 + (i % 3) * 2) + '</span>').join('');
     const el = setScreen(
       '<div class="holo"></div><div class="floaters">' + floaters + '</div>' +
       '<div class="win title-win pop-in">' +
-      '  <div class="titlebar"><span>✦ the_next_chapter.exe</span><span class="tb-dots"><i></i><i></i><i></i></span></div>' +
+      '  <div class="titlebar"><span>THE_NEXT_CHAPTER.EXE</span><span class="tb-dots"><i>_</i><i>□</i><i>x</i></span></div>' +
       '  <div class="win-body">' +
-      '    <div class="logo"><span class="logo-small">the</span><span class="logo-big">Next Chapter</span></div>' +
+      '    <div class="logo">' + logoImg('THE NEXT CHAPTER', 6) + '</div>' +
       '    <p class="tagline">a little game about keeping up a room, and letting go</p>' +
-      '    <button class="aqua big" id="startBtn">▶&nbsp; START</button>' +
+      '    <button class="aqua big" id="startBtn">&gt; START</button>' +
       '    <div class="discs">' + discs + '</div>' +
       '    <p class="small">or pick a disc to jump to a chapter · best with sound on ♪</p>' +
       '  </div>' +
@@ -60,12 +64,12 @@ const UI = (() => {
   function showIntro(ch, idx, onBegin) {
     const el = setScreen(
       '<div class="card pop-in" style="--accent:' + ch.accent + '">' +
-      '  <div class="card-disc"><span>' + (idx + 1) + '</span></div>' +
+      '  <div class="card-disc"><img class="px" src="' + discURL(ch.accent, 1) + '" alt=""><span>' + (idx + 1) + '</span></div>' +
       '  <div class="card-kicker">' + esc(ch.kicker) + '</div>' +
-      '  <div class="card-title">' + esc(ch.title) + '</div>' +
+      '  <div class="card-title">' + logoImg(ch.title.toUpperCase(), 5, { bands: bandsFor(ch.accent) }) + '</div>' +
       '  <div class="lcd">' + ch.year + '</div>' +
       '  <p class="card-text" id="typed"></p>' +
-      '  <button class="aqua" id="beginBtn">' + (ch.moving ? 'Start packing ▶' : 'Open the box ▶') + '</button>' +
+      '  <button class="aqua" id="beginBtn">' + (ch.moving ? 'Start packing &gt;' : 'Open the box &gt;') + '</button>' +
       '</div>', 'intro-screen');
     typeText(el.querySelector('#typed'), ch.intro);
     const go = () => { Sound.click(); onBegin(); };
@@ -93,7 +97,7 @@ const UI = (() => {
     $('#hudLabel').textContent = s.moving ? 'PACKING' : 'UPKEEP';
     const pct = s.moving ? Math.min(1, s.packed / 5) : (s.total ? s.tidy / s.total : 0);
     $('#hudBar').style.width = Math.round(pct * 100) + '%';
-    $('#hudMem').textContent = '✦ ' + s.memSeen + '/' + s.memTotal;
+    $('#hudMem').textContent = 'MEM ' + s.memSeen + '/' + s.memTotal;
     refreshMute();
   }
 
@@ -112,7 +116,7 @@ const UI = (() => {
   function toast(from, text, nudge) {
     const t = document.createElement('div');
     t.className = 'toast slide-in' + (nudge ? ' nudge' : '');
-    t.innerHTML = '<div class="toast-bar"><span class="buddy">' + (from === 'Mum' ? '♥' : '☺') + '</span> ' + esc(from) + ' says:<i>✕</i></div><div class="toast-text">' + esc(text) + '</div>';
+    t.innerHTML = '<div class="toast-bar">' + icon(from === 'Mum' ? 'heart' : 'smiley', 2) + ' ' + esc(from) + ' says:<i>x</i></div><div class="toast-text">' + esc(text) + '</div>';
     toasts.appendChild(t);
     while (toasts.children.length > 3) toasts.firstElementChild.remove();
     nudge ? Sound.nudge() : Sound.toast();
@@ -140,22 +144,22 @@ const UI = (() => {
         '<div class="mem-frame ' + mem.type + '">' +
         '  <div class="mem-media"></div>' +
         (mem.type === 'video'
-          ? '<div class="cam"><span class="rec">● REC</span><span class="cam-mode">SP ▶</span><span class="stamp">' + stampFor(ch.year, seed) + '</span></div>'
+          ? '<div class="cam"><span class="rec">REC</span><span class="cam-mode">SP &gt;</span><span class="stamp">' + stampFor(ch.year, seed) + '</span></div>'
           : '<span class="photo-stamp">' + stampFor(ch.year, seed) + '</span>') +
         '  <div class="missing hidden">placeholder · add <b>' + esc(mem.src) + '</b></div>' +
         '</div>' +
-        (mem.type === 'video' ? '<div class="mem-controls"><button class="ctl" id="memPlay">❚❚</button><div class="seek"><i id="memSeek"></i></div><button class="ctl" id="memReplay">↺</button></div>' : '');
+        (mem.type === 'video' ? '<div class="mem-controls"><button class="ctl" id="memPlay">||</button><div class="seek"><i id="memSeek"></i></div><button class="ctl" id="memReplay">&lt;&lt;</button></div>' : '');
     } else {
       frame = '<div class="paper ' + (mem.type === 'letter' ? 'letter' : '') + '"><p id="memTyped"></p></div>';
     }
     modal.innerHTML =
       '<div class="backdrop fade-in">' +
       '  <div class="win mem-win pop-in" style="--accent:' + ch.accent + '">' +
-      '    <div class="titlebar"><span>' + (mem.type === 'video' ? '▶ Memory Player 2000' : mem.type === 'photo' ? '✿ Photo Viewer' : '✎ Notepad') + ' — ' + esc(fileName) + '</span><button class="tb-close" id="memClose">✕</button></div>' +
+      '    <div class="titlebar"><span>' + (mem.type === 'video' ? 'MEMORY PLAYER 2000' : mem.type === 'photo' ? 'PHOTO VIEWER' : 'NOTEPAD') + ' : ' + esc(fileName) + '</span><button class="tb-close" id="memClose">x</button></div>' +
       '    <div class="mem-body">' + frame +
       (isMedia ? '<div class="mem-caption">' + esc(mem.caption || '') + '</div>' : '') +
       '    </div>' +
-      '    <div class="mem-foot">click anywhere to continue ✦</div>' +
+      '    <div class="mem-foot">click anywhere to continue</div>' +
       '  </div>' +
       '</div>';
     const back = modal.querySelector('.backdrop');
@@ -178,17 +182,34 @@ const UI = (() => {
       opts.mountPlaceholder(host, mem);
       if (mem.type === 'video') fakePlayback();
     };
+    const PX = typeof MEDIA_PIXEL === 'number' ? MEDIA_PIXEL : 0;
+    const pixCanvas = () => { const cv = document.createElement('canvas'); cv.width = Math.max(1, Math.round(host.clientWidth / PX)); cv.height = Math.max(1, Math.round(host.clientHeight / PX)); cv.className = 'pixel-canvas'; return cv; };
+    const cover = (ctx, src, sw, sh, cv) => { const k = Math.max(cv.width / sw, cv.height / sh), w = cv.width / k, h = cv.height / k; ctx.drawImage(src, (sw - w) / 2, (sh - h) / 2, w, h, 0, 0, cv.width, cv.height); };
     if (mem.type === 'photo') {
       const img = new Image();
       img.alt = mem.caption || '';
-      img.onload = () => { host.innerHTML = ''; host.appendChild(img); };
+      img.onload = () => {
+        host.innerHTML = '';
+        if (PX > 0) { const cv = pixCanvas(); cover(cv.getContext('2d'), img, img.naturalWidth, img.naturalHeight, cv); host.appendChild(cv); }
+        else host.appendChild(img);
+      };
       img.onerror = showPlaceholder;
       img.src = mem.src;
     } else {
       const v = document.createElement('video');
       v.playsInline = true; v.preload = 'auto';
       v.addEventListener('error', showPlaceholder, { once: true });
-      v.addEventListener('loadeddata', () => { host.innerHTML = ''; host.appendChild(v); const p = v.play(); if (p && p.catch) p.catch(() => setPlayIcon(false)); });
+      v.addEventListener('loadeddata', () => {
+        host.innerHTML = '';
+        if (PX > 0) {
+          v.className = 'hidden-video'; host.appendChild(v);
+          const cv = pixCanvas(), ctx = cv.getContext('2d'); host.appendChild(cv);
+          const st = memState;
+          const loop = () => { if (memState !== st || !v.isConnected) return; if (v.videoWidth) cover(ctx, v, v.videoWidth, v.videoHeight, cv); requestAnimationFrame(loop); };
+          loop();
+        } else host.appendChild(v);
+        const p = v.play(); if (p && p.catch) p.catch(() => setPlayIcon(false));
+      });
       v.addEventListener('timeupdate', () => { H.onActivity && H.onActivity(); setSeek(v.duration ? v.currentTime / v.duration : 0); });
       v.addEventListener('play', () => setPlayIcon(true));
       v.addEventListener('pause', () => setPlayIcon(false));
@@ -203,7 +224,7 @@ const UI = (() => {
   }
 
   function setSeek(p) { const s = document.getElementById('memSeek'); if (s) s.style.width = Math.round(p * 100) + '%'; }
-  function setPlayIcon(playing) { const b = document.getElementById('memPlay'); if (b) b.textContent = playing ? '❚❚' : '▶'; }
+  function setPlayIcon(playing) { const b = document.getElementById('memPlay'); if (b) b.textContent = playing ? '||' : '>'; }
 
   /* placeholder "playback" for videos that haven't been added yet */
   function fakePlayback() {
@@ -254,8 +275,8 @@ const UI = (() => {
   function showComplete(ch, label, onNext) {
     const el = setScreen(
       '<div class="tidy-banner pop-in" style="--accent:' + ch.accent + '">' +
-      '  <div class="tidy-title">' + (ch.id === 'youngadult' ? 'Home sweet home' : 'Room tidy!') + '</div>' +
-      '  <div class="tidy-sub">' + esc(ch.title) + ' · ' + ch.year + ' ✦ complete</div>' +
+      '  <div class="tidy-title">' + logoImg(ch.id === 'youngadult' ? 'HOME SWEET HOME' : 'ROOM TIDY!', 6, { bands: bandsFor(ch.accent) }) + '</div>' +
+      '  <div class="tidy-sub">' + esc(ch.title) + ' · ' + ch.year + ' · complete</div>' +
       '  <button class="aqua" id="nextBtn">' + esc(label) + '</button>' +
       '</div>', 'complete-screen');
     const b = el.querySelector('#nextBtn');
@@ -279,14 +300,14 @@ const UI = (() => {
       const fresh = o.candidates.filter(id => !selected.includes(id));
       const goingAway = o.box.filter(id => !selected.includes(id));
       win.innerHTML =
-        '<div class="titlebar"><span>💾 Save to Memory Box (A:)</span><span class="tb-dots"><i></i><i></i><i></i></span></div>' +
+        '<div class="titlebar"><span>' + icon('floppy', 2) + ' SAVE TO MEMORY BOX (A:)</span><span class="tb-dots"><i>_</i><i>□</i><i>x</i></span></div>' +
         '<div class="keep-body">' +
         '  <p class="keep-lead">Pack a memory box for the next chapter. <b>Teddy always comes.</b> There’s room for ' + o.capacity + ' more things.</p>' +
         '  <div class="keep-row box-row"><div class="tile locked"><img src="' + o.thumb('teddy') + '" alt=""><span>Teddy</span><em>always</em></div>' + slots.join('') + '</div>' +
         '  <div class="keep-label">From this chapter: click to keep</div>' +
         '  <div class="keep-row">' + (fresh.length ? fresh.map(id => tile(id, 'out')).join('') : '<span class="keep-none">nothing left to choose</span>') + '</div>' +
         (goingAway.length ? '<div class="keep-label">Letting go: click to rescue</div><div class="keep-row">' + goingAway.map(id => tile(id, 'out gone', 'let go')).join('') + '</div>' : '') +
-        '  <div class="keep-foot"><span>Things you don’t keep stay in this room’s past.</span><button class="aqua" id="keepDone">Save &amp; continue ▶</button></div>' +
+        '  <div class="keep-foot"><span>Things you don’t keep stay in this room’s past.</span><button class="aqua" id="keepDone">Save &amp; continue &gt;</button></div>' +
         '</div>';
       win.querySelectorAll('.tile.in').forEach(b => b.addEventListener('click', () => { Sound.back(); selected.splice(selected.indexOf(b.dataset.id), 1); render(); }));
       win.querySelectorAll('.tile.out').forEach(b => b.addEventListener('click', () => {
@@ -305,9 +326,9 @@ const UI = (() => {
     const el = setScreen(
       '<div class="holo"></div>' +
       '<div class="win end-win pop-in">' +
-      '  <div class="titlebar"><span>✦ the_next_chapter.exe: complete</span><span class="tb-dots"><i></i><i></i><i></i></span></div>' +
+      '  <div class="titlebar"><span>THE_NEXT_CHAPTER.EXE : COMPLETE</span><span class="tb-dots"><i>_</i><i>□</i><i>x</i></span></div>' +
       '  <div class="end-body">' +
-      '    <div class="logo"><span class="logo-small">the</span><span class="logo-big">Next Chapter</span></div>' +
+      '    <div class="logo">' + logoImg('THE NEXT CHAPTER', 5) + '</div>' +
       '    <p class="end-lead">She packed Teddy last. She always does.</p>' +
       '    <div class="end-cols">' +
       '      <div><div class="keep-label">Packed for uni</div><div class="keep-row">' + tiles(s.packed) + '</div></div>' +
@@ -315,7 +336,7 @@ const UI = (() => {
       '    </div>' +
       '    <p class="end-stat">memories found: ' + s.memSeen + ' / ' + s.memTotal + '</p>' +
       '    <div class="credits">' + s.credits.map(c => '<span><b>' + esc(c[0]) + '</b> · ' + esc(c[1]) + '</span>').join('') + '</div>' +
-      '    <button class="aqua big" id="replayBtn">↺ Play again</button>' +
+      '    <button class="aqua big" id="replayBtn">&lt;&lt; Play again</button>' +
       '  </div>' +
       '</div>', 'end-screen');
     el.querySelector('#replayBtn').addEventListener('click', () => { Sound.click(); onReplay(); });
@@ -327,13 +348,13 @@ const UI = (() => {
     modal.innerHTML =
       '<div class="backdrop fade-in">' +
       '  <div class="win menu-win pop-in">' +
-      '    <div class="titlebar"><span>★ menu</span><button class="tb-close" data-a="resume">✕</button></div>' +
+      '    <div class="titlebar"><span>MENU</span><button class="tb-close" data-a="resume">x</button></div>' +
       '    <div class="menu-body">' +
-      '      <button class="aqua" data-a="resume">▶ Keep playing</button>' +
-      '      <button class="aqua alt" data-a="restart">↺ Restart this chapter</button>' +
-      '      <button class="aqua alt" data-a="title">⌂ Chapter select</button>' +
-      '      <button class="aqua alt" data-a="sound">' + (Sound.isMuted() ? '♪ Sound: off' : '♪ Sound: on') + '</button>' +
-      '      <button class="aqua alt" data-a="fullscreen">⛶ Fullscreen</button>' +
+      '      <button class="aqua" data-a="resume">&gt; Keep playing</button>' +
+      '      <button class="aqua alt" data-a="restart">Restart chapter</button>' +
+      '      <button class="aqua alt" data-a="title">Chapter select</button>' +
+      '      <button class="aqua alt" data-a="sound">' + (Sound.isMuted() ? 'Sound: off' : 'Sound: on') + '</button>' +
+      '      <button class="aqua alt" data-a="fullscreen">Fullscreen</button>' +
       '      <p class="small">keys: Esc menu · M sound · F fullscreen</p>' +
       '    </div>' +
       '  </div>' +

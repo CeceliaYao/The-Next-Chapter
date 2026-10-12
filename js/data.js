@@ -1,5 +1,5 @@
 /* =========================================================
-   data.js — EVERYTHING the team will want to edit lives here.
+   data.js: EVERYTHING the team will want to edit lives here.
    - chapter text, captions, mum's messages
    - which photo / video file plays for which object
    - where each object is allowed to go
@@ -9,6 +9,7 @@
 
 const MEMORY_BOX_SIZE = 3;          // how many things (besides Teddy) carry over between chapters
 const IDLE_RESET_MS = 150000;       // exhibition: return to title after 2.5 min of no input
+const MEDIA_PIXEL = 3;              // photos & videos get a pixel filter (size of each pixel). 0 = show them as filmed
 
 const CREDITS = [
   ['Qinxi (Cecelia) Yao', 'Main Coder'],
@@ -22,57 +23,58 @@ const CREDITS = [
    bins (object disappears into them): door · toybox · basket · box               */
 const CARRY_FITS = ['shelf', 'desk', 'bed', 'sill', 'floor'];
 
+/* Each object's size comes from its pixel sprite in sprites.js. */
 const ITEM_DEFS = {
   // 1 · nursery
-  teddy:        { name: 'Teddy', w: 64, h: 72, fits: ['bed', 'shelf', 'desk', 'table', 'sill', 'floor'], hint: 'Teddy belongs somewhere cosy. Try the bed.' },
-  blanket:      { name: 'Baby blanket', w: 110, h: 30, fits: ['bed'], hint: 'Blankets go in the cot.' },
-  mobile:       { name: 'Star mobile', w: 110, h: 120, fits: ['mobile'], hint: 'The mobile hangs from the hook above the cot.' },
-  snowglobe:    { name: 'Snow globe music box', w: 52, h: 60, fits: ['shelf', 'desk', 'sill'], hint: 'Somewhere up high: the shelf or the change table.' },
-  rabbitbooks:  { name: 'Peter Rabbit books', w: 70, h: 56, fits: ['shelf', 'desk', 'sill'], hint: 'Books live on the shelf.' },
-  nightlight:   { name: 'Night-light', w: 34, h: 40, fits: ['socket'], hint: 'Plug it into the wall socket next to the cot.' },
-  rattle:       { name: 'Rattle', w: 50, h: 32, fits: ['bed', 'desk', 'shelf', 'floor'], hint: 'Rattles go in the cot.' },
-  bottle:       { name: 'Bottle', w: 30, h: 56, fits: ['desk', 'shelf', 'sill'], hint: 'The bottle goes on the change table or a shelf.' },
+  teddy:        { name: 'Teddy', fits: ['bed', 'shelf', 'desk', 'table', 'sill', 'floor'], hint: 'Teddy belongs somewhere cosy. Try the bed.' },
+  blanket:      { name: 'Baby blanket', fits: ['bed'], hint: 'Blankets go in the cot.' },
+  mobile:       { name: 'Star mobile', fits: ['mobile'], hint: 'The mobile hangs from the hook above the cot.' },
+  snowglobe:    { name: 'Snow globe music box', fits: ['shelf', 'desk', 'sill'], hint: 'Somewhere up high: the shelf or the change table.' },
+  rabbitbooks:  { name: 'Peter Rabbit books', fits: ['shelf', 'desk', 'sill'], hint: 'Books live on the shelf.' },
+  nightlight:   { name: 'Night-light', fits: ['socket'], hint: 'Plug it into the wall socket next to the cot.' },
+  rattle:       { name: 'Rattle', fits: ['bed', 'desk', 'shelf', 'floor'], hint: 'Rattles go in the cot.' },
+  bottle:       { name: 'Bottle', fits: ['desk', 'shelf', 'sill'], hint: 'The bottle goes on the change table or a shelf.' },
   // 2 · childhood
-  picturebooks: { name: 'Storybooks', w: 76, h: 60, fits: ['shelf', 'desk'], hint: 'Storybooks go on the bookshelf.' },
-  teaset:       { name: 'Tea party set', w: 96, h: 46, fits: ['table'], hint: 'Tea parties happen at the little table.' },
-  doll:         { name: 'Doll', w: 46, h: 74, fits: ['table', 'bed', 'shelf'], hint: 'Dolls sit at the tea table, on the bed or on a shelf.' },
-  tutu:         { name: 'Tutu', w: 80, h: 56, fits: ['hook'], hint: 'Dress-ups hang on the hooks above the bed.' },
-  wings:        { name: 'Fairy wings', w: 90, h: 70, fits: ['hook'], hint: 'Dress-ups hang on the hooks above the bed.' },
-  drawing:      { name: 'Crayon drawing', w: 80, h: 64, fits: ['wall'], hint: 'Stick drawings on the wall. Any bare wall works!' },
-  crayons:      { name: 'Crayons', w: 50, h: 26, fits: ['toybox'], hint: 'Crayons go back in the toy box.', keep: false },
-  truck:        { name: "Brother's truck", w: 70, h: 40, fits: ['door'], hint: "That's your brother's! Take it to the door.", keep: false, owner: 'brother' },
+  picturebooks: { name: 'Storybooks', fits: ['shelf', 'desk'], hint: 'Storybooks go on the bookshelf.' },
+  teaset:       { name: 'Tea party set', fits: ['table'], hint: 'Tea parties happen at the little table.' },
+  doll:         { name: 'Doll', fits: ['table', 'bed', 'shelf'], hint: 'Dolls sit at the tea table, on the bed or on a shelf.' },
+  tutu:         { name: 'Tutu', fits: ['hook'], hint: 'Dress-ups hang on the hooks above the bed.' },
+  wings:        { name: 'Fairy wings', fits: ['hook'], hint: 'Dress-ups hang on the hooks above the bed.' },
+  drawing:      { name: 'Crayon drawing', fits: ['wall'], hint: 'Stick drawings on the wall. Any bare wall works!' },
+  crayons:      { name: 'Crayons', fits: ['toybox'], hint: 'Crayons go back in the toy box.', keep: false },
+  truck:        { name: "Brother's truck", fits: ['door'], hint: "That's your brother's! Take it to the door.", keep: false, owner: 'brother' },
   // 3 · tween
-  backpack:     { name: 'School backpack', w: 70, h: 80, fits: ['floor'], hint: 'Just plonk it on the floor.' },
-  skates:       { name: 'Roller skates', w: 84, h: 56, fits: ['floor'], hint: 'Skates go on the floor.' },
-  artsupplies:  { name: 'Art supplies', w: 90, h: 40, fits: ['desk', 'shelf'], hint: 'Art supplies live on the desk.' },
-  sketch:       { name: 'Anime sketch', w: 70, h: 86, fits: ['wall', 'desk'], hint: 'Pin it on the wall above the bed, or keep it on the desk.' },
-  familyphoto:  { name: 'Family photo', w: 70, h: 60, fits: ['wall', 'shelf', 'desk'], hint: 'Frames go on a wall, shelf or desk.' },
-  flipphone:    { name: 'Flip phone', w: 26, h: 44, fits: ['desk', 'bed', 'shelf', 'sill'], hint: 'Phone on the desk (or on the bed, honestly).' },
-  discman:      { name: 'CD player', w: 54, h: 30, fits: ['desk', 'bed', 'shelf'], hint: 'The CD player goes on the desk, shelf or bed.' },
-  controller:   { name: "Brother's controller", w: 60, h: 36, fits: ['door'], hint: "Not yours! Give it back. Drop it on the door.", keep: false, owner: 'brother' },
+  backpack:     { name: 'School backpack', fits: ['floor'], hint: 'Just plonk it on the floor.' },
+  skates:       { name: 'Roller skates', fits: ['floor'], hint: 'Skates go on the floor.' },
+  artsupplies:  { name: 'Art supplies', fits: ['desk', 'shelf'], hint: 'Art supplies live on the desk.' },
+  sketch:       { name: 'Anime sketch', fits: ['wall', 'desk'], hint: 'Pin it on the wall above the bed, or keep it on the desk.' },
+  familyphoto:  { name: 'Family photo', fits: ['wall', 'shelf', 'desk'], hint: 'Frames go on a wall, shelf or desk.' },
+  flipphone:    { name: 'Flip phone', fits: ['desk', 'bed', 'shelf', 'sill'], hint: 'Phone on the desk (or on the bed, honestly).' },
+  discman:      { name: 'CD player', fits: ['desk', 'bed', 'shelf'], hint: 'The CD player goes on the desk, shelf or bed.' },
+  controller:   { name: "Brother's controller", fits: ['door'], hint: "Not yours! Give it back. Drop it on the door.", keep: false, owner: 'brother' },
   // 4 · teen
-  homework1:    { name: 'Maths homework', w: 70, h: 50, fits: ['desk'], hint: 'Homework goes on the desk.', keep: false },
-  homework2:    { name: 'Mock exam', w: 70, h: 50, fits: ['desk'], hint: 'Homework goes on the desk.', keep: false },
-  hoodie:       { name: 'Hoodie', w: 80, h: 56, fits: ['basket'], hint: 'Clothes go in the laundry basket.', keep: false },
-  jeans:        { name: 'Jeans', w: 70, h: 56, fits: ['basket'], hint: 'Clothes go in the laundry basket.', keep: false },
-  tee:          { name: 'T-shirt', w: 66, h: 50, fits: ['basket'], hint: 'Clothes go in the laundry basket.', keep: false },
-  heels:        { name: "Mum's heels", w: 70, h: 40, fits: ['floor'], hint: 'Shoes go on the floor.' },
-  posterband:   { name: 'Band poster', w: 100, h: 136, fits: ['wall'], hint: 'Posters go on the wall above the bed.' },
-  postermovie:  { name: 'Movie poster', w: 100, h: 136, fits: ['wall'], hint: 'Posters go on the wall above the bed.' },
-  trophy:       { name: 'Volleyball trophy', w: 46, h: 70, fits: ['shelf'], hint: 'Trophies go on the shelf above the desk.' },
-  medal:        { name: 'Karate medal', w: 40, h: 60, fits: ['shelf', 'wall'], hint: 'Medals go on the shelf or the wall.' },
-  award:        { name: 'Academic award', w: 54, h: 64, fits: ['shelf', 'desk'], hint: 'Awards go on the shelf above the desk.' },
-  guitar:       { name: 'Guitar', w: 60, h: 150, fits: ['floor', 'bed'], hint: 'Lean the guitar on the floor or the bed.' },
+  homework1:    { name: 'Maths homework', fits: ['desk'], hint: 'Homework goes on the desk.', keep: false },
+  homework2:    { name: 'Mock exam', fits: ['desk'], hint: 'Homework goes on the desk.', keep: false },
+  hoodie:       { name: 'Hoodie', fits: ['basket'], hint: 'Clothes go in the laundry basket.', keep: false },
+  jeans:        { name: 'Jeans', fits: ['basket'], hint: 'Clothes go in the laundry basket.', keep: false },
+  tee:          { name: 'T-shirt', fits: ['basket'], hint: 'Clothes go in the laundry basket.', keep: false },
+  heels:        { name: "Mum's heels", fits: ['floor'], hint: 'Shoes go on the floor.' },
+  posterband:   { name: 'Band poster', fits: ['wall'], hint: 'Posters go on the wall above the bed.' },
+  postermovie:  { name: 'Movie poster', fits: ['wall'], hint: 'Posters go on the wall above the bed.' },
+  trophy:       { name: 'Volleyball trophy', fits: ['shelf'], hint: 'Trophies go on the shelf above the desk.' },
+  medal:        { name: 'Karate medal', fits: ['shelf', 'wall'], hint: 'Medals go on the shelf or the wall.' },
+  award:        { name: 'Academic award', fits: ['shelf', 'desk'], hint: 'Awards go on the shelf above the desk.' },
+  guitar:       { name: 'Guitar', fits: ['floor', 'bed'], hint: 'Lean the guitar on the floor or the bed.' },
   // 5 · young adult
-  laptop:       { name: 'Laptop', w: 90, h: 56, fits: ['desk'], hint: 'The laptop goes on the desk.' },
-  plant:        { name: 'Plant', w: 56, h: 70, fits: ['sill', 'shelf', 'desk', 'floor'], hint: 'Plants love the windowsill.' },
-  fairylights:  { name: 'Fairy lights', w: 300, h: 40, fits: ['lights'], hint: 'Hang the fairy lights over the window.' },
-  mug:          { name: 'Mug', w: 36, h: 40, fits: ['desk', 'sill', 'shelf'], hint: 'Mug on the desk or the windowsill.' },
-  novel:        { name: 'Novel', w: 50, h: 60, fits: ['shelf', 'desk', 'bed'], hint: 'Books on the shelf, desk or bed.' },
-  polaroids:    { name: 'Polaroids', w: 140, h: 70, fits: ['wall'], hint: 'Hang the polaroids on the wall above the bed.' },
+  laptop:       { name: 'Laptop', fits: ['desk'], hint: 'The laptop goes on the desk.' },
+  plant:        { name: 'Plant', fits: ['sill', 'shelf', 'desk', 'floor'], hint: 'Plants love the windowsill.' },
+  fairylights:  { name: 'Fairy lights', fits: ['lights'], hint: 'Hang the fairy lights over the window.' },
+  mug:          { name: 'Mug', fits: ['desk', 'sill', 'shelf'], hint: 'Mug on the desk or the windowsill.' },
+  novel:        { name: 'Novel', fits: ['shelf', 'desk', 'bed'], hint: 'Books on the shelf, desk or bed.' },
+  polaroids:    { name: 'Polaroids', fits: ['wall'], hint: 'Hang the polaroids on the wall above the bed.' },
   // 6 · moving out
-  uniletter:    { name: 'Uni acceptance letter', w: 60, h: 44, fits: ['desk'], hint: '', keep: false },
-  clothesstack: { name: 'Folded clothes', w: 80, h: 40, fits: ['bed'], hint: '', keep: false }
+  uniletter:    { name: 'Uni acceptance letter', fits: ['desk'], hint: '', keep: false },
+  clothesstack: { name: 'Folded clothes', fits: ['bed'], hint: '', keep: false }
 };
 
 /* ---------- room layouts (shared with room.js) ---------- */
@@ -119,10 +121,10 @@ const CHAPTERS = [
   {
     id: 'nursery', kicker: 'Chapter 1', title: 'The Nursery', year: 2000, accent: '#ffcf5c',
     intro: 'A room painted the colour of butter. Someone very small is about to move in.',
-    tip: 'Drag each thing from the box into the room. Glowing outlines show where it can go.',
+    tip: 'Drag each thing from the box into the room. Pink pixel dashes show where it can go.',
     bg: bgNursery, layout: L_NURSERY,
     surfaces: [
-      { id: 'cot', tag: 'bed', type: 'line', x1: 222, x2: 448, y: 370 },
+      { id: 'cot', tag: 'bed', type: 'line', x1: 210, x2: 462, y: 370 },
       { id: 'mobile', tag: 'mobile', type: 'spot', x: 335, y: 178, r: 80 },
       { id: 'shelf', tag: 'shelf', type: 'line', x1: 806, x2: 994, y: 210 },
       { id: 'dresser', tag: 'desk', type: 'line', x1: 798, x2: 992, y: 335 },

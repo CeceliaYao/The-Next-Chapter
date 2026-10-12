@@ -1,10 +1,11 @@
 # The Next Chapter
 
-**KKB385 · A3.** An interactive, Y2K-styled game display about *upkeep*: the slow, never-finished job of looking after a room, and the things in it, while you grow up.
+**KKB385 · A3.** An interactive, pixel-art Y2K game display about *upkeep*: the slow, never-finished job of looking after a room, and the things in it, while you grow up.
 
 The visitor tends one bedroom across six chapters of a suburban girl's life, from the nursery to the day she moves out. Each chapter, she unpacks, tidies and decides what to carry into the next one. Teddy comes along every time. The game is inspired by *Unpacking*, but the twist is upkeep. Mess comes back, Mum nags, and the memory box only has room for so much.
 
 > Built with [p5.js](https://p5js.org/), plain HTML/CSS and Web Audio. No install, no internet needed.
+> Everything is real pixel art: the room is drawn on a 320 × 180 pixel canvas and scaled up 4× with no blur.
 
 ---
 
@@ -39,9 +40,9 @@ npx serve .        # then open the printed localhost address
 
 ## How it plays
 
-1. **Unpack.** Things arrive in the box at the bottom. Drag each one into the room. While you drag, the places it can go glow pink, and a see-through ghost shows exactly where it will land.
+1. **Unpack.** Things arrive in the box at the bottom. Drag each one into the room. While you drag, the places it can go flash with pink pixel dashes, and a dithered ghost shows exactly where it will land.
 2. **Upkeep.** Some chapters start messy (crayons, clothes, homework). The **UPKEEP** meter fills as the room gets tidy. In the teen room, Mum throws another shirt on the pile after you've cleaned up.
-3. **Memories.** Putting certain objects away plays a photo or a video (the team's footage) in a Y2K "Memory Player" with a camcorder date stamp.
+3. **Memories.** Putting certain objects away plays a photo or a video (the team's footage) in a Y2K "Memory Player" with a camcorder date stamp. Photos and videos get a pixel filter so they match the game (see *Formats* below to turn it off).
 4. **Siblings.** Your little brother's things turn up in your room. Drop them on the **door** to give them back.
 5. **Memory box.** Between chapters you choose what to carry forward. Teddy always comes, plus 3 more things. Anything you drop is "let go" and listed on the ending screen.
 6. **Moving out.** The box at the bottom flips around. Now you *pack* the room into it. Read the uni letter, then pack Teddy last.
@@ -84,6 +85,7 @@ Until a file exists, the game shows a styled placeholder with the filename it is
 
 - **Photos:** `.jpg` (or `.png`, but then change the extension in `js/data.js`). Landscape, about 1200 × 730 px; the frame crops to fill.
 - **Videos:** **MP4, H.264**. Phone footage is often HEVC `.mov`, which many browsers can't play. In Premiere: *Export → H.264 → Match Source*. Keep clips short (5–20 s) and landscape 16:9. The player closes itself shortly after a video ends.
+- **Pixel filter:** `MEDIA_PIXEL` in `js/data.js` sets how chunky the photos and videos look (3 by default). Set it to `0` to show them exactly as filmed.
 - Captions, filenames, Mum's messages and chapter text all live in **`js/data.js`**. Change them freely; it's plain text.
 
 ---
@@ -92,18 +94,21 @@ Until a file exists, the game shows a styled placeholder with the filename it is
 
 ```
 index.html        page shell + HUD
-style.css         the Y2K skin (windows, aqua buttons, chrome type, messenger pop-ups)
+style.css         the pixel Y2K skin (pixel windows, bevelled buttons, messenger pop-ups)
 js/data.js        ← edit me: chapters, objects, where things go, captions, file names
-js/sprites.js     every object, drawn in p5 (swap for drawn/scanned art later)
-js/room.js        the bedroom for each chapter (walls, window, furniture)
+js/pixel.js       the pixel engine: palette, crisp shapes, outlines, dithering, pixel text
+js/sprites.js     every object as pixel art (grids of palette letters, or pixel shapes)
+js/room.js        the bedroom for each chapter as pixel art (walls, window, furniture)
 js/game.js        game logic: drag & drop, placement rules, memory box, feedback
 js/ui.js          screens: title, chapter cards, memory player, keep box, ending
 js/audio.js       synthesised sound effects + music-box ambience (no audio files)
 lib/p5.min.js     p5.js 1.11 (bundled so it works offline)
-fonts/            Rubik Bubbles, Sniglet, VT323 (bundled, SIL Open Font License)
+fonts/            Pixelify Sans, Silkscreen, VT323 (bundled, SIL Open Font License)
 assets/photos/    ← put photos here
 assets/video/     ← put videos here
 ```
+
+**Editing the pixel art:** in `js/sprites.js` many objects are little grids of letters, one letter per pixel (`.` is see-through). The letters are colours from `PALETTE` in `js/pixel.js`, e.g. `u` teddy brown, `h` hot pink, `w` white. Change a letter, refresh, and the pixel changes. The dark outline is added automatically.
 
 **Changing where things can go:** each object in `ITEM_DEFS` has a `fits` list (e.g. `['shelf', 'desk']`), and each chapter has `surfaces` with a matching `tag`. If every spot an object fits is full, the game lets it go on any shelf, desk, bed or the floor, so a visitor can never get stuck.
 
@@ -120,4 +125,4 @@ assets/video/     ← put videos here
 
 Film inspiration: *Teddy Bear* (Sophie Holloway, 2019), *Belongings* (Alex Coppola).
 
-Third-party: [p5.js](https://github.com/processing/p5.js) (LGPL-2.1, see `lib/p5-LICENSE.txt`); fonts [Rubik Bubbles](https://fonts.google.com/specimen/Rubik+Bubbles), [Sniglet](https://fonts.google.com/specimen/Sniglet) and [VT323](https://fonts.google.com/specimen/VT323) (SIL OFL 1.1, see `fonts/`).
+Third-party: [p5.js](https://github.com/processing/p5.js) (LGPL-2.1, see `lib/p5-LICENSE.txt`); fonts [Pixelify Sans](https://fonts.google.com/specimen/Pixelify+Sans), [Silkscreen](https://fonts.google.com/specimen/Silkscreen) and [VT323](https://fonts.google.com/specimen/VT323) (SIL OFL 1.1, see `fonts/`).

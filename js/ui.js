@@ -93,7 +93,7 @@ const UI = (() => {
       '<div class="win title-win pop-in">' +
       '  <div class="titlebar"><span>THE_NEXT_CHAPTER.EXE</span><span class="tb-dots"><i>_</i><i>□</i><i>x</i></span></div>' +
       '  <div class="win-body">' +
-      '    <p class="tagline">a little game about keeping up a room,<br>and letting go</p>' +
+      '    <p class="tagline">one room, from nursery to moving out:<br>what we keep up, carry on, and leave behind</p>' +
       '    <button class="aqua big" id="startBtn">&gt; START</button>' +
       '    <div class="discs">' + discs + '</div>' +
       '    <p class="small">or pick a disc to jump to a chapter · best with sound on ♪</p>' +

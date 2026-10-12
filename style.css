@@ -189,6 +189,8 @@ button { font-family: 'Silkscreen', monospace; cursor: var(--cursor-hand); }
 .title-screen { gap: 34px; }
 .title-screen .logo { position: relative; z-index: 1; margin: 0; }
 .brand-logo { display: block; filter: drop-shadow(8px 8px 0 rgba(34, 26, 19, .25)); }
+/* the team's logo and photos are always shown as the original artwork, never pixelated */
+.brand-logo, .door-logo { image-rendering: auto; }
 .title-screen.door-closed .pop-in { animation-play-state: paused; }
 /* the bedroom door in front of the title screen */
 .door-splash { position: absolute; inset: 0; z-index: 30; cursor: pointer; transform-origin: 640px 380px; }

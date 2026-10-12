@@ -87,7 +87,7 @@ const UI = (() => {
     const names = CREDITS.map(c => c[0].replace(/\s*\(.*\)/, '')).sort().join(' · ');
     const el = setScreen(
       '<div class="holo"></div><div class="floaters">' + floaters + '</div>' +
-      '<div class="logo pop-in"><img class="px brand-logo" src="assets/brand/logo-main-pixel.png" alt="The Next Chapter" style="width:510px;height:354px"></div>' +
+      '<div class="logo pop-in"><img class="brand-logo" src="assets/brand/logo-main.png" alt="The Next Chapter" style="width:510px;height:355px"></div>' +
       '<div class="win title-win pop-in">' +
       '  <div class="titlebar"><span>THE_NEXT_CHAPTER.EXE</span><span class="tb-dots"><i>_</i><i>□</i><i>x</i></span></div>' +
       '  <div class="win-body">' +
@@ -102,7 +102,7 @@ const UI = (() => {
         ? '<div class="door-splash" role="button" aria-label="Open the door">' +
           '  <canvas class="px door-wall" width="320" height="180"></canvas>' +
           '  <div class="door-leaf"><canvas class="px" width="' + DOOR_ART.w + '" height="180"></canvas>' +
-          '    <img class="px door-logo" src="assets/brand/logo-stacked-pixel.png" alt="The Next Chapter">' +
+          '    <img class="door-logo" src="assets/brand/logo-stacked.png" alt="The Next Chapter">' +
           '    <div class="door-names">' + esc(names) + '</div>' +
           '    <div class="door-hint">click the door to come in &gt;</div>' +
           '  </div>' +
@@ -460,7 +460,7 @@ const UI = (() => {
       '<div class="win end-win pop-in">' +
       '  <div class="titlebar"><span>THE_NEXT_CHAPTER.EXE : COMPLETE</span><span class="tb-dots"><i>_</i><i>□</i><i>x</i></span></div>' +
       '  <div class="end-body">' +
-      '    <div class="logo"><img class="px brand-logo" src="assets/brand/logo-liner-pixel.png" alt="The Next Chapter" style="width:320px;height:58px"></div>' +
+      '    <div class="logo"><img class="brand-logo" src="assets/brand/logo-liner.png" alt="The Next Chapter" style="width:340px;height:62px"></div>' +
       '    <p class="end-lead">She packed Teddy last. She always does.</p>' +
       '    <div class="end-cols">' +
       '      <div><div class="keep-label">Packed for uni</div><div class="keep-row">' + tiles(s.packed) + '</div></div>' +

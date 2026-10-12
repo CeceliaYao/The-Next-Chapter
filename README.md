@@ -111,7 +111,9 @@ The look follows the team's identity board and our colour decision: **orange (tw
 | Pink | `#ff84e4` | accent: hearts, Mum's messages |
 | Yellow / Lime | `#ffc700` / `#8de328` | the logo, chapter titles, UPKEEP meter |
 
-The logo files are in `assets/brand/`. `logo-main.png` is the original; the `-pixel` versions (main, stacked for the door, liner for the ending) were redrawn on a pixel grid in the brand colours so they match the game. To use a new logo, replace those files and keep the same names.
+The logo files in `assets/brand/` are the team's original artwork (transparent PNGs, never pixelated): `logo-main.png` on the title screen, `logo-stacked.png` on the door, `logo-liner.png` on the ending. To use a new logo, replace those files and keep the same names.
+
+**Rule for the team's own images:** logos, photos and videos are always shown as the originals (cut out where needed), never pixelated. Only the game's drawn objects and rooms are pixel art.
 
 ---
 
@@ -130,7 +132,7 @@ js/ui.js          screens: title, chapter cards, memory player, keep box, ending
 js/audio.js       synthesised sound effects + music-box ambience (no audio files)
 lib/p5.min.js     p5.js 1.11 (bundled so it works offline)
 fonts/            Pixelify Sans, Silkscreen, VT323 (bundled, SIL Open Font License)
-assets/brand/     team logo (original + pixel versions) and favicon
+assets/brand/     team logos (original artwork) and favicon
 assets/photos/    ← put photos here
 assets/video/     ← put videos here
 ```

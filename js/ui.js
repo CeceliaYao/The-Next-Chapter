@@ -84,7 +84,9 @@ const UI = (() => {
       '<button class="disc" data-i="' + i + '"><img class="px" src="' + discURL(c.accent, 1) + '" alt=""><b>' + (i + 1) + '</b><small>' + c.year + '</small></button>').join('');
     const floaters = ['star', 'heart', 'sparkle', 'heart', 'star', 'sparkle', 'heart', 'star', 'sparkle', 'heart'].map((n, i) =>
       '<span class="floater" style="left:' + (5 + i * 9.5) + '%;animation-delay:' + (-i * 1.7) + 's">' + icon(n, 4 + (i % 3) * 2) + '</span>').join('');
-    const names = CREDITS.map(c => c[0].replace(/\s*\(.*\)/, '')).sort().join(' · ');
+    const names = CREDITS.map(c => c[0].replace(/\s*\(.*\)/, '')).join(' · ');   // full names, in CREDITS order
+    const short = CREDITS.map(c => c[2]);
+    const byLine = short.slice(0, -1).join(', ') + ' &amp; ' + short[short.length - 1];
     const el = setScreen(
       '<div class="holo"></div><div class="floaters">' + floaters + '</div>' +
       '<div class="logo pop-in"><img class="brand-logo" src="assets/brand/logo-main.png" alt="The Next Chapter" style="width:510px;height:355px"></div>' +
@@ -97,7 +99,7 @@ const UI = (() => {
       '    <p class="small">or pick a disc to jump to a chapter · best with sound on ♪</p>' +
       '  </div>' +
       '</div>' +
-      '<div class="title-foot">KKB385 · A3 · an interactive room by Isabella, Lyebin, Chloee &amp; Cecelia</div>' +
+      '<div class="title-foot">KKB385 · A3 · an interactive room by ' + byLine + '</div>' +
       (withDoor
         ? '<div class="door-splash" role="button" aria-label="Open the door">' +
           '  <canvas class="px door-wall" width="320" height="180"></canvas>' +
@@ -119,15 +121,18 @@ const UI = (() => {
       let opened = false;
       const open = () => {
         if (opened || !splash.isConnected) return; opened = true;
-        window.removeEventListener('keydown', onKeyOpen);
+        window.removeEventListener('keydown', onKeyOpen, true);
         Sound.init(); Sound.door();
         splash.classList.add('opening');
         setTimeout(() => el.classList.remove('door-closed'), 750);   // the title screen pops in as you walk through
         setTimeout(() => splash.remove(), 1400);
       };
-      const onKeyOpen = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
+      const onKeyOpen = e => {
+        if (!splash.isConnected) { window.removeEventListener('keydown', onKeyOpen, true); return; }
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); open(); }
+      };
       splash.addEventListener('click', open);
-      window.addEventListener('keydown', onKeyOpen);
+      window.addEventListener('keydown', onKeyOpen, true);   // capture: runs before the game's own key handler
     }
     showHUD(false); hideHint();
   }
@@ -238,7 +243,8 @@ const UI = (() => {
     const back = modal.querySelector('.backdrop');
     draggable(modal.querySelector('.mem-win'));
     memState = { mem, opts, opened: performance.now(), timers: [], video: null, fakeT: null };
-    const close = () => { if (performance.now() - memState.opened > 450) closeMemory(); };
+    const st0 = memState, live = () => memState === st0;   // late image/video callbacks must not touch a newer memory
+    const close = () => { if (memState && performance.now() - memState.opened > 450) closeMemory(); };
     modal.querySelector('#memClose').addEventListener('click', e => { e.stopPropagation(); closeMemory(); });
     back.addEventListener('click', e => {
       if (e.target.closest('.mem-controls') || e.target.closest('.mem-frame.video')) return;
@@ -251,6 +257,7 @@ const UI = (() => {
 
     const host = modal.querySelector('.mem-media');
     const showPlaceholder = () => {
+      if (!live()) return;
       host.innerHTML = '';
       if (DEV) modal.querySelector('.missing').classList.remove('hidden');
       opts.mountPlaceholder(host, mem);
@@ -276,6 +283,7 @@ const UI = (() => {
     // the stand-in illustrations are pixel art on purpose, always 3 screen px per pixel
     const artCanvas = () => { const cv = document.createElement('canvas'); cv.width = Math.round(host.clientWidth / 3); cv.height = Math.round(host.clientHeight / 3); cv.className = 'pixel-canvas'; return cv; };
     const showArt = () => {
+      if (!live()) return;
       host.innerHTML = '';
       const cv = artCanvas(), art = MEMORY_ART[mem.art](cv.width, cv.height);
       const c2 = cv.getContext('2d'); c2.imageSmoothingEnabled = false; c2.drawImage(art.toCanvas(1), 0, 0);
@@ -285,6 +293,7 @@ const UI = (() => {
       const img = new Image();
       img.onerror = showPlaceholder;
       img.onload = () => {
+        if (!live()) return;
         host.innerHTML = '';
         const sw = img.naturalWidth, sh = img.naturalHeight;
         fitFrame(sw / sh, 0); frameEl.classList.add('real');
@@ -295,11 +304,12 @@ const UI = (() => {
         const loop = () => {
           if (memState !== st || !cv.isConnected) return;
           const t = Math.min(1, fakeTime() / dur), e = t * t * (3 - 2 * t);
+          st.stillLoop = loop; st.stillDone = t >= 1;
           const k = Math.max(cv.width / sw, cv.height / sh) * (1 + 0.22 * e);
           const w = cv.width / k, h = cv.height / k;
           const cx = sw * (0.5 + (f[0] - 0.5) * e), cy = sh * (0.5 + (f[1] - 0.5) * e);
           ctx.drawImage(img, Math.max(0, Math.min(sw - w, cx - w / 2)), Math.max(0, Math.min(sh - h, cy - h / 2)), w, h, 0, 0, cv.width, cv.height);
-          requestAnimationFrame(loop);
+          if (!st.stillDone) requestAnimationFrame(loop);
         };
         loop();
       };
@@ -311,6 +321,7 @@ const UI = (() => {
       const img = new Image();
       img.alt = mem.caption || '';
       img.onload = () => {
+        if (!live()) return;
         host.innerHTML = '';
         fitFrame(img.naturalWidth / img.naturalHeight, 24);
         if (PX > 0) { const cv = pixCanvas(); cover(cv.getContext('2d'), img, img.naturalWidth, img.naturalHeight, cv); host.appendChild(cv); }
@@ -323,6 +334,7 @@ const UI = (() => {
       v.playsInline = true; v.preload = 'auto';
       v.addEventListener('error', () => (mem.still ? showStill() : showPlaceholder()), { once: true });
       v.addEventListener('loadeddata', () => {
+        if (!live()) return;
         host.innerHTML = '';
         if (v.videoWidth) fitFrame(v.videoWidth / v.videoHeight, 0);   // portrait phone videos get a tall frame
         frameEl.classList.add('real');
@@ -358,6 +370,7 @@ const UI = (() => {
     return f.paused ? f.acc : f.acc + (performance.now() - f.start);
   }
   function fakePlayback(d) {
+    if (!memState) return;
     const dur = d || 7000;
     memState.fakeDur = dur;
     memState.fakeT = { start: performance.now(), paused: false, acc: 0 };
@@ -388,6 +401,7 @@ const UI = (() => {
     const v = memState.video;
     if (v && v.isConnected) { v.currentTime = 0; v.play(); return; }
     fakePlayback(memState.fakeDur);
+    if (memState.stillLoop && memState.stillDone) { memState.stillDone = false; requestAnimationFrame(memState.stillLoop); }
   }
 
   function closeMemory(silent) {
@@ -397,7 +411,7 @@ const UI = (() => {
     if (st.video) { st.video.pause(); st.video.removeAttribute('src'); st.video.load(); }
     st.opts.unmountPlaceholder && st.opts.unmountPlaceholder();
     const win = modal.querySelector('.backdrop');
-    if (win) { win.classList.add('fade-out'); setTimeout(() => { if (!memState) modal.innerHTML = ''; }, 220); }
+    if (win) { win.classList.add('fade-out'); setTimeout(() => { if (win.isConnected && !win.querySelector('.menu-win')) win.remove(); }, 220); }
     if (!silent && st.opts.onClose) st.opts.onClose();
   }
   const memoryOpen = () => !!memState;

@@ -147,10 +147,10 @@ assets/video/     ← put videos here
 
 **The Next Chapter** by
 
-- **Qinxi (Cecelia) Yao**: Main Coder
-- **Chloee Park**: Design
 - **Isabella Kiosses**: Film & Didactic
 - **Lyebin Cho**: Film & Photo
+- **Chloee Park**: Design
+- **Qinxi (Cecelia) Yao**: Main Coder
 
 Film inspiration: *Teddy Bear* (Sophie Holloway, 2019), *Belongings* (Alex Coppola).
 

@@ -479,7 +479,10 @@ function onKey(e) {
   else if (k === 'm' || k === 'M') toggleMute();
   else if (k === 'f' || k === 'F') toggleFullscreen();
   else if (k === 'N' && e.shiftKey && G.state === 'play' && !G.modal) debugSkip();
-  else if (k === 'Enter') { const b = document.querySelector('#beginBtn, #nextBtn, #keepDone, #startBtn'); if (b && !b.disabled) b.click(); }
+  else if (k === 'Enter') {
+    if (document.querySelector('.door-splash')) return;   // the closed door handles Enter itself (it opens)
+    const b = document.querySelector('#beginBtn, #nextBtn, #keepDone, #startBtn'); if (b && !b.disabled) b.click();
+  }
 }
 
 function itemAt(px, py) {

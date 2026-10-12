@@ -11,11 +11,12 @@ const MEMORY_BOX_SIZE = 3;          // how many things (besides Teddy) carry ove
 const IDLE_RESET_MS = 150000;       // exhibition: return to title after 2.5 min of no input
 const MEDIA_PIXEL = 0;              // 0 = photos & videos are shown exactly as shot. Set to 3 for a chunky pixel filter
 
+// [full name, role, short name]: this order is used on the door, the title screen and the ending
 const CREDITS = [
-  ['Qinxi (Cecelia) Yao', 'Main Coder'],
-  ['Chloee Park', 'Design'],
-  ['Isabella Kiosses', 'Film & Didactic'],
-  ['Lyebin Cho', 'Film & Photo']
+  ['Isabella Kiosses', 'Film & Didactic', 'Isabella'],
+  ['Lyebin Cho', 'Film & Photo', 'Lyebin'],
+  ['Chloee Park', 'Design', 'Chloee'],
+  ['Qinxi (Cecelia) Yao', 'Main Coder', 'Cecelia']
 ];
 
 /* Teddy gets a little older every chapter (the sprite changes too, see sprites.js). */

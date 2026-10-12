@@ -35,7 +35,7 @@ function stamp(b, x, y, rows, c, clip) {
 
 function roomShell(b, th) {
   const { LX, RX, CY, WX1, WX2, WY1, WY2, FY } = RA;
-  b.rect(0, 0, ART_W, ART_H, '#eadcff'); b.dither(0, 0, ART_W, ART_H, '#ffe3f4', 6);
+  b.rect(0, 0, ART_W, ART_H, '#fff1cc'); b.dither(0, 0, ART_W, ART_H, '#ffe2c4', 6);
   b.poly([[LX, CY], [RX + 1, CY], [WX2 + 1, WY1], [WX1, WY1]], th.ceil);
   b.poly([[LX, CY], [WX1, WY1], [WX1, WY2 + 1], [LX, FY + 1]], th.side);
   b.poly([[WX2 + 1, WY1], [RX + 1, CY], [RX + 1, FY + 1], [WX2 + 1, WY2 + 1]], th.side2 || th.side);
@@ -175,9 +175,9 @@ function drawCot(b, c) {
 
 function drawBed(b, bed, style) {
   const s = {
-    flowers: { frame: 'p', duvet: 'P', dark: 'h', pillow: 'w' },
-    butterflies: { frame: 'l', duvet: 'a', dark: 'A', pillow: 'y' },
-    messy: { frame: 'V', duvet: 'v', dark: 'V', pillow: 'l' },
+    flowers: { frame: '#f3d3d6', duvet: '#eaa5b5', dark: '#d88799', pillow: 'w' },
+    butterflies: { frame: '#e2dbef', duvet: '#a9d9d0', dark: '#86c2b7', pillow: 'y' },
+    messy: { frame: '#6d5a8f', duvet: '#9a88c4', dark: '#7d6aa8', pillow: 'l' },
     linen: { frame: 'R', duvet: 'c', dark: 'g', pillow: 'w' },
     bare: { frame: 'R', duvet: 'g', dark: 'G', pillow: null }
   }[style];
@@ -195,7 +195,7 @@ function drawBed(b, bed, style) {
   if (s.pillow) b.box(x1 + 6, top - 4, 17, 7, s.pillow);
   if (style === 'messy') {
     b.poly([[x1 + 18, top], [x1 + 40, top - 1], [x1 + 60, top + 2], [x2 - 3, top], [x2 - 2, top + 15], [x1 + 50, top + 17], [x1 + 30, top + 13], [x1 + 16, top + 16]], s.duvet);
-    b.line(x1 + 26, top + 5, x1 + 46, top + 8, 'V'); b.line(x1 + 50, top + 4, x1 + 64, top + 6, 'V');
+    b.line(x1 + 26, top + 5, x1 + 46, top + 8, '#6d5a8f'); b.line(x1 + 50, top + 4, x1 + 64, top + 6, '#6d5a8f');
     b.line(x1 + 18, top, x1 + 16, top + 16, 'o'); b.line(x1 + 16, top + 16, x1 + 30, top + 13, 'o'); b.line(x1 + 30, top + 13, x1 + 50, top + 17, 'o'); b.line(x1 + 50, top + 17, x2 - 2, top + 15, 'o');
     b.hline(x1 + 18, top, x2 - x1 - 20, 'o');
     return;
@@ -297,7 +297,7 @@ function hangString(b, x, toY) { b.vline(x, RA.WY1, Math.max(1, toY - RA.WY1), '
 /* ---------- one background per chapter ---------- */
 
 function bgNursery(b, L) {
-  roomShell(b, { ceil: '#fff8dc', side: '#f6e2a8', side2: '#f0d896', sideShade: '#e8cc88', wall: '#fff1c1', dots: '#d9c4ff', floor: '#e9c79c', floor2: '#d4ad80', pattern: 'stars' });
+  roomShell(b, { ceil: '#fbf1d8', side: '#ecd9ac', side2: '#e5d09e', sideShade: '#dcc490', wall: '#f7e8c4', dots: '#c9b8e0', floor: '#d9b48a', floor2: '#c29a6c', pattern: 'stars' });
   ceilingStars(b);
   drawWindow(b, 'night', 'b');
   drawDoor(b, 'p', 'baby');
@@ -310,7 +310,7 @@ function bgNursery(b, L) {
 }
 
 function bgChildhood(b, L) {
-  roomShell(b, { ceil: '#fff0f7', side: '#ffbfdc', side2: '#ffb3d4', sideShade: '#ff9fc8', wall: '#ffd1e8', dots: 'w', dots2: 'P', floor: '#e8bf92', floor2: '#d2a676', pattern: 'dots' });
+  roomShell(b, { ceil: '#fbeeee', side: '#e5bcc0', side2: '#ddb2b7', sideShade: '#d3a5ab', wall: '#f0d0d2', dots: '#fbeeee', dots2: '#e3a0b2', floor: '#dcb48a', floor2: '#c59a6e', pattern: 'dots' });
   lightBeam(b, 2);
   drawWindow(b, 'day', 'w');
   drawDoor(b, 'w', 'letters');
@@ -323,7 +323,7 @@ function bgChildhood(b, L) {
 }
 
 function bgTween(b, L) {
-  roomShell(b, { ceil: '#f6f0ff', side: '#d2c0ff', side2: '#c8b2ff', sideShade: '#b9a0f5', wall: '#e3d4ff', dots: 'L', dots2: 'A', floor: '#dcb38a', floor2: '#c69a70', pattern: 'butterflies' });
+  roomShell(b, { ceil: '#f2eef8', side: '#cdc2e2', side2: '#c4b8db', sideShade: '#b9acd2', wall: '#ddd5ec', dots: '#bcaadd', dots2: '#9fcfc6', floor: '#d6ae86', floor2: '#bf956b', pattern: 'butterflies' });
   lightBeam(b, 2);
   drawWindow(b, 'afternoon', 'y');
   drawDoor(b, 'l', 'butterfly');
@@ -334,7 +334,7 @@ function bgTween(b, L) {
 }
 
 function bgTeen(b, L) {
-  roomShell(b, { ceil: '#eafbf8', side: '#8fd9cf', side2: '#80d0c5', sideShade: '#6ec2b6', wall: '#b8f0e6', dots: '#a0e4d9', dots2: 'w', floor: '#c9a27c', floor2: '#b28b66', pattern: 'stripes' });
+  roomShell(b, { ceil: '#eef6f3', side: '#a3c6be', side2: '#99bdb5', sideShade: '#8fb2aa', wall: '#c0dcd5', dots: '#b0d0c8', dots2: '#f4fbf8', floor: '#c69f7a', floor2: '#ae8762', pattern: 'stripes' });
   lightBeam(b, 2);
   drawWindow(b, 'dusk', 'v');
   drawDoor(b, 'w', 'keepout');

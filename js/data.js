@@ -119,9 +119,9 @@ const YA_SURFACES = [
 /* ---------- the six chapters ---------- */
 const CHAPTERS = [
   {
-    id: 'nursery', kicker: 'Chapter 1', title: 'The Nursery', year: 2000, accent: '#ffcf5c',
+    id: 'nursery', kicker: 'Chapter 1', title: 'The Nursery', year: 2000, accent: '#ffc700',
     intro: 'A room painted the colour of butter. Someone very small is about to move in.',
-    tip: 'Drag each thing from the box into the room. Pink pixel dashes show where it can go.',
+    tip: 'Drag each thing from the box into the room. Blue pixel dashes show where it can go.',
     bg: bgNursery, layout: L_NURSERY,
     surfaces: [
       { id: 'cot', tag: 'bed', type: 'line', x1: 210, x2: 462, y: 370 },
@@ -145,7 +145,7 @@ const CHAPTERS = [
     ambience: { root: 67, notes: [0, 4, 7, 12, 16, 19] }
   },
   {
-    id: 'childhood', kicker: 'Chapter 2', title: 'Childhood', year: 2005, accent: '#ff7fc4',
+    id: 'childhood', kicker: 'Chapter 2', title: 'Childhood', year: 2005, accent: '#ff84e4',
     intro: 'The cot has been traded for a big-girl bed. Tea parties, tiaras, and only tiny messes.',
     tip: 'Tidy the little messes, and give your brother’s truck back (drop it on the door).',
     bg: bgChildhood, layout: L_CHILD,
@@ -184,7 +184,7 @@ const CHAPTERS = [
     ambience: { root: 69, notes: [0, 2, 4, 7, 9, 12] }
   },
   {
-    id: 'tween', kicker: 'Chapter 3', title: 'Tween', year: 2010, accent: '#a98cff',
+    id: 'tween', kicker: 'Chapter 3', title: 'Tween', year: 2010, accent: '#00b5ff',
     intro: 'A heavier backpack. Brand-new skates. A brother who keeps “borrowing” things.',
     tip: 'Unpack your stuff. Something on your bed isn’t yours…',
     bg: bgTween, layout: L_TWEEN,
@@ -215,7 +215,7 @@ const CHAPTERS = [
     ambience: { root: 65, notes: [0, 4, 7, 9, 12, 16] }
   },
   {
-    id: 'teen', kicker: 'Chapter 4', title: 'Teen', year: 2014, accent: '#3fc9b8',
+    id: 'teen', kicker: 'Chapter 4', title: 'Teen', year: 2014, accent: '#8de328',
     intro: 'Mock exams, trophies, and a floor you can’t really see anymore. Mum has opinions.',
     tip: 'Mum says CLEAN YOUR ROOM. Clothes go in the basket, homework on the desk.',
     bg: bgTeen, layout: L_TEEN,
@@ -263,7 +263,7 @@ const CHAPTERS = [
     ambience: { root: 62, notes: [0, 3, 7, 10, 12, 15] }
   },
   {
-    id: 'youngadult', kicker: 'Chapter 5', title: 'Young Adult', year: 2017, accent: '#c8a27a',
+    id: 'youngadult', kicker: 'Chapter 5', title: 'Young Adult', year: 2017, accent: '#ff5400',
     intro: 'A more grown-up room. Most of the childhood things are gone now. Not all of them.',
     tip: 'Make the room yours. Fairy lights go over the window.',
     bg: bgYoungAdult, layout: L_YA,
@@ -281,7 +281,7 @@ const CHAPTERS = [
     ambience: { root: 64, notes: [0, 4, 7, 11, 14, 16] }
   },
   {
-    id: 'movingout', kicker: 'Chapter 6', title: 'Moving Out', year: 2018, accent: '#ff9f6b',
+    id: 'movingout', kicker: 'Chapter 6', title: 'Moving Out', year: 2018, accent: '#ff84e4',
     intro: 'A letter came in the mail. The car is in the driveway. Time to pack.',
     tip: 'Pack what you’ll take into the box. Teddy goes in last.',
     bg: bgMovingOut, layout: L_YA, moving: true,

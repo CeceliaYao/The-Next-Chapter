@@ -11,7 +11,7 @@ const ART_W = 320, ART_H = 180;
 
 /* One shared Y2K pastel palette. Single letters are used in the pixel grids. */
 const PALETTE = {
-  o: '#3b2350', // outline / ink
+  o: '#2a1f1a', // outline / ink (warm, matches the logo's #221a13)
   w: '#ffffff', c: '#fff4e6', g: '#e4def4', G: '#b4abd4', D: '#7d73a8',
   p: '#ffd0ea', P: '#ff9fd6', h: '#ff5fb4', m: '#c93a88',
   l: '#e6d8ff', L: '#c3a6ff', v: '#9a72f0', V: '#6a48c4',
@@ -21,7 +21,9 @@ const PALETTE = {
   y: '#fff6b8', Y: '#ffd95a', k: '#f3a93a', K: '#c47a2c',
   t: '#f7d6a8', u: '#dc9c5c', U: '#a8663a',
   r: '#ecbc84', R: '#c98a52', Q: '#8e5634',
-  s: '#ffdcc4', S: '#f2ad94', x: '#ff6478', X: '#c4304e', z: '#241733'
+  s: '#ffdcc4', S: '#f2ad94', x: '#ff6478', X: '#c4304e', z: '#241733',
+  // the team's brand colours (from the logo)
+  '1': '#00b5ff', '2': '#ff5400', '3': '#ff84e4', '4': '#ffc700', '5': '#8de328', '6': '#f6e680'
 };
 
 const _rgba = {};
@@ -200,7 +202,7 @@ function pixLogo(str, opts) {
   }
   buf.outline('o');
   // hard drop shadow 2px down-right
-  const shadow = opts.shadow || '#6a48c4', src = buf.d.slice();
+  const shadow = opts.shadow || '#221a13', src = buf.d.slice();   // ink, like the 3D edge on the team logo
   for (let y = buf.H - 1; y >= 0; y--) for (let x = buf.W - 1; x >= 0; x--) {
     const i = y * buf.W + x;
     if (src[i]) continue;

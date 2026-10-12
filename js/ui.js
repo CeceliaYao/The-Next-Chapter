@@ -10,7 +10,7 @@ const UI = (() => {
   const $ = sel => document.querySelector(sel);
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const mix = (a, b, t) => { const p = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); const A = p(a), B = p(b); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join(''); };
-  const bandsFor = c => ['#ffffff', mix(c, '#ffffff', 0.7), mix(c, '#ffffff', 0.35), c, c, mix(c, '#3b2350', 0.25), mix(c, '#ffffff', 0.6), '#ffffff'];
+  const bandsFor = c => ['#ffffff', mix(c, '#ffffff', 0.7), mix(c, '#ffffff', 0.35), c, c, mix(c, '#221a13', 0.25), mix(c, '#ffffff', 0.6), '#ffffff'];
   const logoImg = (text, scale, opts, cls) => { const L = logoURL(text, Object.assign({ font: 'Silkscreen', size: 8 }, opts || {})); return '<img class="px ' + (cls || '') + '" src="' + L.url + '" alt="' + esc(text) + '" style="width:' + L.w * scale + 'px;height:' + L.h * scale + 'px">'; };
   const icon = (name, scale) => { const b = iconBuf(name); return '<img class="px icon" src="' + iconURL(name, 1) + '" alt="" style="width:' + b.W * scale + 'px;height:' + b.H * scale + 'px">'; };
   let H = {};                // handlers from game.js
@@ -31,6 +31,46 @@ const UI = (() => {
     if (b) { b.textContent = Sound.isMuted() ? 'x' : '♪'; b.title = Sound.isMuted() ? 'Sound off' : 'Sound on'; b.classList.toggle('off', Sound.isMuted()); }
   }
 
+  /* windows can be dragged around by their title bar, like a real desktop.
+     The CSS `translate` property is used so it stacks with the pop-in animation. */
+  function draggable(win) {
+    const bar = win && win.querySelector('.titlebar');
+    if (!bar) return;
+    bar.classList.add('grab');
+    let x = 0, y = 0, drag = null, moved = false;
+    bar.addEventListener('pointerdown', e => {
+      if (e.button !== 0 || e.target.closest('button')) return;
+      const s = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s')) || 1;
+      const t = (win.style.translate || '').split(' ').map(parseFloat);   // keeps its spot if the window re-renders
+      x = t[0] || 0; y = t[1] || 0;
+      const r = win.getBoundingClientRect(), st = document.getElementById('stage').getBoundingClientRect();
+      drag = {
+        id: e.pointerId, s, cx: e.clientX, cy: e.clientY, x0: x, y0: y,
+        minX: x + (st.left - r.left) / s - (r.width / s - 96), maxX: x + (st.right - r.left) / s - 96,
+        minY: y + (st.top - r.top) / s, maxY: y + (st.bottom - r.top) / s - 44
+      };
+      moved = false;
+      try { bar.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+      bar.classList.add('grabbing');
+      e.preventDefault();
+    });
+    bar.addEventListener('pointermove', e => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const dx = (e.clientX - drag.cx) / drag.s, dy = (e.clientY - drag.cy) / drag.s;
+      if (!moved && Math.hypot(dx, dy) < 4) return;
+      moved = true;
+      x = Math.round(Math.min(drag.maxX, Math.max(drag.minX, drag.x0 + dx)) / 4) * 4;   // snap to the 4px pixel grid
+      y = Math.round(Math.min(drag.maxY, Math.max(drag.minY, drag.y0 + dy)) / 4) * 4;
+      win.style.translate = x + 'px ' + y + 'px';
+      H.onActivity && H.onActivity();
+    });
+    const end = e => { if (drag && e.pointerId === drag.id) { drag = null; bar.classList.remove('grabbing'); } };
+    bar.addEventListener('pointerup', end);
+    bar.addEventListener('pointercancel', end);
+    // a drag shouldn't count as "click anywhere to continue"
+    bar.addEventListener('click', e => { if (moved) { e.stopPropagation(); moved = false; } });
+  }
+
   function setScreen(html, cls) {
     overlay.innerHTML = html ? '<div class="screen ' + (cls || '') + '">' + html + '</div>' : '';
     return overlay.firstElementChild;
@@ -44,17 +84,18 @@ const UI = (() => {
       '<span class="floater" style="left:' + (5 + i * 9.5) + '%;animation-delay:' + (-i * 1.7) + 's">' + icon(n, 4 + (i % 3) * 2) + '</span>').join('');
     const el = setScreen(
       '<div class="holo"></div><div class="floaters">' + floaters + '</div>' +
+      '<div class="logo pop-in"><img class="px brand-logo" src="assets/brand/logo-main-pixel.png" alt="The Next Chapter" style="width:510px;height:354px"></div>' +
       '<div class="win title-win pop-in">' +
       '  <div class="titlebar"><span>THE_NEXT_CHAPTER.EXE</span><span class="tb-dots"><i>_</i><i>□</i><i>x</i></span></div>' +
       '  <div class="win-body">' +
-      '    <div class="logo">' + logoImg('THE NEXT CHAPTER', 6) + '</div>' +
-      '    <p class="tagline">a little game about keeping up a room, and letting go</p>' +
+      '    <p class="tagline">a little game about keeping up a room,<br>and letting go</p>' +
       '    <button class="aqua big" id="startBtn">&gt; START</button>' +
       '    <div class="discs">' + discs + '</div>' +
       '    <p class="small">or pick a disc to jump to a chapter · best with sound on ♪</p>' +
       '  </div>' +
       '</div>' +
       '<div class="title-foot">KKB385 · A3 · an interactive room by Isabella, Lyebin, Chloee &amp; Cecelia</div>', 'title-screen');
+    draggable(el.querySelector('.title-win'));
     el.querySelector('#startBtn').addEventListener('click', () => H.onStart());
     el.querySelectorAll('.disc').forEach(b => b.addEventListener('click', () => H.onJump(+b.dataset.i)));
     showHUD(false); hideHint();
@@ -163,6 +204,7 @@ const UI = (() => {
       '  </div>' +
       '</div>';
     const back = modal.querySelector('.backdrop');
+    draggable(modal.querySelector('.mem-win'));
     memState = { mem, opts, opened: performance.now(), timers: [], video: null, fakeT: null };
     const close = () => { if (performance.now() - memState.opened > 450) closeMemory(); };
     modal.querySelector('#memClose').addEventListener('click', e => { e.stopPropagation(); closeMemory(); });
@@ -315,6 +357,7 @@ const UI = (() => {
         Sound.pick(); selected.push(b.dataset.id); render();
       }));
       win.querySelector('#keepDone').addEventListener('click', () => { Sound.click(); o.onDone(selected.slice()); });
+      draggable(win);
     };
     render();
     showHUD(false); hideHint();
@@ -328,7 +371,7 @@ const UI = (() => {
       '<div class="win end-win pop-in">' +
       '  <div class="titlebar"><span>THE_NEXT_CHAPTER.EXE : COMPLETE</span><span class="tb-dots"><i>_</i><i>□</i><i>x</i></span></div>' +
       '  <div class="end-body">' +
-      '    <div class="logo">' + logoImg('THE NEXT CHAPTER', 5) + '</div>' +
+      '    <div class="logo"><img class="px brand-logo" src="assets/brand/logo-liner-pixel.png" alt="The Next Chapter" style="width:480px;height:86px"></div>' +
       '    <p class="end-lead">She packed Teddy last. She always does.</p>' +
       '    <div class="end-cols">' +
       '      <div><div class="keep-label">Packed for uni</div><div class="keep-row">' + tiles(s.packed) + '</div></div>' +
@@ -339,6 +382,7 @@ const UI = (() => {
       '    <button class="aqua big" id="replayBtn">&lt;&lt; Play again</button>' +
       '  </div>' +
       '</div>', 'end-screen');
+    draggable(el.querySelector('.end-win'));
     el.querySelector('#replayBtn').addEventListener('click', () => { Sound.click(); onReplay(); });
     showHUD(false); hideHint(); clearToasts();
   }
@@ -359,6 +403,7 @@ const UI = (() => {
       '    </div>' +
       '  </div>' +
       '</div>';
+    draggable(modal.querySelector('.menu-win'));
     modal.querySelectorAll('[data-a]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); Sound.click(); h(b.dataset.a); }));
     modal.querySelector('.backdrop').addEventListener('click', e => { if (e.target.classList.contains('backdrop')) h('resume'); });
   }

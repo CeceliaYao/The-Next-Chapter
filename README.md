@@ -4,6 +4,8 @@
 
 The visitor tends one bedroom across six chapters of a suburban girl's life, from the nursery to the day she moves out. Each chapter, she unpacks, tidies and decides what to carry into the next one. Teddy comes along every time. The game is inspired by *Unpacking*, but the twist is upkeep. Mess comes back, Mum nags, and the memory box only has room for so much.
 
+**▶ Play it online:** https://ceceliayao.github.io/The-Next-Chapter/
+
 > Built with [p5.js](https://p5js.org/), plain HTML/CSS and Web Audio. No install, no internet needed.
 > Everything is real pixel art: the room is drawn on a 320 × 180 pixel canvas and scaled up 4× with no blur.
 
@@ -11,7 +13,9 @@ The visitor tends one bedroom across six chapters of a suburban girl's life, fro
 
 ## Run it
 
-**On the exhibition computer (recommended):**
+**Online:** open https://ceceliayao.github.io/The-Next-Chapter/ in Chrome. It is the same game, served by GitHub Pages straight from the `main` branch, so every push updates it within a minute or two.
+
+**On the exhibition computer (recommended for the show, no Wi-Fi needed):**
 
 1. Copy the whole folder onto the machine (USB is fine).
 2. Open `index.html` in **Google Chrome** (double-click it, or drag it into a Chrome window).
@@ -28,6 +32,7 @@ npx serve .        # then open the printed localhost address
 | Action | How |
 | --- | --- |
 | Move things | Click and drag |
+| Move a window | Drag it by its coloured title bar |
 | Replay a memory | Click a placed object that shows a ▶ / ! badge |
 | Menu (restart chapter, chapter select) | **Esc** or the ★ menu button |
 | Sound on/off | **M** or the ♪ button |
@@ -40,7 +45,7 @@ npx serve .        # then open the printed localhost address
 
 ## How it plays
 
-1. **Unpack.** Things arrive in the box at the bottom. Drag each one into the room. While you drag, the places it can go flash with pink pixel dashes, and a dithered ghost shows exactly where it will land.
+1. **Unpack.** Things arrive in the box at the bottom. Drag each one into the room. While you drag, the places it can go flash with blue pixel dashes, and a dithered ghost shows exactly where it will land.
 2. **Upkeep.** Some chapters start messy (crayons, clothes, homework). The **UPKEEP** meter fills as the room gets tidy. In the teen room, Mum throws another shirt on the pile after you've cleaned up.
 3. **Memories.** Putting certain objects away plays a photo or a video (the team's footage) in a Y2K "Memory Player" with a camcorder date stamp. Photos and videos get a pixel filter so they match the game (see *Formats* below to turn it off).
 4. **Siblings.** Your little brother's things turn up in your room. Drop them on the **door** to give them back.
@@ -90,6 +95,24 @@ Until a file exists, the game shows a styled placeholder with the filename it is
 
 ---
 
+## Brand
+
+The look follows the team's identity board: the *The Next Chapter* logo and its six colours, warm muted rooms (like *Unpacking*), and bright "point colours" on the frames, buttons and title bars, in a Windows 98-style desktop where the windows can be dragged around.
+
+| Colour | Hex | Used for |
+| --- | --- | --- |
+| Ink | `#221a13` | outlines, text |
+| Blue | `#00b5ff` | drop guides, second buttons, title bars |
+| Orange | `#ff5400` | main buttons, counters |
+| Pink | `#ff84e4` | hearts, Mum's messages, title bars |
+| Yellow | `#ffc700` | MEM tag, title bars |
+| Lime | `#8de328` | UPKEEP meter, title bars |
+| Cream | `#f6e680` | window bevels, paper |
+
+The logo files are in `assets/brand/`. `logo-main.png` is the original; the `-pixel` versions were redrawn on a pixel grid in the brand colours so they match the game. To use a new logo, replace those files and keep the same names.
+
+---
+
 ## Project structure
 
 ```
@@ -104,11 +127,12 @@ js/ui.js          screens: title, chapter cards, memory player, keep box, ending
 js/audio.js       synthesised sound effects + music-box ambience (no audio files)
 lib/p5.min.js     p5.js 1.11 (bundled so it works offline)
 fonts/            Pixelify Sans, Silkscreen, VT323 (bundled, SIL Open Font License)
+assets/brand/     team logo (original + pixel versions) and favicon
 assets/photos/    ← put photos here
 assets/video/     ← put videos here
 ```
 
-**Editing the pixel art:** in `js/sprites.js` many objects are little grids of letters, one letter per pixel (`.` is see-through). The letters are colours from `PALETTE` in `js/pixel.js`, e.g. `u` teddy brown, `h` hot pink, `w` white. Change a letter, refresh, and the pixel changes. The dark outline is added automatically.
+**Editing the pixel art:** in `js/sprites.js` many objects are little grids of letters, one letter per pixel (`.` is see-through). The letters are colours from `PALETTE` in `js/pixel.js`, e.g. `u` teddy brown, `h` hot pink, `w` white, and `1`–`6` the brand colours (blue, orange, pink, yellow, lime, cream). Change a letter, refresh, and the pixel changes. The dark outline is added automatically.
 
 **Changing where things can go:** each object in `ITEM_DEFS` has a `fits` list (e.g. `['shelf', 'desk']`), and each chapter has `surfaces` with a matching `tag`. If every spot an object fits is full, the game lets it go on any shelf, desk, bed or the floor, so a visitor can never get stuck.
 

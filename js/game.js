@@ -741,7 +741,7 @@ function layoutTray(snap) {
 
 /* ================= particles (in art pixels) ================= */
 
-const SPARK_COLS = ['h', 'Y', 'A', 'L', 'w', 'B', 'P'];
+const SPARK_COLS = ['1', '2', '3', '4', '5', 'w', '6'];
 
 function burst(x, y, n, spread) {
   for (let i = 0; i < n; i++) {
@@ -759,7 +759,7 @@ function confetti(n) {
 function trail(px, py) {
   if (G.time - G.lastTrail < 45) return;
   G.lastTrail = G.time;
-  G.particles.push({ x: px / ART, y: py / ART, vx: (Math.random() - 0.5) * 0.01, vy: 0.012, g: 0, life: 380, size: 1, col: ['h', 'w', 'A', 'Y'][Math.floor(Math.random() * 4)], kind: 'star' });
+  G.particles.push({ x: px / ART, y: py / ART, vx: (Math.random() - 0.5) * 0.01, vy: 0.012, g: 0, life: 380, size: 1, col: ['3', 'w', '1', '4'][Math.floor(Math.random() * 4)], kind: 'star' });
 }
 
 /* ================= rendering ================= */
@@ -777,12 +777,13 @@ function buildBg() {
 
 function buildTray() {
   const b = new PixBuf(312, 35, 0);
-  for (let y = 0; y < 35; y++) { b.rect(0, y, 312, 1, 'b'); b.dither(0, y, 312, 1, 'l', Math.round(y / 34 * 16)); }
-  b.hline(3, 2, 306, 'w'); b.hline(3, 3, 306, 'w'); b.dither(3, 4, 306, 2, 'w', 8);
+  for (let y = 0; y < 35; y++) { b.rect(0, y, 312, 1, '#fff6dc'); b.dither(0, y, 312, 1, '#ffe2b8', Math.round(y / 34 * 12)); }
+  ['1', '3', '4', '5', '2'].forEach((c, i) => b.rect(1 + i * 62, 1, i === 4 ? 61 : 62, 2, c));
+  b.hline(3, 4, 306, 'w'); b.dither(3, 5, 306, 2, 'w', 8);
   b.rect(0, 0, 312, 1, 'o'); b.rect(0, 34, 312, 1, 'o'); b.rect(0, 0, 1, 35, 'o'); b.rect(311, 0, 1, 35, 'o');
   [[0, 0], [311, 0], [0, 34], [311, 34]].forEach(([x, y]) => b.px(x, y, null));
   b.px(1, 1, 'o'); b.px(310, 1, 'o'); b.px(1, 33, 'o'); b.px(310, 33, 'o');
-  b.box(4, 4, 30, 27, 'r'); b.rect(17, 5, 4, 25, 'y');
+  b.box(4, 4, 30, 27, 'r'); b.rect(17, 5, 4, 3, 'y'); b.box(7, 8, 24, 21, 'w');   // cardboard box + label sticker
   trayCv = b.toCanvas(1);
 }
 
@@ -851,7 +852,7 @@ function drawItem(it) {
   const img = it.alpha < 0.6 ? fr.ghost : (lifted || G.hover === it) ? fr.hover : fr.normal;
   art.drawImage(img, ax - 1, ay - 1);
   if (it.state === 'tray' && it.carried) art.drawImage(heartCv(), ax + S.w - 5, ay - 3);
-  if (it.mess && it.state === 'placed' && !it.tw && G.state === 'play') bubble(ax + S.w - 3, ay - 6 + (Math.floor(G.time / 300) % 2), 'h', '!');
+  if (it.mess && it.state === 'placed' && !it.tw && G.state === 'play') bubble(ax + S.w - 3, ay - 6 + (Math.floor(G.time / 300) % 2), '2', '!');
 }
 
 let _heart = null;
@@ -889,7 +890,7 @@ function drawRoomFx() {
 
 function dashRect(x1, y1, x2, y2, hot) {
   const ph = Math.floor(G.time / 120);
-  const plot = (x, y, k) => apx(x, y, hot ? ((k + ph) % 4 < 2 ? 'h' : 'w') : ((k + ph) % 4 < 2 ? 'h' : null) || 'w');
+  const plot = (x, y, k) => apx(x, y, (k + ph) % 4 < 2 ? '1' : 'w');
   let k = 0;
   for (let x = x1; x <= x2; x++) { if (hot || (k + ph) % 4 < 2) plot(x, y1, k); k++; }
   for (let y = y1; y <= y2; y++) { if (hot || (k + ph) % 4 < 2) plot(x2, y, k); k++; }
@@ -906,12 +907,12 @@ function drawGuides(it) {
     if (s.type === 'line' || s.type === 'hang') {
       const y = q(s.y) - (s.type === 'line' ? 1 : 0), x1 = q(s.x1), x2 = q(s.x2);
       for (let x = x1; x <= x2; x++) {
-        if (hot) { apx(x, y, (x + ph) % 4 < 2 ? 'h' : 'w'); apx(x, y - 1, 'h'); }
-        else if ((x + ph) % 4 < 2) apx(x, y, 'h'); else apx(x, y, 'w');
+        if (hot) { apx(x, y, (x + ph) % 4 < 2 ? '1' : 'w'); apx(x, y - 1, '1'); }
+        else if ((x + ph) % 4 < 2) apx(x, y, '1'); else apx(x, y, 'w');
       }
     } else if (s.type === 'spot') {
       const cx = q(s.x), cy = q(s.y), r = Math.round(q(s.r) * 0.6);
-      for (let a = 0; a < 64; a++) { if (!hot && (a + ph) % 4 >= 2) continue; apx(cx + Math.cos(a / 64 * Math.PI * 2) * r, cy + Math.sin(a / 64 * Math.PI * 2) * r, (a + ph) % 4 < 2 ? 'h' : 'w'); }
+      for (let a = 0; a < 64; a++) { if (!hot && (a + ph) % 4 >= 2) continue; apx(cx + Math.cos(a / 64 * Math.PI * 2) * r, cy + Math.sin(a / 64 * Math.PI * 2) * r, (a + ph) % 4 < 2 ? '1' : 'w'); }
     } else if (s.type === 'area') {
       dashRect(q(s.x1) + 1, q(s.y1) - 8, q(s.x2) - 1, Math.min(140, q(s.y2) + 1), hot);
     } else {
@@ -948,9 +949,10 @@ function drawTray() {
   if (G.ch.moving) { drawPackingBox(); return; }
   art.drawImage(trayCv, 4, 144);
   const left = G.items.filter(i => i.state === 'tray').length;
-  miniTextCtx(art, 9, 152, left ? 'BOX' : 'DONE', 'o');
-  miniTextCtx(art, 9 + (left > 9 ? 0 : 2), 160, left + ' ', 'h');
-  miniTextCtx(art, 9, 166, left ? 'LEFT' : '♥', 'o');
+  const mid = (t, y, c) => miniTextCtx(art, 23 - Math.floor(miniWidth(t) / 2), y, t, c);   // centred on the sticker
+  mid(left ? 'BOX' : 'DONE', 154, 'o');
+  mid(left ? String(left) : '♥', 160, left ? '2' : '3');
+  mid(left ? 'LEFT' : '', 166, 'o');
 }
 
 function artPoly(pts, c) {
@@ -992,8 +994,8 @@ function drawPackingBox() {
   art.drawImage(_boxCache.front, 0, 0);
   if (G.state === 'play') {
     miniTextCtx(art, 14, 152, "DRAG WHAT YOU'LL", 'o'); miniTextCtx(art, 14, 159, 'TAKE INTO THE BOX', 'o');
-    miniTextCtx(art, 214, 152, 'TEDDY GOES IN', 'o'); miniTextCtx(art, 214, 159, 'LAST ♥', 'h');
-    miniTextCtx(art, 214, 168, G.packed.length + ' PACKED', 'v');
+    miniTextCtx(art, 214, 152, 'TEDDY GOES IN', 'o'); miniTextCtx(art, 214, 159, 'LAST ♥', '3');
+    miniTextCtx(art, 214, 168, G.packed.length + ' PACKED', '2');
   }
 }
 
@@ -1006,7 +1008,7 @@ function drawMarkers() {
     const unseen = !G.seen.has(mem.id);
     if (!unseen && G.hover !== it) return;
     const [ax, ay] = artPos(it), S = SPR[it.id];
-    bubble(ax + S.w - 2, ay - 5 + (unseen ? Math.floor(G.time / 300) % 2 : 0), unseen ? 'h' : 'w', unseen ? '!' : '>');
+    bubble(ax + S.w - 2, ay - 5 + (unseen ? Math.floor(G.time / 300) % 2 : 0), unseen ? '3' : 'w', unseen ? '!' : '>');
   });
 }
 
@@ -1026,7 +1028,7 @@ function drawTooltip(ctx) {
   const mem = it.state === 'placed' && !it.mess ? memoryFor(it.id) : null;
   let label = it.def.name + (it.carried && it.state === 'tray' ? ' ♥' : '') + (mem ? '  > replay' : '');
   if (it.mess) label = it.def.name + ' (tidy me!)';
-  const t = pixText(label.toUpperCase(), '#3b2350', { size: 8 });
+  const t = pixText(label.toUpperCase(), '#221a13', { size: 8 });
   const S = SPR[it.id], [ax, ay] = artPos(it);
   const w = t.width * 2 + 16, h = t.height * 2 + 12;
   let x = Math.round(((ax + S.w / 2) * ART - w / 2) / 2) * 2, y = Math.round(((ay - 3) * ART - h) / 2) * 2;

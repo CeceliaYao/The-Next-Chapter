@@ -43,7 +43,7 @@ function setup() {
   Promise.race([Promise.all(fonts), new Promise(r => setTimeout(r, 2500))]).then(() => {
     buildSprites();
     initCursors();
-    goTitle();
+    goTitle(true);
     loop();
   });
 }
@@ -73,14 +73,14 @@ function resetRun() {
   G.memoryBox = ['teddy']; G.since = { teddy: 0 }; G.letGo = []; G.seen = new Set(); G.yaLayout = null;
 }
 
-function goTitle() {
+function goTitle(withDoor) {
   UI.closeMemory(true); G.modal = null; G.memPH = null;
   Sound.stopAmbience(); UI.clearToasts();
   setupChapter(0);
   autoTidy();
   G.state = 'title';
   setBlur(true);
-  UI.showTitle(CHAPTERS);
+  UI.showTitle(CHAPTERS, withDoor === true);
 }
 
 function startRun() { Sound.init(); Sound.click(); resetRun(); goChapter(0); }
@@ -708,7 +708,7 @@ function update(dt) {
   if (canvasEl) canvasEl.style.cursor = G.drag ? CURSORS.grab : G.hover ? CURSORS.hand : '';
 
   const now = performance.now();
-  if (G.state !== 'title' && G.state !== 'boot' && now - G.lastInput > IDLE_RESET_MS) goTitle();
+  if (G.state !== 'title' && G.state !== 'boot' && now - G.lastInput > IDLE_RESET_MS) goTitle(true);
   if (canInteract() && !G.drag && !G.running && now - G.lastProgress > 15000 && now - G.lastHelp > 15000) showHelp();
 }
 

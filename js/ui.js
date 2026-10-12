@@ -78,20 +78,16 @@ const UI = (() => {
   }
 
   /* ---------------- title ---------------- */
-  // The logo hangs on a door on the left; press START (or pick a disc) and the door swings open.
-  function showTitle(chapters) {
+  // withDoor: the visitor first sees the bedroom door (logo + our names on it) and opens it to reach this screen.
+  function showTitle(chapters, withDoor) {
     const discs = chapters.map((c, i) =>
       '<button class="disc" data-i="' + i + '"><img class="px" src="' + discURL(c.accent, 1) + '" alt=""><b>' + (i + 1) + '</b><small>' + c.year + '</small></button>').join('');
     const floaters = ['star', 'heart', 'sparkle', 'heart', 'star', 'sparkle', 'heart', 'star', 'sparkle', 'heart'].map((n, i) =>
       '<span class="floater" style="left:' + (5 + i * 9.5) + '%;animation-delay:' + (-i * 1.7) + 's">' + icon(n, 4 + (i % 3) * 2) + '</span>').join('');
-    const D = DOOR_ART;
+    const names = CREDITS.map(c => c[0].replace(/\s*\(.*\)/, '')).sort().join(' · ');
     const el = setScreen(
       '<div class="holo"></div><div class="floaters">' + floaters + '</div>' +
-      '<div class="title-door pop-in">' +
-      '  <canvas class="px door-frame" width="' + D.fw + '" height="' + D.fh + '"></canvas>' +
-      '  <div class="door-leaf"><canvas class="px" width="' + D.lw + '" height="' + D.lh + '"></canvas>' +
-      '    <img class="px brand-logo" src="assets/brand/logo-main-pixel.png" alt="The Next Chapter"></div>' +
-      '</div>' +
+      '<div class="logo pop-in"><img class="px brand-logo" src="assets/brand/logo-main-pixel.png" alt="The Next Chapter" style="width:510px;height:354px"></div>' +
       '<div class="win title-win pop-in">' +
       '  <div class="titlebar"><span>THE_NEXT_CHAPTER.EXE</span><span class="tb-dots"><i>_</i><i>□</i><i>x</i></span></div>' +
       '  <div class="win-body">' +
@@ -102,20 +98,37 @@ const UI = (() => {
       '  </div>' +
       '</div>' +
       '<div class="title-foot">KKB385 · A3 · an interactive room by Isabella, Lyebin, Chloee &amp; Cecelia</div>' +
-      '<div class="door-flash"></div>', 'title-screen');
-    const paint = (sel, cv) => { const c = el.querySelector(sel).getContext('2d'); c.imageSmoothingEnabled = false; c.drawImage(cv, 0, 0); };
-    paint('.door-frame', drawDoorFrame());
-    paint('.door-leaf canvas', drawDoorLeaf());
+      (withDoor
+        ? '<div class="door-splash" role="button" aria-label="Open the door">' +
+          '  <canvas class="px door-wall" width="320" height="180"></canvas>' +
+          '  <div class="door-leaf"><canvas class="px" width="' + DOOR_ART.w + '" height="180"></canvas>' +
+          '    <img class="px door-logo" src="assets/brand/logo-stacked-pixel.png" alt="The Next Chapter">' +
+          '    <div class="door-names">' + esc(names) + '</div>' +
+          '    <div class="door-hint">click the door to come in &gt;</div>' +
+          '  </div>' +
+          '</div>'
+        : ''), 'title-screen' + (withDoor ? ' door-closed' : ''));
     draggable(el.querySelector('.title-win'));
-    let opening = false;
-    const open = then => {
-      if (opening) return; opening = true;
-      Sound.init(); Sound.door();
-      el.classList.add('opening');
-      setTimeout(then, 1050);
-    };
-    el.querySelector('#startBtn').addEventListener('click', () => open(() => H.onStart()));
-    el.querySelectorAll('.disc').forEach(b => b.addEventListener('click', () => open(() => H.onJump(+b.dataset.i))));
+    el.querySelector('#startBtn').addEventListener('click', () => H.onStart());
+    el.querySelectorAll('.disc').forEach(b => b.addEventListener('click', () => H.onJump(+b.dataset.i)));
+    if (withDoor) {
+      const splash = el.querySelector('.door-splash');
+      const paint = (sel, cv) => { const c = splash.querySelector(sel).getContext('2d'); c.imageSmoothingEnabled = false; c.drawImage(cv, 0, 0); };
+      paint('.door-wall', drawDoorWall());
+      paint('.door-leaf canvas', drawDoorLeaf());
+      let opened = false;
+      const open = () => {
+        if (opened || !splash.isConnected) return; opened = true;
+        window.removeEventListener('keydown', onKeyOpen);
+        Sound.init(); Sound.door();
+        splash.classList.add('opening');
+        setTimeout(() => el.classList.remove('door-closed'), 750);   // the title screen pops in as you walk through
+        setTimeout(() => splash.remove(), 1400);
+      };
+      const onKeyOpen = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } };
+      splash.addEventListener('click', open);
+      window.addEventListener('keydown', onKeyOpen);
+    }
     showHUD(false); hideHint();
   }
 

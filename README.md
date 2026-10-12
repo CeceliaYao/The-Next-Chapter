@@ -39,7 +39,7 @@ npx serve .        # then open the printed localhost address
 | Fullscreen | **F** |
 | Skip the current chapter (for testing) | **Shift + N** |
 
-**Exhibition mode is built in.** After 2.5 minutes with no input, the game returns to the title screen for the next visitor (`IDLE_RESET_MS` in `js/data.js`). On the title screen the logo hangs on a coral bedroom door on the left (after Chloee's laptop mock-up); press **START** and the door swings open into the nursery. The window on the right has six discs so visitors, or the team during the demo, can jump straight to any chapter.
+**Exhibition mode is built in.** After 2.5 minutes with no input, the game returns to the title screen for the next visitor (`IDLE_RESET_MS` in `js/data.js`). The game opens on a closed bedroom door with the logo and our names on it (after Chloee's laptop mock-up). Click the door (or press Enter) and it swings open onto the title screen; the door comes back after an idle reset, so every new visitor gets to open it. On the title screen, **START** begins the game and the six discs jump straight to any chapter (handy for the demo).
 
 ---
 

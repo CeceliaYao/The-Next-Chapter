@@ -238,6 +238,10 @@ function goEnding() {
   G.state = 'ending';
   Sound.stopAmbience();
   setBlur(true);
+  UI.showThanks(ENDING_NOTE, getThumb('teddy', CHAPTERS.length - 1), () => { if (G.state === 'ending') showSummary(); });
+}
+
+function showSummary() {
   confetti(90);
   const yearOf = id => {
     if (G.since[id] != null) return CHAPTERS[G.since[id]].year;
@@ -481,7 +485,7 @@ function onKey(e) {
   else if (k === 'N' && e.shiftKey && G.state === 'play' && !G.modal) debugSkip();
   else if (k === 'Enter') {
     if (document.querySelector('.door-splash')) return;   // the closed door handles Enter itself (it opens)
-    const b = document.querySelector('#beginBtn, #nextBtn, #keepDone, #startBtn'); if (b && !b.disabled) b.click();
+    const b = document.querySelector('#beginBtn, #nextBtn, #keepDone, #startBtn, #thanksNext'); if (b && !b.disabled) b.click();
   }
 }
 

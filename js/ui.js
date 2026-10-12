@@ -466,6 +466,39 @@ const UI = (() => {
     showHUD(false); hideHint();
   }
 
+  /* ---------------- thank-you note (after the last box, before the summary) ---------------- */
+  // The lines fade in one by one. A click (or Enter) shows them all at once; the next one moves on.
+  function showThanks(note, teddyThumb, onNext) {
+    const STEP = 1.7, FIRST = 1.1;
+    const lines = note.lines.map((t, i) => '<p class="tl" style="--d:' + (FIRST + i * STEP).toFixed(1) + 's">' + esc(t) + '</p>').join('');
+    const last = FIRST + note.lines.length * STEP;
+    const el = setScreen(
+      '<div class="holo"></div>' +
+      '<div class="win thanks-win pop-in">' +
+      '  <div class="titlebar"><span>NOTEPAD : thank_you.txt</span><span class="tb-dots"><i>_</i><i>□</i><i>x</i></span></div>' +
+      '  <div class="thanks-body">' +
+      '    <h2 class="tl" style="--d:.3s">' + esc(note.title) + '</h2>' + lines +
+      '    <div class="thanks-foot tl" style="--d:' + last.toFixed(1) + 's">' +
+      '      <img class="px" src="' + teddyThumb + '" alt="">' +
+      '      <p class="thanks-sign">' + esc(note.sign) + ' <span>♥</span></p>' +
+      '      <button class="aqua" id="thanksNext">What she packed &gt;</button>' +
+      '    </div>' +
+      '  </div>' +
+      '</div>', 'thanks-screen');
+    draggable(el.querySelector('.thanks-win'));
+    let shown = false;
+    const showAll = () => { if (!shown) { shown = true; el.classList.add('all'); } };
+    const timer = setTimeout(showAll, (last + 0.8) * 1000);
+    el.addEventListener('click', e => { if (!e.target.closest('#thanksNext')) showAll(); });
+    el.querySelector('#thanksNext').addEventListener('click', e => {
+      e.stopPropagation();
+      if (!shown) { showAll(); return; }
+      clearTimeout(timer); Sound.click(); onNext();
+    });
+    Sound.page();
+    showHUD(false); hideHint(); clearToasts();
+  }
+
   /* ---------------- ending ---------------- */
   function showEnding(s, onReplay) {
     const tiles = (list, cls) => list.map(x => '<div class="tile mini ' + (cls || '') + '"><img src="' + s.thumb(x.id) + '" alt=""><span>' + esc(s.names(x.id)) + '</span>' + (x.label ? '<em>' + esc(x.label) + '</em>' : '') + '</div>').join('');
@@ -515,7 +548,7 @@ const UI = (() => {
 
   return {
     init, showTitle, showIntro, showHUD, setHUD, hint, hideHint, toast, clearToasts,
-    openMemory, closeMemory, memoryOpen, showComplete, showKeep, showEnding, showMenu, hideMenu,
+    openMemory, closeMemory, memoryOpen, showComplete, showKeep, showThanks, showEnding, showMenu, hideMenu,
     clearScreen: () => setScreen(''), refreshMute
   };
 })();

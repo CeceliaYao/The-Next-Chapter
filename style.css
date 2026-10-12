@@ -297,6 +297,23 @@ button.tile:hover { transform: translateY(-4px); }
 .credits { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; font-size: 16px; margin-bottom: 8px; }
 .credits b { font-family: 'Silkscreen'; font-size: 13px; }
 
+/* thank-you note before the summary: the lines fade in one at a time */
+.thanks-win { position: relative; width: 860px; }
+.thanks-body {
+  margin: 14px; padding: 26px 44px 20px; text-align: left;
+  background: #fffdf6; border-top: 12px solid var(--orange2); box-shadow: 0 0 0 4px var(--ink);
+}
+.thanks-body h2 { margin: 0 0 18px; font-family: 'Silkscreen'; font-size: 26px; color: var(--hot); }
+.thanks-body p { margin: 0 0 16px; font-size: 21px; line-height: 31px; text-wrap: pretty; }
+.thanks-foot { display: flex; align-items: center; gap: 14px; margin-top: 6px; }
+.thanks-foot img { width: 76px; height: 76px; flex: none; }
+.thanks-foot .thanks-sign { flex: 1; margin: 0; font-weight: 700; }
+.thanks-sign span { color: var(--hot); }
+.thanks-foot .aqua { font-size: 18px; white-space: nowrap; }
+.thanks-screen .tl { opacity: 0; animation: lineIn 1.1s ease var(--d) forwards; }
+.thanks-screen.all .tl { animation: none; opacity: 1; }
+@keyframes lineIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
 /* ---------- modal: memory player + menu ---------- */
 #modal { position: absolute; inset: 0; z-index: 30; pointer-events: none; }
 .backdrop { position: absolute; inset: 0; pointer-events: auto; display: flex; align-items: center; justify-content: center; background: var(--dither); }

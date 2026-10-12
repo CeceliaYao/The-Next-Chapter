@@ -11,6 +11,17 @@ const MEMORY_BOX_SIZE = 3;          // how many things (besides Teddy) carry ove
 const IDLE_RESET_MS = 150000;       // exhibition: return to title after 2.5 min of no input
 const MEDIA_PIXEL = 0;              // 0 = photos & videos are shown exactly as shot. Set to 3 for a chunky pixel filter
 
+// The note the player reads after the last box is packed, before the summary.
+const ENDING_NOTE = {
+  title: 'Thank you for playing this far.',
+  lines: [
+    'In one small room, you just read the first eighteen years of a girl’s life. She never said much. You got to know her through what she kept, what she outgrew, and what she couldn’t quite let go.',
+    'That’s upkeep: the quiet, everyday care of the things we live with. A bed made. A trophy dusted. A worn-out bear carried into one more room. Objects can’t remember for us, but they hold on to who we were.',
+    'Now the room is empty. She’s off to study a Bachelor of Creative Industries, to make new things, and new memories, of her own.'
+  ],
+  sign: 'Here’s to her next chapter. And to yours.'
+};
+
 // [full name, role, short name]: this order is used on the door, the title screen and the ending
 const CREDITS = [
   ['Isabella Kiosses', 'Film & Didactic', 'Isabella'],
@@ -186,7 +197,7 @@ const CHAPTERS = [
     ],
     memories: [
       { id: 'c-tea', items: ['teaset'], type: 'video', src: 'assets/video/02-childhood-tea-party.mp4', caption: 'Tea party with the dolls and Teddy.' },
-      { id: 'c-draw', items: ['drawing'], type: 'photo', src: 'assets/photos/02-childhood-drawings.jpg', art: 'crayon', caption: 'This is my family. Teddy is the biggest.' }
+      { id: 'c-draw', items: ['drawing'], type: 'text', title: 'my_family.txt', caption: 'MY FAMILY, by me (age 5)\n\nMum. Dad. Me. My little brother.\nAnd Teddy.\n\nTeddy is the biggest.' }
     ],
     onStart: [{ do: 'wait', ms: 1800 }, { do: 'toast', from: 'Mum', text: 'Tidy up before dinner, sweetheart ♥' }],
     onPlace: {
@@ -218,7 +229,7 @@ const CHAPTERS = [
       { id: 't-bag', items: ['backpack'], type: 'video', src: 'assets/video/03-tween-backpack.mp4', still: 'assets/photos/03-tween-backpack.jpg', focus: [0.55, 0.5], caption: '“too many textbooks to carry”' },
       { id: 't-skates', items: ['skates'], type: 'photo', src: 'assets/photos/03-tween-rollerskates.jpg', caption: '“I got these for my birthday! Now to learn how to brake”' },
       { id: 't-art', items: ['artsupplies'], type: 'photo', src: 'assets/photos/03-tween-drawing.jpg', caption: '“Drawing is hard, but fun!”' },
-      { id: 't-family', items: ['familyphoto'], type: 'photo', src: 'assets/photos/03-tween-family-photo.jpg', art: 'familyphoto', caption: 'Family photo. Everybody say cheese.' }
+      { id: 't-family', items: ['familyphoto'], type: 'text', title: 'family_photo.txt', caption: 'Family photo day.\n\n“Everybody say cheese!”\n\nMum framed a copy for my room.' }
     ],
     onStart: [{ do: 'wait', ms: 1800 }, { do: 'toast', from: 'Little bro', text: 'have u seen my controller??' }],
     onPlace: {
@@ -314,7 +325,7 @@ const CHAPTERS = [
     memories: [
       {
         id: 'm-letter', items: ['uniletter'], type: 'letter', title: 'acceptance_letter.txt',
-        caption: 'Dear student,\n\nCongratulations! We are delighted to offer you a place in our Bachelor of Design, commencing next semester.\n\nWelcome to your next chapter.\n\nOffice of Admissions'
+        caption: 'Dear student,\n\nCongratulations! We are delighted to offer you a place in our Bachelor of Creative Industries, commencing next semester.\n\nWelcome to your next chapter.\n\nOffice of Admissions'
       },
       { id: 'm-boxes', items: [], type: 'video', src: 'assets/video/06-moving-out-boxes.mp4', still: 'assets/photos/06-moving-out-boxes.jpg', focus: [0.5, 0.45], caption: 'Teddy, the family photo, and some clothes. That’s the important stuff.' }
     ],

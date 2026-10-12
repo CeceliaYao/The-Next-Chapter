@@ -51,7 +51,8 @@ npx serve .        # then open the printed localhost address
 4. **Siblings.** Your little brother's things turn up in your room. Drop them on the **door** to give them back.
 5. **Memory box.** Between chapters you choose what to carry forward. Teddy always comes, plus 3 more things. Anything you drop is "let go" and listed on the ending screen.
    **Teddy gets older.** Each chapter Teddy looks a little more worn: brand new with his organza bow (2000), well hugged, an ear sewn back on, a gingham patch and a limp bow, the bow lost and a button for an eye, then faded and floppy but still here (2018). The chapter card, the memory box and the ending ("Teddy through the years") all show it. The wording lives in `TEDDY_AGES` in `js/data.js`; the drawing is `teddy` in `js/sprites.js`.
-6. **Moving out.** The box at the bottom flips around. Now you *pack* the room into it. Read the uni letter, then pack Teddy last.
+6. **Moving out.** The box at the bottom flips around. Now you *pack* the room into it. Read the uni letter (a place in the Bachelor of Creative Industries), then pack Teddy last.
+7. **Thank you.** A short note fades in, line by line: thanks for playing, and a few words on upkeep, memory and objects. Click to show it all at once, then *What she packed >* opens the summary. The wording lives in `ENDING_NOTE` in `js/data.js`.
 
 | # | Chapter | Year | What happens | Memories (from the shot list) |
 | --- | --- | --- | --- | --- |
@@ -66,7 +67,7 @@ npx serve .        # then open the printed localhost address
 
 ## Adding the real photos & videos
 
-Until a file exists, the game shows something in its place, so nothing looks broken: a pixel stand-in for the printed props (family photo, posters, the childhood drawing), the photo with a slow camcorder zoom for the snow globe and moving-out videos, or the object itself bobbing in a little scene. Open the game with `?dev` on the end of the address (e.g. `index.html?dev`) to see which filename each one is waiting for. To add footage, **save it with exactly these names**. Files marked ✅ are already in the game (from the team's photos):
+Until a file exists, the game shows something in its place, so nothing looks broken: a pixel stand-in for the teen posters, the photo with a slow camcorder zoom for the snow globe and moving-out videos, or the object itself bobbing in a little scene. Open the game with `?dev` on the end of the address (e.g. `index.html?dev`) to see which filename each one is waiting for. To add footage, **save it with exactly these names**. Files marked ✅ are already in the game (from the team's photos):
 
 | File | Plays when… | Caption on screen |
 | --- | --- | --- |
@@ -74,11 +75,11 @@ Until a file exists, the game shows something in its place, so nothing looks bro
 | `assets/video/01-nursery-snowglobe.mp4` (✅ still: `assets/photos/01-nursery-snowglobe.jpg`) | Snow globe is put away | ♪ ♫ ♪ watching the glitter fall |
 | ✅ `assets/photos/01-nursery-peter-rabbit.jpg` | Peter Rabbit is put down | Peter Rabbit, chilling on a shelf. |
 | `assets/video/02-childhood-tea-party.mp4` | Tea set goes on the tea table | Tea party with the dolls and Teddy. |
-| `assets/photos/02-childhood-drawings.jpg` (pixel stand-in for now) | Drawing goes on the wall | This is my family. Teddy is the biggest. |
+| no picture, just a note: `my_family.txt` | Drawing goes on the wall | MY FAMILY, by me (age 5) … Teddy is the biggest. |
 | ✅ `assets/video/03-tween-backpack.mp4` (from IMG_2448) | Backpack is put down | "too many textbooks to carry" |
 | ✅ `assets/photos/03-tween-rollerskates.jpg` | Skates are put down | "I got these for my birthday! Now to learn how to brake" |
 | ✅ `assets/photos/03-tween-drawing.jpg` | Art supplies go on the desk | "Drawing is hard, but fun!" |
-| `assets/photos/03-tween-family-photo.jpg` (pixel stand-in for now) | Family photo is placed (use light glare to hide faces) | Family photo. Everybody say cheese. |
+| no picture, just a note: `family_photo.txt` | Family photo is placed | Family photo day. "Everybody say cheese!" |
 | `assets/photos/04-teen-homework.jpg` | Homework goes on the desk | "this is my life now." |
 | `assets/video/04-teen-clothes-pile.mp4` | Both clothes go in the basket (then Mum scolds) | One more on the pile… "CLEAN. YOUR. ROOM." |
 | `assets/photos/04-teen-high-heels.jpg` | Heels are put down | "stole these from mum" |
@@ -123,12 +124,12 @@ The logo files in `assets/brand/` are the team's original artwork (transparent P
 index.html        page shell + HUD
 style.css         the pixel Y2K skin (pixel windows, bevelled buttons, messenger pop-ups)
 js/data.js        ← edit me: chapters, objects, where things go, captions, file names, Teddy's ages
-js/memory-art.js  pixel stand-ins for the printed props until their photos are taken
+js/memory-art.js  pixel stand-in for the posters until their photo is taken
 js/pixel.js       the pixel engine: palette, crisp shapes, outlines, dithering, pixel text
 js/sprites.js     every object as pixel art (grids of palette letters, or pixel shapes)
 js/room.js        the bedroom for each chapter as pixel art (walls, window, furniture)
 js/game.js        game logic: drag & drop, placement rules, memory box, feedback
-js/ui.js          screens: title, chapter cards, memory player, keep box, ending
+js/ui.js          screens: title, chapter cards, memory player, keep box, thank-you note, ending
 js/audio.js       synthesised sound effects + music-box ambience (no audio files)
 lib/p5.min.js     p5.js 1.11 (bundled so it works offline)
 fonts/            Pixelify Sans, Silkscreen, VT323 (bundled, SIL Open Font License)

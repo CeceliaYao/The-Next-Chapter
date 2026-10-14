@@ -3,10 +3,14 @@
    placement rules, pixel feedback (hops, sparkles, wiggles)
    and the chapter-to-chapter memory box. Everything visual
    is drawn into a 320 x 180 pixel canvas, then scaled up 4x.
+   Words drawn on the canvas (tooltips, the box counter, drop
+   labels) use the smooth UI fonts so they're easy to read.
    ========================================================= */
 'use strict';
 
-const W = 1280, H = 720;
+const W = 1280, H = 720;          // the game canvas (16:9)
+const STAGE_W = 1280, STAGE_H = 960, SCREEN_K = 1200 / 1280;   // the 4:3 page it sits in, and its on-page scale
+const FONT_UI = '"Archivo Narrow", "Arial Narrow", Arial, sans-serif', FONT_BODY = 'Jost, "Trebuchet MS", Verdana, sans-serif';
 const TRAY = { x: 16, y: 576, w: 1248, h: 140 };
 const TRAY_FLOOR = 176;          // art row the tray items stand on
 
@@ -17,7 +21,7 @@ const G = {
   particles: [], timers: [], queue: [], running: false,
   time: 0, lastInput: performance.now(), lastProgress: performance.now(), lastHelp: 0, helpFlash: null,
   memoryBox: ['teddy'], since: { teddy: 0 }, letGo: [], seen: new Set(), fired: new Set(), everTidy: new Set(),
-  yaLayout: null, packed: [], boxClose: 0, gift: false, memPH: null
+  yaLayout: null, packed: [], boxClose: 0, gift: false, labels: []
 };
 
 let canvasEl, artCv, art, bgCv = null, bgFor = null, trayCv = null, thumbCache = {}, CURSORS = {};
@@ -26,7 +30,7 @@ let canvasEl, artCv, art, bgCv = null, bgFor = null, trayCv = null, thumbCache =
 
 function setup() {
   const c = createCanvas(W, H);
-  c.parent('stage');
+  c.parent('screen');
   canvasEl = c.elt;
   canvasEl.id = 'game';
   canvasEl.style.touchAction = 'none';
@@ -39,7 +43,7 @@ function setup() {
   initInput();
   UI.init({ onStart: startRun, onJump: jumpTo, onMenu: openMenu, onMute: toggleMute, onActivity: () => { G.lastInput = performance.now(); } });
   noLoop();
-  const fonts = ['8px "Silkscreen"', '700 8px "Silkscreen"', '16px "Pixelify Sans"', '700 16px "Pixelify Sans"', '16px "VT323"'].map(f => document.fonts.load(f).catch(() => null));
+  const fonts = ['500 16px Jost', '700 16px Jost', '500 16px "Archivo Narrow"', '700 16px "Archivo Narrow"', '16px VT323'].map(f => document.fonts.load(f).catch(() => null));
   Promise.race([Promise.all(fonts), new Promise(r => setTimeout(r, 2500))]).then(() => {
     buildSprites();
     initCursors();
@@ -54,17 +58,22 @@ function draw() {
 }
 
 function fitStage() {
-  const s = Math.min(window.innerWidth / W, window.innerHeight / H);
+  const s = Math.min(window.innerWidth / STAGE_W, window.innerHeight / STAGE_H);
   document.documentElement.style.setProperty('--s', s);
-  const pd = Math.min(3, Math.max(1, Math.round(s * (window.devicePixelRatio || 1) * 4) / 4));
+  const pd = Math.min(3, Math.max(1, Math.round(s * SCREEN_K * (window.devicePixelRatio || 1) * 4) / 4));
   if (pd !== pixelDensity()) pixelDensity(pd);
 }
 
+/* vector cursors (crisp at any size); if a browser can't use them it falls back to the system ones */
 function initCursors() {
-  const cur = (name, hx, hy, fb) => 'url(' + iconURL(name, 2) + ') ' + hx + ' ' + hy + ', ' + fb;
-  CURSORS = { arrow: cur('cursor', 2, 2, 'default'), hand: cur('hand', 10, 2, 'pointer'), grab: cur('grab', 12, 8, 'grabbing') };
+  const svg = body => 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">' + body + '</svg>') + '")';
+  const arrow = '<path d="M5 3v21l5.2-5 3.6 8.4 3.6-1.6-3.6-8.2H21z" fill="#fff" stroke="#221a13" stroke-width="2" stroke-linejoin="round"/>';
+  const hand = '<path d="M11 15V5.5a2 2 0 014 0V13h.4v-1.5a2 2 0 014 0V13h.3v-.8a2 2 0 014 0V14h.3a2 2 0 014 0v6.5c0 5-3.4 8.5-8.4 8.5h-2c-3 0-4.8-1.4-6.6-3.8l-4.3-5.8a2 2 0 013-2.6z" fill="#fff" stroke="#221a13" stroke-width="2" stroke-linejoin="round"/>';
+  const grab = '<path d="M8.5 15.5v-2.4a2 2 0 014 0V12a2 2 0 014 0v.2a2 2 0 014 0v.6a2 2 0 014 0v7.7c0 4.6-3.2 7.9-7.8 7.9h-2.3c-2.8 0-4.6-1.3-6.3-3.6l-2.6-3.6a2 2 0 013-2.6z" fill="#fff" stroke="#221a13" stroke-width="2" stroke-linejoin="round"/>';
+  CURSORS = { arrow: svg(arrow) + ' 5 3, default', hand: svg(hand) + ' 13 4, pointer', grab: svg(grab) + ' 16 14, grabbing' };
   document.documentElement.style.setProperty('--cursor', CURSORS.arrow);
   document.documentElement.style.setProperty('--cursor-hand', CURSORS.hand);
+  document.documentElement.style.setProperty('--cursor-grab', CURSORS.grab);
 }
 
 /* ================= flow ================= */
@@ -74,7 +83,7 @@ function resetRun() {
 }
 
 function goTitle(withDoor) {
-  UI.closeMemory(true); G.modal = null; G.memPH = null;
+  UI.closeMemory(true); G.modal = null;
   Sound.stopAmbience(); UI.clearToasts();
   setupChapter(0);
   autoTidy();
@@ -103,7 +112,7 @@ function beginChapter() {
   setBlur(false);
   UI.showHUD(true);
   updateHUD();
-  UI.hint(G.ch.tip, { ms: 9000 });
+  UI.setHelper(getThumb('teddy'), G.ch.tip);   // Teddy gives the chapter's tip in the dock under the room
   Sound.startAmbience(G.ch.ambience);
   G.lastProgress = performance.now();
   const start = G.ch.onStart.slice();
@@ -315,7 +324,6 @@ function openMemory(id, done) {
   G.modal = 'memory';
   Sound.stopAmbience();
   UI.openMemory(mem, G.ch, {
-    mountPlaceholder: mountPlaceholder, unmountPlaceholder: unmountPlaceholder,
     onClose: () => {
       G.modal = null; G.lastInput = performance.now(); G.lastProgress = performance.now();
       updateHUD();
@@ -481,7 +489,6 @@ function onKey(e) {
   }
   if (k === 'Escape') { if (G.modal === 'menu') closeMenu(); else if (G.state === 'play') openMenu(); }
   else if (k === 'm' || k === 'M') toggleMute();
-  else if (k === 'f' || k === 'F') toggleFullscreen();
   else if (k === 'N' && e.shiftKey && G.state === 'play' && !G.modal) debugSkip();
   else if (k === 'Enter') {
     if (document.querySelector('.door-splash')) return;   // the closed door handles Enter itself (it opens)
@@ -624,7 +631,6 @@ function openMenu() {
     if (a === 'restart') { closeMenu(); setupChapter(G.idx); beginChapter(); }
     if (a === 'title') { closeMenu(); goTitle(); }
     if (a === 'sound') { toggleMute(); G.modal = null; openMenu(); }
-    if (a === 'fullscreen') { toggleFullscreen(); }
   });
 }
 function closeMenu() { G.modal = null; UI.hideMenu(); }
@@ -634,13 +640,6 @@ function toggleMute() {
   Sound.toggle();
   UI.refreshMute();
   if (!Sound.isMuted() && G.state === 'play' && !G.modal) Sound.startAmbience(G.ch.ambience);
-}
-
-function toggleFullscreen() {
-  try {
-    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-    else document.exitFullscreen();
-  } catch (e) { /* not allowed here */ }
 }
 
 function updateHUD() {
@@ -802,6 +801,7 @@ function render() {
   if (!trayCv) buildTray();
   art.clearRect(0, 0, ART_W, ART_H);
   art.drawImage(bgCv, 0, 0);
+  G.labels = [];
   drawRoomFx();
   const guideItem = G.drag ? G.drag.item : (G.helpFlash && G.time < G.helpFlash.until ? G.helpFlash.item : null);
   const list = drawList();
@@ -809,15 +809,44 @@ function render() {
   drawFront();
   if (guideItem) drawGuides(guideItem);
   drawTray();
-  list.filter(i => i.state === 'tray').forEach(drawItem);
-  if (G.drag) { drawGhost(); drawItem(G.drag.item); }
-  drawMarkers();
-  drawParticles();
   const ctx = drawingContext;
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(artCv, 0, 0, W, H);
+  drawLabels(ctx);               // the words sit on the room and the box...
+  art.clearRect(0, 0, ART_W, ART_H);
+  list.filter(i => i.state === 'tray').forEach(drawItem);   // ...and the things in the tray / in your hand go over them
+  if (G.drag) { drawGhost(); drawItem(G.drag.item); }
+  drawMarkers();
+  drawParticles();
+  ctx.drawImage(artCv, 0, 0, W, H);
   drawTooltip(ctx);
-  if (G.memPH) drawPlaceholder();
+}
+
+/* ---------- words on the canvas: smooth fonts on top of the pixel art ---------- */
+function canvasText(ctx, str, x, y, o) {
+  ctx.font = (o.weight || 700) + ' ' + o.size + 'px ' + (o.family || FONT_UI);
+  ctx.textAlign = o.align || 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = o.color || PALETTE.o;
+  ctx.fillText(str, x, y);
+}
+function pill(ctx, str, cx, cy, size, accent) {
+  ctx.font = '700 ' + size + 'px ' + FONT_UI;
+  const w = ctx.measureText(str).width + size * 1.1, h = size * 1.6;
+  // kept inside the visible part of the screen (the top 44 px of the canvas are cropped by #screen)
+  const x = Math.round(Math.max(8, Math.min(W - w - 8, cx - w / 2))), y = Math.round(Math.max(50, Math.min(H - h - 6, cy - h / 2)));
+  ctx.save();
+  ctx.shadowColor = 'rgba(34,26,19,.25)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3;
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.fillStyle = '#ffffff'; ctx.fill();
+  ctx.restore();
+  ctx.lineWidth = 2; ctx.strokeStyle = accent || PALETTE.o; ctx.stroke();
+  canvasText(ctx, str, x + w / 2, y + h / 2 + 1, { size });
+}
+const HEART = '\u2665\uFE0E';
+function drawLabels(ctx) {
+  G.labels.forEach(l => {
+    if (l.pill) pill(ctx, l.text, l.x, l.y, l.size, l.accent);
+    else canvasText(ctx, l.text, l.x, l.y, l);
+  });
 }
 
 function layerOf(it) {
@@ -927,11 +956,7 @@ function drawGuides(it) {
     } else {
       dashRect(q(s.x1), q(s.y1), q(s.x2), q(s.y2), hot);
     }
-    if (s.label) {
-      const lx = Math.round((q(s.x1) + q(s.x2)) / 2), ly = q(s.y1) - 8, w = miniWidth(s.label);
-      arect(lx - w / 2 - 3, ly - 2, w + 6, 9, 'o'); arect(lx - w / 2 - 2, ly - 1, w + 4, 7, 'w');
-      miniTextCtx(art, Math.round(lx - w / 2), ly, s.label, 'o');
-    }
+    if (s.label) G.labels.push({ pill: true, text: s.label, x: (s.x1 + s.x2) / 2, y: s.y1 - 18, size: 20, accent: hot ? PALETTE['1'] : PALETTE.o });
   }
 }
 
@@ -963,11 +988,15 @@ function drawFront() {
 function drawTray() {
   if (G.ch.moving) { drawPackingBox(); return; }
   art.drawImage(trayCv, 4, 144);
-  const left = G.items.filter(i => i.state === 'tray').length;
-  const mid = (t, y, c) => miniTextCtx(art, 23 - Math.floor(miniWidth(t) / 2), y, t, c);   // centred on the sticker
-  mid(left ? 'BOX' : 'DONE', 154, 'o');
-  mid(left ? String(left) : '♥', 160, left ? '2' : '3');
-  mid(left ? 'LEFT' : '', 166, 'o');
+  const left = G.items.filter(i => i.state === 'tray').length, cx = 23 * ART;   // centred on the box's label sticker
+  if (left) {
+    G.labels.push({ text: 'BOX', x: cx, y: 621, size: 18 });
+    G.labels.push({ text: String(left), x: cx, y: 650, size: 34, color: PALETTE['2'] });
+    G.labels.push({ text: 'LEFT', x: cx, y: 678, size: 18 });
+  } else {
+    G.labels.push({ text: 'ALL', x: cx, y: 630, size: 20 });
+    G.labels.push({ text: 'DONE ' + HEART, x: cx, y: 668, size: 20, color: PALETTE['3'] });
+  }
 }
 
 function artPoly(pts, c) {
@@ -989,8 +1018,6 @@ function drawPackingBox() {
     const f = new PixBuf(ART_W, ART_H, 0);
     f.box(bx1, top + 4, bx2 - bx1 + 1, 180 - top - 3, 'r');
     f.rect(158, top + 5, 5, 180 - top - 5, 'y');
-    miniText(f, 129, top + 9, 'NEXT CHAPTER >', 'o');
-    miniText(f, 140, top + 17, 'FRAGILE ♥', 'm');
     const reach = Math.round(30 * k), lift = Math.round(10 * k);
     const L = [[bx1, top + 4], [bx1, top], [bx1 - 24 + reach * 2 + (k > 0.5 ? (k - 0.5) * 40 : 0), top + 8 - lift * 2], [bx1 - 24 + reach * 2, top + 14 - lift * 2]];
     const R = L.map(([x, y]) => [bx1 + bx2 - x, y]);
@@ -1007,10 +1034,13 @@ function drawPackingBox() {
     art.drawImage(cv, 0, 0, cv.width, rows + 1, Math.round(x) - 1, top + 5 - rows, cv.width, rows + 1);
   });
   art.drawImage(_boxCache.front, 0, 0);
+  G.labels.push({ text: 'NEXT CHAPTER ▸', x: 160 * ART, y: (top + 11) * ART, size: 28 });   // printed on the box
+  G.labels.push({ text: 'FRAGILE ' + HEART, x: 160 * ART, y: (top + 19) * ART, size: 24, color: PALETTE.m });
   if (G.state === 'play') {
-    miniTextCtx(art, 14, 152, "DRAG WHAT YOU'LL", 'o'); miniTextCtx(art, 14, 159, 'TAKE INTO THE BOX', 'o');
-    miniTextCtx(art, 214, 152, 'TEDDY GOES IN', 'o'); miniTextCtx(art, 214, 159, 'LAST ♥', '3');
-    miniTextCtx(art, 214, 168, G.packed.length + ' PACKED', '2');
+    const t = (text, x, y, color) => G.labels.push({ text, x, y, size: 27, align: 'left', family: FONT_BODY, color });
+    t('Drag what you’ll take', 56, 622); t('into the box', 56, 656);
+    t('Teddy goes in last ' + HEART, 856, 622, PALETTE.m);
+    t(G.packed.length + ' packed', 856, 676, '#c94300');
   }
 }
 
@@ -1041,17 +1071,10 @@ function drawTooltip(ctx) {
   const it = G.hover;
   if (!it || G.drag) return;
   const mem = it.state === 'placed' && !it.mess ? memoryFor(it.id) : null;
-  let label = it.def.name + (it.carried && it.state === 'tray' ? ' ♥' : '') + (mem ? '  > replay' : '');
-  if (it.mess) label = it.def.name + ' (tidy me!)';
-  const t = pixText(label.toUpperCase(), '#221a13', { size: 8 });
+  let label = it.def.name + (it.carried && it.state === 'tray' ? ' ' + HEART : '') + (mem ? '  ·  click to replay' : '');
+  if (it.mess) label = it.def.name + '  ·  tidy me!';
   const S = SPR[it.id], [ax, ay] = artPos(it);
-  const w = t.width * 2 + 16, h = t.height * 2 + 12;
-  let x = Math.round(((ax + S.w / 2) * ART - w / 2) / 2) * 2, y = Math.round(((ay - 3) * ART - h) / 2) * 2;
-  x = Math.max(8, Math.min(W - w - 8, x)); y = Math.max(48, y);
-  ctx.fillStyle = PALETTE.o; ctx.fillRect(x - 4, y, w + 8, h); ctx.fillRect(x, y - 4, w, h + 8);
-  ctx.fillStyle = '#ffffff'; ctx.fillRect(x, y, w, h);
-  ctx.fillStyle = PALETTE.p; ctx.fillRect(x, y + h - 4, w, 4);
-  ctx.drawImage(t, x + 8, y + 6, t.width * 2, t.height * 2);
+  pill(ctx, label, (ax + S.w / 2) * ART, Math.max(66, (ay - 3) * ART - 22), 22);
 }
 
 function getThumb(id, v) {
@@ -1063,37 +1086,6 @@ function getThumb(id, v) {
   const ctx = out.getContext('2d'); ctx.imageSmoothingEnabled = false;
   ctx.drawImage(cv, Math.round((size - cv.width * k) / 2), Math.round((size - cv.height * k) / 2), cv.width * k, cv.height * k);
   return (thumbCache[key] = out.toDataURL('image/png'));
-}
-
-/* ---------- pixel placeholder for photos / videos that haven't been added yet ---------- */
-
-let phCv = null, phBg = {};
-function mountPlaceholder(host, mem) {
-  if (!phCv) { phCv = document.createElement('canvas'); phCv.width = 150; phCv.height = 91; phCv.className = 'pixel-canvas'; }
-  host.appendChild(phCv);
-  const ids = mem.items.length ? mem.items.slice(0, 3) : (mem.id === 'te-clothes' ? ['hoodie', 'jeans', 'tee'] : ['teddy', 'familyphoto', 'clothesstack']);
-  G.memPH = { mem, ids, t0: G.time };
-}
-
-function unmountPlaceholder() { G.memPH = null; if (phCv && phCv.parentNode) phCv.parentNode.removeChild(phCv); }
-
-function drawPlaceholder() {
-  const ph = G.memPH, t = G.time - ph.t0, ctx = phCv.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
-  const key = G.ch.accent;
-  if (!phBg[key]) { const b = new PixBuf(150, 91, 0); skyGrad(b, 0, 0, 150, 91, [key, '#e6d8ff', '#c9f4ff']); b.ell(75, 84, 60, 6, '#ffffff'); phBg[key] = b.toCanvas(1); }
-  ctx.clearRect(0, 0, 150, 91); ctx.drawImage(phBg[key], 0, 0);
-  const n = ph.ids.length, step = Math.floor(t / 320);
-  ph.ids.forEach((id, i) => {
-    const cv = spriteFrame(id, G.time).normal;
-    const k = Math.max(1, Math.min(4, Math.floor(Math.min(62 / cv.height, (130 / n) / cv.width))));
-    const cx = Math.round(75 + (i - (n - 1) / 2) * (140 / n)), bob = (step + i) % 2;
-    ctx.drawImage(cv, cx - Math.round(cv.width * k / 2), 84 - cv.height * k - bob - 2, cv.width * k, cv.height * k);
-  });
-  for (let i = 0; i < 10; i++) {
-    const p = (t / 2600 + i * 0.13) % 1, x = (i * 37) % 150, y = Math.round(p * 95) - 4;
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(x, y, 1, 1); ctx.fillRect(x - 1, y, 3, 1); ctx.fillRect(x, y - 1, 1, 3);
-  }
 }
 
 /* ================= debug helpers (handy for testing a build) ================= */

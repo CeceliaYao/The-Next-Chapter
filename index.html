@@ -6,38 +6,45 @@
   <title>The Next Chapter</title>
   <meta name="description" content="The Next Chapter: one room, from nursery to moving out. What we keep up, carry on, and leave behind.">
   <link rel="icon" type="image/svg+xml" href="assets/brand/favicon.svg">
-  <link rel="stylesheet" href="style.css?v=20261012i">
+  <link rel="stylesheet" href="style.css?v=20261014a">
 </head>
 <body>
   <div id="stage">
-    <!-- p5 canvas is inserted here -->
     <div id="hud" class="hidden">
-      <button id="menuBtn" class="aqua small-btn" title="Menu (Esc)">MENU</button>
+      <button id="menuBtn" class="aqua small-btn" title="Menu (Esc)">Menu</button>
       <div class="hud-chapter"><span id="hudChapter">Chapter 1 · The Nursery</span></div>
       <div class="lcd hud-year" id="hudYear">2000</div>
       <div class="hud-meter">
-        <span id="hudLabel">UPKEEP</span>
+        <span id="hudLabel">Upkeep</span>
         <div class="bar"><i id="hudBar"></i></div>
         <b id="hudTidy">0/0</b>
       </div>
-      <div class="hud-mem" id="hudMem" title="Memories found in this chapter">MEM 0/0</div>
-      <button id="muteBtn" class="aqua small-btn round" title="Sound (M)">♪</button>
+      <div class="hud-mem" id="hudMem" title="Memories found in this chapter">Memories 0/0</div>
+      <button id="muteBtn" class="aqua small-btn round" title="Sound (M)" aria-label="Sound"></button>
     </div>
-    <div id="hint" class="hidden"></div>
+    <div id="screen"><!-- the p5 canvas is moved in here --></div>
+    <div id="dock" class="hidden">
+      <div id="hint">
+        <img id="hintIcon" class="px" alt="Teddy">
+        <div class="hint-body">
+          <p id="hintText"></p>
+          <p class="hint-keys">drag things into place · click a <b>!</b> to open a memory · Esc for the menu</p>
+        </div>
+      </div>
+      <div id="toasts"></div>
+    </div>
     <div id="overlay"></div>
     <div id="modal"></div>
-    <div id="toasts"></div>
   </div>
   <noscript>The Next Chapter needs JavaScript to run.</noscript>
 
   <script src="lib/p5.min.js"></script>
-  <script src="js/pixel.js?v=20261012i"></script>
-  <script src="js/sprites.js?v=20261012i"></script>
-  <script src="js/room.js?v=20261012i"></script>
-  <script src="js/data.js?v=20261012i"></script>
-  <script src="js/memory-art.js?v=20261012i"></script>
-  <script src="js/audio.js?v=20261012i"></script>
-  <script src="js/ui.js?v=20261012i"></script>
-  <script src="js/game.js?v=20261012i"></script>
+  <script src="js/pixel.js?v=20261014a"></script>
+  <script src="js/sprites.js?v=20261014a"></script>
+  <script src="js/room.js?v=20261014a"></script>
+  <script src="js/data.js?v=20261014a"></script>
+  <script src="js/audio.js?v=20261014a"></script>
+  <script src="js/ui.js?v=20261014a"></script>
+  <script src="js/game.js?v=20261014a"></script>
 </body>
 </html>

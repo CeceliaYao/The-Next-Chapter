@@ -1,35 +1,62 @@
 /* =========================================================
-   ui.js: the Y2K pixel "operating system" over the room:
-   title screen, chapter cards, HUD, Mum's messenger pop-ups,
-   the Memory Player (photos / videos), the memory box and
-   the ending. Plain DOM + CSS, so it's easy to restyle.
+   ui.js: the early-2000s "desktop" around the room:
+   title screen, chapter cards, top bar, Teddy's tips,
+   Mum's messenger pop-ups, the Memory Player (photos /
+   videos), the memory box and the ending.
+   Plain DOM + CSS, so it's easy to restyle.
    ========================================================= */
 'use strict';
 
 const UI = (() => {
   const $ = sel => document.querySelector(sel);
-  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const mix = (a, b, t) => { const p = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); const A = p(a), B = p(b); return '#' + A.map((v, i) => Math.round(v + (B[i] - v) * t).toString(16).padStart(2, '0')).join(''); };
-  const bandsFor = c => ['#ffffff', mix(c, '#ffffff', 0.7), mix(c, '#ffffff', 0.35), c, c, mix(c, '#221a13', 0.25), mix(c, '#ffffff', 0.6), '#ffffff'];
-  const logoImg = (text, scale, opts, cls) => { const L = logoURL(text, Object.assign({ font: 'Silkscreen', size: 8 }, opts || {})); return '<img class="px ' + (cls || '') + '" src="' + L.url + '" alt="' + esc(text) + '" style="width:' + L.w * scale + 'px;height:' + L.h * scale + 'px">'; };
-  const icon = (name, scale) => { const b = iconBuf(name); return '<img class="px icon" src="' + iconURL(name, 1) + '" alt="" style="width:' + b.W * scale + 'px;height:' + b.H * scale + 'px">'; };
+  // escapes text for HTML; hearts get the text-style selector so phones don't turn them into emoji
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])).replace(/\u2665(?!\uFE0E)/g, '\u2665\uFE0E');
   const DEV = /[?&]dev\b/.test(location.search);   // add ?dev to the URL to see which media files are missing
+
+  /* small vector icons (smooth at any size) */
+  const ICONS = {
+    heart: '<path d="M12 21s-7.6-4.7-9.6-9.3C.8 8.2 3 4.5 6.6 4.5c2.1 0 3.6 1.2 4.4 2.6.8-1.4 2.3-2.6 4.4-2.6 3.6 0 5.8 3.7 4.2 7.2C19.6 16.3 12 21 12 21z" fill="#ff5fb4" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>',
+    star: '<path d="M12 2.4l2.8 6 6.6.8-4.9 4.5 1.3 6.5L12 16.9l-5.8 3.3 1.3-6.5-4.9-4.5 6.6-.8z" fill="#ffc700" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>',
+    sparkle: '<path d="M12 1c.9 5.6 4.4 9.1 10 10-5.6.9-9.1 4.4-10 10-.9-5.6-4.4-9.1-10-10 5.6-.9 9.1-4.4 10-10z" fill="#fff" stroke="#ffb27a" stroke-width=".8"/>',
+    bubble: '<circle cx="12" cy="12" r="10" fill="rgba(255,255,255,.3)" stroke="#fff" stroke-width="1.4"/><ellipse cx="8.4" cy="7.8" rx="3.2" ry="2" fill="#fff" opacity=".9"/>',
+    smiley: '<circle cx="12" cy="12" r="10" fill="#ffd23a" stroke="#fff" stroke-width="1.6"/><circle cx="8.6" cy="10" r="1.4" fill="#221a13"/><circle cx="15.4" cy="10" r="1.4" fill="#221a13"/><path d="M7.5 14c2.4 3 6.6 3 9 0" stroke="#221a13" stroke-width="1.6" fill="none" stroke-linecap="round"/>',
+    floppy: '<path d="M3 3h15l3 3v15H3z" fill="#2f6fd6" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/><rect x="7" y="3.7" width="9" height="5.5" fill="#e8f1ff"/><rect x="13" y="4.6" width="2" height="3.6" fill="#2f6fd6"/><rect x="6" y="12.5" width="12" height="7.5" rx="1" fill="#fff"/>',
+    soundOn: '<path d="M3.5 9h4l5-4v14l-5-4h-4z" fill="#fff"/><path d="M15.8 8.6a4.8 4.8 0 010 6.8M18.4 6a8.5 8.5 0 010 12" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>',
+    soundOff: '<path d="M3.5 9h4l5-4v14l-5-4h-4z" fill="#fff"/><path d="M15.8 8.6a4.8 4.8 0 010 6.8" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" opacity=".45"/><path d="M3 21L21 3" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>',
+    camera: '<path d="M3 7h4l2-3h6l2 3h4v13H3z" fill="none" stroke="#221a13" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" fill="none" stroke="#221a13" stroke-width="1.6"/>',
+    film: '<rect x="3" y="4" width="18" height="16" rx="1.5" fill="none" stroke="#fff" stroke-width="1.6"/><path d="M7 4v16M17 4v16M3 8h4M3 12h4M3 16h4M17 8h4M17 12h4M17 16h4" stroke="#fff" stroke-width="1.4"/>'
+  };
+  const svg = (name, size, extra) => '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" aria-hidden="true"' + (extra || '') + '>' + ICONS[name] + '</svg>';
+
   let H = {};                // handlers from game.js
-  let overlay, modal, hud, hintEl, toasts;
+  let overlay, modal, hud, dock, hintEl, hintText, toasts;
   let memState = null;
-  let hintTimer = null;
+  let hintTimer = null, baseHint = '';
 
   function init(handlers) {
     H = handlers;
-    overlay = $('#overlay'); modal = $('#modal'); hud = $('#hud'); hintEl = $('#hint'); toasts = $('#toasts');
+    overlay = $('#overlay'); modal = $('#modal'); hud = $('#hud'); dock = $('#dock'); hintEl = $('#hint'); hintText = $('#hintText'); toasts = $('#toasts');
     $('#menuBtn').addEventListener('click', () => { Sound.click(); H.onMenu(); });
     $('#muteBtn').addEventListener('click', () => { H.onMute(); });
+    // "click anywhere to continue" also counts the black margins around the 4:3 page
+    // (only a real click out there: a drag that starts on the memory window and ends outside doesn't count)
+    let downOutside = false;
+    document.addEventListener('pointerdown', e => { downOutside = !e.target.closest('#stage'); }, true);
+    document.addEventListener('click', e => {
+      if (memState && downOutside && !e.target.closest('#stage') && performance.now() - memState.opened > 450) closeMemory();
+    });
     refreshMute();
   }
 
+  // the sound button shows a speaker (never an "x", which reads as "close")
   function refreshMute() {
     const b = $('#muteBtn');
-    if (b) { b.textContent = Sound.isMuted() ? 'x' : '♪'; b.title = Sound.isMuted() ? 'Sound off' : 'Sound on'; b.classList.toggle('off', Sound.isMuted()); }
+    if (!b) return;
+    const off = Sound.isMuted();
+    b.innerHTML = svg(off ? 'soundOff' : 'soundOn', 24);
+    b.title = off ? 'Sound is off (M)' : 'Sound is on (M)';
+    b.setAttribute('aria-label', b.title);
+    b.classList.toggle('off', off);
   }
 
   /* windows can be dragged around by their title bar, like a real desktop.
@@ -60,8 +87,8 @@ const UI = (() => {
       const dx = (e.clientX - drag.cx) / drag.s, dy = (e.clientY - drag.cy) / drag.s;
       if (!moved && Math.hypot(dx, dy) < 4) return;
       moved = true;
-      x = Math.round(Math.min(drag.maxX, Math.max(drag.minX, drag.x0 + dx)) / 4) * 4;   // snap to the 4px pixel grid
-      y = Math.round(Math.min(drag.maxY, Math.max(drag.minY, drag.y0 + dy)) / 4) * 4;
+      x = Math.round(Math.min(drag.maxX, Math.max(drag.minX, drag.x0 + dx)));
+      y = Math.round(Math.min(drag.maxY, Math.max(drag.minY, drag.y0 + dy)));
       win.style.translate = x + 'px ' + y + 'px';
       H.onActivity && H.onActivity();
     });
@@ -81,20 +108,21 @@ const UI = (() => {
   // withDoor: the visitor first sees the bedroom door (logo + our names on it) and opens it to reach this screen.
   function showTitle(chapters, withDoor) {
     const discs = chapters.map((c, i) =>
-      '<button class="disc" data-i="' + i + '"><img class="px" src="' + discURL(c.accent, 1) + '" alt=""><b>' + (i + 1) + '</b><small>' + c.year + '</small></button>').join('');
-    const floaters = ['star', 'heart', 'sparkle', 'heart', 'star', 'sparkle', 'heart', 'star', 'sparkle', 'heart'].map((n, i) =>
-      '<span class="floater" style="left:' + (5 + i * 9.5) + '%;animation-delay:' + (-i * 1.7) + 's">' + icon(n, 4 + (i % 3) * 2) + '</span>').join('');
+      '<button class="disc" data-i="' + i + '" style="--accent:' + c.accent + '" aria-label="Chapter ' + (i + 1) + ', ' + c.year + '"><b>' + (i + 1) + '</b><small>' + c.year + '</small></button>').join('');
+    const kinds = ['star', 'bubble', 'heart', 'sparkle', 'bubble', 'star', 'heart', 'sparkle', 'bubble', 'star', 'heart', 'bubble'];
+    const floaters = kinds.map((n, i) =>
+      '<span class="floater" style="left:' + (3 + i * 8.3) + '%;animation-delay:' + (-i * 2.1) + 's;animation-duration:' + (19 + (i % 4) * 3) + 's">' + svg(n, 22 + (i % 3) * 12) + '</span>').join('');
     const names = CREDITS.map(c => c[0].replace(/\s*\(.*\)/, '')).join(' · ');   // full names, in CREDITS order
     const short = CREDITS.map(c => c[2]);
     const byLine = short.slice(0, -1).join(', ') + ' &amp; ' + short[short.length - 1];
     const el = setScreen(
       '<div class="holo"></div><div class="floaters">' + floaters + '</div>' +
-      '<div class="logo pop-in"><img class="brand-logo" src="assets/brand/logo-main.png" alt="The Next Chapter" style="width:510px;height:355px"></div>' +
+      '<div class="logo pop-in"><img class="brand-logo" src="assets/brand/logo-main.svg" alt="The Next Chapter" style="width:520px;height:361px"></div>' +
       '<div class="win title-win pop-in">' +
-      '  <div class="titlebar"><span>THE_NEXT_CHAPTER.EXE</span><span class="tb-dots"><i>_</i><i>□</i><i>x</i></span></div>' +
+      '  <div class="titlebar"><span>The Next Chapter</span></div>' +
       '  <div class="win-body">' +
       '    <p class="tagline">one room, from nursery to moving out:<br>what we keep up, carry on, and leave behind</p>' +
-      '    <button class="aqua big" id="startBtn">&gt; START</button>' +
+      '    <button class="aqua big" id="startBtn">Start ▶︎</button>' +
       '    <div class="discs">' + discs + '</div>' +
       '    <p class="small">or pick a disc to jump to a chapter · best with sound on ♪</p>' +
       '  </div>' +
@@ -102,11 +130,11 @@ const UI = (() => {
       '<div class="title-foot">KKB385 · A3 · an interactive room by ' + byLine + '</div>' +
       (withDoor
         ? '<div class="door-splash" role="button" aria-label="Open the door">' +
-          '  <canvas class="px door-wall" width="320" height="180"></canvas>' +
-          '  <div class="door-leaf"><canvas class="px" width="' + DOOR_ART.w + '" height="180"></canvas>' +
-          '    <img class="door-logo" src="assets/brand/logo-stacked.png" alt="The Next Chapter">' +
+          '  <canvas class="px door-wall" width="' + ART_W + '" height="' + DOOR_ART.h + '"></canvas>' +
+          '  <div class="door-leaf"><canvas class="px" width="' + DOOR_ART.w + '" height="' + DOOR_ART.h + '"></canvas>' +
+          '    <img class="door-logo" src="assets/brand/logo-stacked.svg" alt="The Next Chapter">' +
           '    <div class="door-names">' + esc(names) + '</div>' +
-          '    <div class="door-hint">click the door to come in &gt;</div>' +
+          '    <div class="door-hint">click the door to come in ▶︎</div>' +
           '  </div>' +
           '</div>'
         : ''), 'title-screen' + (withDoor ? ' door-closed' : ''));
@@ -124,7 +152,7 @@ const UI = (() => {
         window.removeEventListener('keydown', onKeyOpen, true);
         Sound.init(); Sound.door();
         splash.classList.add('opening');
-        setTimeout(() => el.classList.remove('door-closed'), 750);   // the title screen pops in as you walk through
+        setTimeout(() => el.classList.remove('door-closed'), 750);   // the title screen comes in as you walk through
         setTimeout(() => splash.remove(), 1400);
       };
       const onKeyOpen = e => {
@@ -134,73 +162,73 @@ const UI = (() => {
       splash.addEventListener('click', open);
       window.addEventListener('keydown', onKeyOpen, true);   // capture: runs before the game's own key handler
     }
-    showHUD(false); hideHint();
+    showHUD(false);
   }
 
   /* ---------------- chapter card ---------------- */
   function showIntro(ch, idx, onBegin, teddy) {
     const el = setScreen(
       '<div class="card pop-in" style="--accent:' + ch.accent + '">' +
-      '  <div class="card-disc"><img class="px" src="' + discURL(ch.accent, 1) + '" alt=""><span>' + (idx + 1) + '</span></div>' +
+      '  <div class="cd"><span>' + (idx + 1) + '</span></div>' +
       '  <div class="card-kicker">' + esc(ch.kicker) + '</div>' +
-      '  <div class="card-title">' + logoImg(ch.title.toUpperCase(), 5, { bands: bandsFor(ch.accent) }) + '</div>' +
+      '  <h1 class="big-title">' + esc(ch.title) + '</h1>' +
       '  <div class="lcd">' + ch.year + '</div>' +
-      '  <p class="card-text" id="typed"></p>' +
+      '  <p class="card-text">' + esc(ch.intro) + '</p>' +
       (teddy ? '  <div class="card-teddy"><img class="px" src="' + teddy.thumb + '" alt="Teddy"><span>Teddy: <b>' + esc(teddy.label) + '</b></span></div>' : '') +
-      '  <button class="aqua" id="beginBtn">' + (ch.moving ? 'Start packing &gt;' : 'Open the box &gt;') + '</button>' +
+      '  <button class="aqua" id="beginBtn">' + (ch.moving ? 'Start packing ▶︎' : 'Open the box ▶︎') + '</button>' +
       '</div>', 'intro-screen');
-    typeText(el.querySelector('#typed'), ch.intro);
     const go = () => { Sound.click(); onBegin(); };
     el.querySelector('#beginBtn').addEventListener('click', go);
-    showHUD(false); hideHint();
+    showHUD(false);
   }
 
-  function typeText(node, text) {
-    let i = 0;
-    node.textContent = '';
-    const tick = () => {
-      if (!node.isConnected) return;
-      i += 2; node.textContent = text.slice(0, i);
-      if (i < text.length) setTimeout(tick, 28);
-    };
-    tick();
-  }
-
-  /* ---------------- HUD ---------------- */
-  function showHUD(on) { hud.classList.toggle('hidden', !on); }
+  /* ---------------- top bar + dock ---------------- */
+  function showHUD(on) { hud.classList.toggle('hidden', !on); dock.classList.toggle('hidden', !on); }
   function setHUD(s) {
     $('#hudChapter').textContent = s.kicker + ' · ' + s.title;
     $('#hudYear').textContent = s.year;
     $('#hudTidy').textContent = s.moving ? (s.packed + ' packed') : (s.tidy + '/' + s.total);
-    $('#hudLabel').textContent = s.moving ? 'PACKING' : 'UPKEEP';
+    $('#hudLabel').textContent = s.moving ? 'Packing' : 'Upkeep';
     const pct = s.moving ? Math.min(1, s.packed / 5) : (s.total ? s.tidy / s.total : 0);
     $('#hudBar').style.width = Math.round(pct * 100) + '%';
-    $('#hudMem').textContent = 'MEM ' + s.memSeen + '/' + s.memTotal;
+    $('#hudMem').textContent = 'Memories ' + s.memSeen + '/' + s.memTotal;
     refreshMute();
   }
 
+  // Teddy sits in the dock and gives the tips (Teddy ages with the chapters)
+  function setHelper(thumb, text) {
+    $('#hintIcon').src = thumb;
+    baseHint = text || '';
+    hint(baseHint);
+  }
   function hint(text, opts) {
     if (!text) return hideHint();
-    hintEl.textContent = text;
-    hintEl.classList.remove('hidden', 'pulse');
+    hintText.textContent = text;
+    hintEl.classList.remove('pulse', 'fresh');
     void hintEl.offsetWidth;
+    hintEl.classList.add('fresh');
     if (opts && opts.pulse) hintEl.classList.add('pulse');
     clearTimeout(hintTimer);
     if (opts && opts.ms) hintTimer = setTimeout(hideHint, opts.ms);
   }
-  function hideHint() { hintEl.classList.add('hidden'); }
+  // "hiding" a tip goes back to the chapter's standing instruction
+  function hideHint() {
+    clearTimeout(hintTimer);
+    hintEl.classList.remove('pulse', 'fresh');
+    if (hintText.textContent !== baseHint) hintText.textContent = baseHint;
+  }
 
-  /* ---------------- messenger toasts ---------------- */
+  /* ---------------- messenger pop-ups ---------------- */
   function toast(from, text, nudge) {
     const t = document.createElement('div');
-    t.className = 'toast slide-in' + (nudge ? ' nudge' : '');
-    t.innerHTML = '<div class="toast-bar">' + icon(from === 'Mum' ? 'heart' : 'smiley', 2) + ' ' + esc(from) + ' says:<i>x</i></div><div class="toast-text">' + esc(text) + '</div>';
+    t.className = 'toast slide-in' + (nudge ? ' nudge' : '') + (from === 'Mum' ? ' mum' : '');
+    t.innerHTML = '<div class="toast-bar">' + svg(from === 'Mum' ? 'heart' : 'smiley', 18) + ' ' + esc(from) + ' says:<i>✕</i></div><div class="toast-text">' + esc(text) + '</div>';
     toasts.appendChild(t);
-    while (toasts.children.length > 3) toasts.firstElementChild.remove();
+    while (toasts.children.length > 2) toasts.firstElementChild.remove();
     nudge ? Sound.nudge() : Sound.toast();
-    const kill = () => { t.classList.add('slide-out'); setTimeout(() => t.remove(), 400); };
+    const kill = () => { t.classList.add('slide-out'); setTimeout(() => t.remove(), 300); };
     t.addEventListener('click', kill);
-    setTimeout(kill, 6500);
+    setTimeout(kill, 7000);
   }
   function clearToasts() { toasts.innerHTML = ''; }
 
@@ -214,7 +242,6 @@ const UI = (() => {
   function openMemory(mem, ch, opts) {
     closeMemory(true);
     const seed = [...mem.id].reduce((n, c) => n + c.charCodeAt(0), 0);
-    const fileName = mem.title || (mem.src ? mem.src.split('/').pop() : 'memory');
     const isMedia = mem.type === 'photo' || mem.type === 'video';
     let frame = '';
     if (isMedia) {
@@ -222,18 +249,20 @@ const UI = (() => {
         '<div class="mem-frame ' + mem.type + '">' +
         '  <div class="mem-media"></div>' +
         (mem.type === 'video'
-          ? '<div class="cam"><span class="rec">REC</span><span class="cam-mode">SP &gt;</span><span class="stamp">' + stampFor(ch.year, seed) + '</span></div>'
+          ? '<div class="cam"><span class="rec">REC</span><span class="cam-mode">SP ▶︎</span><span class="stamp">' + stampFor(ch.year, seed) + '</span></div>'
           : '<span class="photo-stamp">' + stampFor(ch.year, seed) + '</span>') +
-        '  <div class="missing hidden">placeholder · add <b>' + esc(mem.src) + '</b></div>' +
+        '  <div class="missing hidden">waiting for <b>' + esc(mem.src) + '</b></div>' +
         '</div>' +
-        (mem.type === 'video' ? '<div class="mem-controls"><button class="ctl" id="memPlay">||</button><div class="seek"><i id="memSeek"></i></div><button class="ctl" id="memReplay">&lt;&lt;</button></div>' : '');
+        (mem.type === 'video' ? '<div class="mem-controls"><button class="ctl" id="memPlay">❚❚</button><div class="seek"><i id="memSeek"></i></div><button class="ctl" id="memReplay">↺</button></div>' : '');
     } else {
-      frame = '<div class="paper ' + (mem.type === 'letter' ? 'letter' : '') + '"><p id="memTyped"></p></div>';
+      frame = '<div class="paper ' + (mem.type === 'letter' ? 'letter' : '') + '"><p id="memText"></p></div>';
     }
+    // the title bar just says what kind of window it is: the file name would only distract from the caption
+    const kind = mem.type === 'video' ? 'Memory Player' : mem.type === 'photo' ? 'Photo Viewer' : mem.type === 'letter' ? 'Mail' : 'Notepad';
     modal.innerHTML =
       '<div class="backdrop fade-in">' +
       '  <div class="win mem-win pop-in" style="--accent:' + ch.accent + '">' +
-      '    <div class="titlebar"><span>' + (mem.type === 'video' ? 'MEMORY PLAYER 2000' : mem.type === 'photo' ? 'PHOTO VIEWER' : 'NOTEPAD') + ' : ' + esc(fileName) + '</span><button class="tb-close" id="memClose">x</button></div>' +
+      '    <div class="titlebar"><span>' + kind + '</span><button class="tb-close" id="memClose" aria-label="Close">✕</button></div>' +
       '    <div class="mem-body">' + frame +
       (isMedia ? '<div class="mem-caption">' + esc(mem.caption || '') + '</div>' : '') +
       '    </div>' +
@@ -253,52 +282,42 @@ const UI = (() => {
     if (mem.type === 'video') {
       modal.querySelector('.mem-frame').addEventListener('click', e => { e.stopPropagation(); togglePlay(); });
     }
-    if (!isMedia) { typeText(modal.querySelector('#memTyped'), mem.caption || ''); Sound.page(); return; }
+    if (!isMedia) { modal.querySelector('#memText').textContent = mem.caption || ''; Sound.page(); return; }
 
     const host = modal.querySelector('.mem-media');
-    const showPlaceholder = () => {
-      if (!live()) return;
-      host.innerHTML = '';
-      if (DEV) modal.querySelector('.missing').classList.remove('hidden');
-      opts.mountPlaceholder(host, mem);
-      if (mem.type === 'video') fakePlayback();
-    };
-    const PX = typeof MEDIA_PIXEL === 'number' ? MEDIA_PIXEL : 0;
     const frameEl = modal.querySelector('.mem-frame');
+    // no photo / video yet: the frame stays empty (the caption still shows)
+    const showEmpty = () => {
+      if (!live()) return;
+      host.innerHTML = svg(mem.type === 'video' ? 'film' : 'camera', 64, ' class="mem-empty"');
+      if (DEV) modal.querySelector('.missing').classList.remove('hidden');
+      const c = modal.querySelector('.mem-controls'); if (c) c.style.visibility = 'hidden';
+    };
     // photos and stills keep their own shape (portrait photos get a tall frame, nothing is cropped)
     const fitFrame = (ratio, inset) => {
-      const a = Math.min(1.9, Math.max(0.6, ratio)), MW = 576, MH = 420;
+      const a = Math.min(1.9, Math.max(0.6, ratio)), MW = 600, MH = 440;
       const w = a >= MW / MH ? MW : Math.round(MH * a), h = a >= MW / MH ? Math.round(MW / a) : MH;
       frameEl.style.width = (w + inset) + 'px'; frameEl.style.height = (h + inset) + 'px';
     };
-    // canvas for real footage: full resolution for the screen it's on (the stage may be scaled up)
+    // canvas for the still-photo zoom: full resolution for the screen it's on (the stage may be scaled up)
     const photoCanvas = () => {
       const s = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s')) || 1;
-      const k = PX > 0 ? PX : 1 / Math.min(3, s * (window.devicePixelRatio || 1));
+      const k = 1 / Math.min(3, s * (window.devicePixelRatio || 1));
       const cv = document.createElement('canvas');
       cv.width = Math.max(1, Math.round(host.clientWidth / k)); cv.height = Math.max(1, Math.round(host.clientHeight / k));
-      cv.className = PX > 0 ? 'pixel-canvas' : 'photo-canvas';
+      cv.className = 'photo-canvas';
       return cv;
-    };
-    // the stand-in illustrations are pixel art on purpose, always 3 screen px per pixel
-    const artCanvas = () => { const cv = document.createElement('canvas'); cv.width = Math.round(host.clientWidth / 3); cv.height = Math.round(host.clientHeight / 3); cv.className = 'pixel-canvas'; return cv; };
-    const showArt = () => {
-      if (!live()) return;
-      host.innerHTML = '';
-      const cv = artCanvas(), art = MEMORY_ART[mem.art](cv.width, cv.height);
-      const c2 = cv.getContext('2d'); c2.imageSmoothingEnabled = false; c2.drawImage(art.toCanvas(1), 0, 0);
-      host.appendChild(cv);
     };
     const showStill = () => {          // the video isn't in yet, but there's a photo: a slow camcorder zoom towards the subject
       const img = new Image();
-      img.onerror = showPlaceholder;
+      img.onerror = showEmpty;
       img.onload = () => {
         if (!live()) return;
         host.innerHTML = '';
         const sw = img.naturalWidth, sh = img.naturalHeight;
-        fitFrame(sw / sh, 0); frameEl.classList.add('real');
+        fitFrame(sw / sh, 0);
         const cv = photoCanvas(), ctx = cv.getContext('2d'); host.appendChild(cv);
-        ctx.imageSmoothingEnabled = PX === 0; ctx.imageSmoothingQuality = 'high';
+        ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
         const st = memState, dur = 8000, f = mem.focus || [0.5, 0.5];
         fakePlayback(dur);
         const loop = () => {
@@ -315,8 +334,6 @@ const UI = (() => {
       };
       img.src = mem.still;
     };
-    const pixCanvas = photoCanvas;
-    const cover = (ctx, src, sw, sh, cv) => { const k = Math.max(cv.width / sw, cv.height / sh), w = cv.width / k, h = cv.height / k; ctx.drawImage(src, (sw - w) / 2, (sh - h) / 2, w, h, 0, 0, cv.width, cv.height); };
     if (mem.type === 'photo') {
       const img = new Image();
       img.alt = mem.caption || '';
@@ -324,27 +341,19 @@ const UI = (() => {
         if (!live()) return;
         host.innerHTML = '';
         fitFrame(img.naturalWidth / img.naturalHeight, 24);
-        if (PX > 0) { const cv = pixCanvas(); cover(cv.getContext('2d'), img, img.naturalWidth, img.naturalHeight, cv); host.appendChild(cv); }
-        else host.appendChild(img);
+        host.appendChild(img);
       };
-      img.onerror = () => (mem.art && typeof MEMORY_ART !== 'undefined' && MEMORY_ART[mem.art]) ? showArt() : showPlaceholder();
+      img.onerror = showEmpty;
       img.src = mem.src;
     } else {
       const v = document.createElement('video');
       v.playsInline = true; v.preload = 'auto';
-      v.addEventListener('error', () => (mem.still ? showStill() : showPlaceholder()), { once: true });
+      v.addEventListener('error', () => (mem.still ? showStill() : showEmpty()), { once: true });
       v.addEventListener('loadeddata', () => {
         if (!live()) return;
         host.innerHTML = '';
         if (v.videoWidth) fitFrame(v.videoWidth / v.videoHeight, 0);   // portrait phone videos get a tall frame
-        frameEl.classList.add('real');
-        if (PX > 0) {
-          v.className = 'hidden-video'; host.appendChild(v);
-          const cv = pixCanvas(), ctx = cv.getContext('2d'); host.appendChild(cv);
-          const st = memState;
-          const loop = () => { if (memState !== st || !v.isConnected) return; if (v.videoWidth) cover(ctx, v, v.videoWidth, v.videoHeight, cv); requestAnimationFrame(loop); };
-          loop();
-        } else host.appendChild(v);
+        host.appendChild(v);
         const p = v.play(); if (p && p.catch) p.catch(() => setPlayIcon(false));
       });
       v.addEventListener('timeupdate', () => { H.onActivity && H.onActivity(); setSeek(v.duration ? v.currentTime / v.duration : 0); });
@@ -361,9 +370,9 @@ const UI = (() => {
   }
 
   function setSeek(p) { const s = document.getElementById('memSeek'); if (s) s.style.width = Math.round(p * 100) + '%'; }
-  function setPlayIcon(playing) { const b = document.getElementById('memPlay'); if (b) b.textContent = playing ? '||' : '>'; }
+  function setPlayIcon(playing) { const b = document.getElementById('memPlay'); if (b) b.textContent = playing ? '❚❚' : '▶︎'; }
 
-  /* placeholder "playback" for videos that haven't been added yet */
+  /* "playback" timeline for the camcorder zoom over a still photo */
   function fakeTime() {
     const f = memState && memState.fakeT;
     if (!f) return memState && memState.fakeDur ? memState.fakeDur : 0;
@@ -396,7 +405,7 @@ const UI = (() => {
   }
 
   function restart() {
-    if (!memState) return;
+    if (!memState || (!memState.fakeDur && !(memState.video && memState.video.isConnected))) return;
     memState.timers.forEach(clearTimeout); memState.timers = [];
     const v = memState.video;
     if (v && v.isConnected) { v.currentTime = 0; v.play(); return; }
@@ -409,7 +418,6 @@ const UI = (() => {
     const st = memState; memState = null;
     st.timers.forEach(clearTimeout);
     if (st.video) { st.video.pause(); st.video.removeAttribute('src'); st.video.load(); }
-    st.opts.unmountPlaceholder && st.opts.unmountPlaceholder();
     const win = modal.querySelector('.backdrop');
     if (win) { win.classList.add('fade-out'); setTimeout(() => { if (win.isConnected && !win.querySelector('.menu-win')) win.remove(); }, 220); }
     if (!silent && st.opts.onClose) st.opts.onClose();
@@ -420,14 +428,13 @@ const UI = (() => {
   function showComplete(ch, label, onNext) {
     const el = setScreen(
       '<div class="tidy-banner pop-in" style="--accent:' + ch.accent + '">' +
-      '  <div class="tidy-title">' + logoImg(ch.id === 'youngadult' ? 'HOME SWEET HOME' : 'ROOM TIDY!', 6, { bands: bandsFor(ch.accent) }) + '</div>' +
+      '  <div class="big-title">' + (ch.id === 'youngadult' ? 'Home sweet home' : 'Room tidy!') + '</div>' +
       '  <div class="tidy-sub">' + esc(ch.title) + ' · ' + ch.year + ' · complete</div>' +
       '  <button class="aqua" id="nextBtn">' + esc(label) + '</button>' +
       '</div>', 'complete-screen');
     const b = el.querySelector('#nextBtn');
     b.disabled = true; setTimeout(() => { b.disabled = false; }, 900);
     b.addEventListener('click', () => { Sound.click(); onNext(); });
-    hideHint();
   }
 
   /* ---------------- memory box (keep / let go) ---------------- */
@@ -445,14 +452,14 @@ const UI = (() => {
       const fresh = o.candidates.filter(id => !selected.includes(id));
       const goingAway = o.box.filter(id => !selected.includes(id));
       win.innerHTML =
-        '<div class="titlebar"><span>' + icon('floppy', 2) + ' SAVE TO MEMORY BOX (A:)</span><span class="tb-dots"><i>_</i><i>□</i><i>x</i></span></div>' +
+        '<div class="titlebar"><span>' + svg('floppy', 20) + ' Save to memory box (A:)</span></div>' +
         '<div class="keep-body">' +
         '  <p class="keep-lead">Pack a memory box for the next chapter. <b>Teddy always comes.</b> There’s room for ' + o.capacity + ' more things.</p>' +
         '  <div class="keep-row box-row"><div class="tile locked"><img src="' + o.thumb('teddy') + '" alt=""><span>Teddy' + (o.teddyLabel ? '<small>' + esc(o.teddyLabel) + '</small>' : '') + '</span><em>always</em></div>' + slots.join('') + '</div>' +
         '  <div class="keep-label">From this chapter: click to keep</div>' +
         '  <div class="keep-row">' + (fresh.length ? fresh.map(id => tile(id, 'out')).join('') : '<span class="keep-none">nothing left to choose</span>') + '</div>' +
         (goingAway.length ? '<div class="keep-label">Letting go: click to rescue</div><div class="keep-row">' + goingAway.map(id => tile(id, 'out gone', 'let go')).join('') + '</div>' : '') +
-        '  <div class="keep-foot"><span>Things you don’t keep stay in this room’s past.</span><button class="aqua" id="keepDone">Save &amp; continue &gt;</button></div>' +
+        '  <div class="keep-foot"><span>Things you don’t keep stay in this room’s past.</span><button class="aqua" id="keepDone">Save &amp; continue ▶︎</button></div>' +
         '</div>';
       win.querySelectorAll('.tile.in').forEach(b => b.addEventListener('click', () => { Sound.back(); selected.splice(selected.indexOf(b.dataset.id), 1); render(); }));
       win.querySelectorAll('.tile.out').forEach(b => b.addEventListener('click', () => {
@@ -463,40 +470,30 @@ const UI = (() => {
       draggable(win);
     };
     render();
-    showHUD(false); hideHint();
+    showHUD(false);
   }
 
   /* ---------------- thank-you note (after the last box, before the summary) ---------------- */
-  // The lines fade in one by one. A click (or Enter) shows them all at once; the next one moves on.
+  // everything is readable straight away; the lines just settle in quickly one after another
   function showThanks(note, teddyThumb, onNext) {
-    const STEP = 1.7, FIRST = 1.1;
-    const lines = note.lines.map((t, i) => '<p class="tl" style="--d:' + (FIRST + i * STEP).toFixed(1) + 's">' + esc(t) + '</p>').join('');
-    const last = FIRST + note.lines.length * STEP;
+    const lines = note.lines.map((t, i) => '<p class="tl" style="--d:' + (0.15 + i * 0.15).toFixed(2) + 's">' + esc(t) + '</p>').join('');
     const el = setScreen(
       '<div class="holo"></div>' +
       '<div class="win thanks-win pop-in">' +
-      '  <div class="titlebar"><span>NOTEPAD : thank_you.txt</span><span class="tb-dots"><i>_</i><i>□</i><i>x</i></span></div>' +
+      '  <div class="titlebar"><span>Notepad · thank you</span></div>' +
       '  <div class="thanks-body">' +
-      '    <h2 class="tl" style="--d:.3s">' + esc(note.title) + '</h2>' + lines +
-      '    <div class="thanks-foot tl" style="--d:' + last.toFixed(1) + 's">' +
+      '    <h2 class="tl" style="--d:0s">' + esc(note.title) + '</h2>' + lines +
+      '    <div class="thanks-foot tl" style="--d:' + (0.15 + note.lines.length * 0.15).toFixed(2) + 's">' +
       '      <img class="px" src="' + teddyThumb + '" alt="">' +
-      '      <p class="thanks-sign">' + esc(note.sign) + ' <span>♥</span></p>' +
-      '      <button class="aqua" id="thanksNext">What she packed &gt;</button>' +
+      '      <p class="thanks-sign">' + esc(note.sign) + ' <span>♥︎</span></p>' +
+      '      <button class="aqua" id="thanksNext">What she packed ▶︎</button>' +
       '    </div>' +
       '  </div>' +
       '</div>', 'thanks-screen');
     draggable(el.querySelector('.thanks-win'));
-    let shown = false;
-    const showAll = () => { if (!shown) { shown = true; el.classList.add('all'); } };
-    const timer = setTimeout(showAll, (last + 0.8) * 1000);
-    el.addEventListener('click', e => { if (!e.target.closest('#thanksNext')) showAll(); });
-    el.querySelector('#thanksNext').addEventListener('click', e => {
-      e.stopPropagation();
-      if (!shown) { showAll(); return; }
-      clearTimeout(timer); Sound.click(); onNext();
-    });
+    el.querySelector('#thanksNext').addEventListener('click', e => { e.stopPropagation(); Sound.click(); onNext(); });
     Sound.page();
-    showHUD(false); hideHint(); clearToasts();
+    showHUD(false); clearToasts();
   }
 
   /* ---------------- ending ---------------- */
@@ -505,9 +502,9 @@ const UI = (() => {
     const el = setScreen(
       '<div class="holo"></div>' +
       '<div class="win end-win pop-in">' +
-      '  <div class="titlebar"><span>THE_NEXT_CHAPTER.EXE : COMPLETE</span><span class="tb-dots"><i>_</i><i>□</i><i>x</i></span></div>' +
+      '  <div class="titlebar"><span>The Next Chapter · complete</span></div>' +
       '  <div class="end-body">' +
-      '    <div class="logo"><img class="brand-logo" src="assets/brand/logo-liner.png" alt="The Next Chapter" style="width:340px;height:62px"></div>' +
+      '    <div class="logo"><img class="brand-logo" src="assets/brand/logo-liner.svg" alt="The Next Chapter" style="width:400px;height:72px"></div>' +
       '    <p class="end-lead">She packed Teddy last. She always does.</p>' +
       '    <div class="end-cols">' +
       '      <div><div class="keep-label">Packed for uni</div><div class="keep-row">' + tiles(s.packed) + '</div></div>' +
@@ -516,12 +513,12 @@ const UI = (() => {
       (s.teddy ? '    <div class="teddy-row"><div class="keep-label">Teddy through<br>the years</div><div class="teddy-years">' + s.teddy.map(t => '<div class="ty"><img class="px" src="' + t.thumb + '" alt="" title="' + esc(t.label) + '"><span>' + t.year + '</span></div>').join('<i>›</i>') + '</div></div>' : '') +
       '    <p class="end-stat">memories found: ' + s.memSeen + ' / ' + s.memTotal + '</p>' +
       '    <div class="credits">' + s.credits.map(c => '<span><b>' + esc(c[0]) + '</b> · ' + esc(c[1]) + '</span>').join('') + '</div>' +
-      '    <button class="aqua big" id="replayBtn">&lt;&lt; Play again</button>' +
+      '    <button class="aqua big" id="replayBtn">↺ Play again</button>' +
       '  </div>' +
       '</div>', 'end-screen');
     draggable(el.querySelector('.end-win'));
     el.querySelector('#replayBtn').addEventListener('click', () => { Sound.click(); onReplay(); });
-    showHUD(false); hideHint(); clearToasts();
+    showHUD(false); clearToasts();
   }
 
   /* ---------------- pause menu ---------------- */
@@ -529,14 +526,13 @@ const UI = (() => {
     modal.innerHTML =
       '<div class="backdrop fade-in">' +
       '  <div class="win menu-win pop-in">' +
-      '    <div class="titlebar"><span>MENU</span><button class="tb-close" data-a="resume">x</button></div>' +
+      '    <div class="titlebar"><span>Menu</span><button class="tb-close" data-a="resume" aria-label="Close">✕</button></div>' +
       '    <div class="menu-body">' +
-      '      <button class="aqua" data-a="resume">&gt; Keep playing</button>' +
+      '      <button class="aqua" data-a="resume">▶︎ Keep playing</button>' +
       '      <button class="aqua alt" data-a="restart">Restart chapter</button>' +
       '      <button class="aqua alt" data-a="title">Chapter select</button>' +
       '      <button class="aqua alt" data-a="sound">' + (Sound.isMuted() ? 'Sound: off' : 'Sound: on') + '</button>' +
-      '      <button class="aqua alt" data-a="fullscreen">Fullscreen</button>' +
-      '      <p class="small">keys: Esc menu · M sound · F fullscreen</p>' +
+      '      <p class="small">keys: Esc menu · M sound</p>' +
       '    </div>' +
       '  </div>' +
       '</div>';
@@ -547,7 +543,7 @@ const UI = (() => {
   function hideMenu() { if (!memState) modal.innerHTML = ''; }
 
   return {
-    init, showTitle, showIntro, showHUD, setHUD, hint, hideHint, toast, clearToasts,
+    init, showTitle, showIntro, showHUD, setHUD, setHelper, hint, hideHint, toast, clearToasts,
     openMemory, closeMemory, memoryOpen, showComplete, showKeep, showThanks, showEnding, showMenu, hideMenu,
     clearScreen: () => setScreen(''), refreshMute
   };

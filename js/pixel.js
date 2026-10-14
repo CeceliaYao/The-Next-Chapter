@@ -3,6 +3,8 @@
    Everything is drawn into crisp pixel buffers (no blur,
    no anti-aliasing) and then scaled up by whole numbers.
    1 art pixel = 4 screen pixels in the 1280 x 720 world.
+   Only the room and its things are pixel art; the words
+   and windows around it use normal fonts and CSS.
    ========================================================= */
 'use strict';
 
@@ -141,127 +143,16 @@ class PixBuf {
   }
 }
 
-/* ---------- pixel text (thresholded pixel fonts, cached) ---------- */
-const _textCache = {};
-function pixText(str, col, opts) {
-  opts = opts || {};
-  const size = opts.size || 8, font = opts.font || 'Silkscreen', weight = opts.weight || 400;
-  const key = [str, col, size, font, weight, opts.outline || '', opts.shadow || ''].join('|');
-  if (_textCache[key]) return _textCache[key];
-  const meas = document.createElement('canvas').getContext('2d');
-  meas.font = weight + ' ' + size + 'px "' + font + '"';
-  const tw = Math.ceil(meas.measureText(str).width) + 4, th = Math.ceil(size * 1.4) + 4;
-  const cv = document.createElement('canvas'); cv.width = tw; cv.height = th;
-  const ctx = cv.getContext('2d');
-  ctx.font = meas.font; ctx.textBaseline = 'top'; ctx.fillStyle = '#000';
-  ctx.fillText(str, 2, 2);
-  const data = ctx.getImageData(0, 0, tw, th).data;
-  const buf = new PixBuf(tw, th, 2);
-  for (let y = 0; y < th; y++) for (let x = 0; x < tw; x++) if (data[(y * tw + x) * 4 + 3] >= 120) buf.px(x, y, col);
-  if (opts.outline) buf.outline(opts.outline);
-  if (opts.shadow) {
-    const sh = buf.clone();
-    for (let y = buf.H - 1; y >= 0; y--) for (let x = buf.W - 1; x >= 0; x--) {
-      const i = y * buf.W + x;
-      if (!buf.d[i] && x > 0 && y > 0 && buf.d[(y - 1) * buf.W + x - 1]) sh.d[i] = opts.shadow;
-    }
-    buf.d = sh.d;
-  }
-  const out = trimCanvas(buf.toCanvas(1));
-  return (_textCache[key] = out);
-}
-
-function trimCanvas(cv) {
-  const ctx = cv.getContext('2d'), d = ctx.getImageData(0, 0, cv.width, cv.height).data;
-  let x0 = cv.width, y0 = cv.height, x1 = -1, y1 = -1;
-  for (let y = 0; y < cv.height; y++) for (let x = 0; x < cv.width; x++) if (d[(y * cv.width + x) * 4 + 3]) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
-  if (x1 < 0) return cv;
-  const out = document.createElement('canvas'); out.width = x1 - x0 + 1; out.height = y1 - y0 + 1;
-  out.getContext('2d').drawImage(cv, -x0, -y0);
-  return out;
-}
-
-/* ---------- Y2K pixel logo: chrome-pink bands, ink outline, hard shadow, sparkles ---------- */
-function pixLogo(str, opts) {
-  opts = opts || {};
-  const size = opts.size || 16, font = opts.font || 'Pixelify Sans';
-  const bands = opts.bands || ['#ffffff', '#ffe3f4', '#ffb6e1', '#ff7ec8', '#ff5fb4', '#c7a8ff', '#ffe9f7', '#ffffff'];
-  const meas = document.createElement('canvas').getContext('2d');
-  meas.font = '700 ' + size + 'px "' + font + '"';
-  const tw = Math.ceil(meas.measureText(str).width) + 4, th = Math.ceil(size * 1.3) + 4;
-  const cv = document.createElement('canvas'); cv.width = tw; cv.height = th;
-  const ctx = cv.getContext('2d'); ctx.font = meas.font; ctx.textBaseline = 'top'; ctx.fillText(str, 2, 2);
-  const data = ctx.getImageData(0, 0, tw, th).data;
-  let top = th, bot = 0;
-  for (let y = 0; y < th; y++) for (let x = 0; x < tw; x++) if (data[(y * tw + x) * 4 + 3] >= 120) { top = Math.min(top, y); bot = Math.max(bot, y); }
-  const buf = new PixBuf(tw, th, 4);
-  for (let y = 0; y < th; y++) for (let x = 0; x < tw; x++) {
-    if (data[(y * tw + x) * 4 + 3] < 120) continue;
-    const k = Math.min(bands.length - 1, Math.floor((y - top) / Math.max(1, bot - top + 1) * bands.length));
-    buf.px(x, y, bands[k]);
-  }
-  buf.outline('o');
-  // hard drop shadow 2px down-right
-  const shadow = opts.shadow || '#221a13', src = buf.d.slice();   // ink, like the 3D edge on the team logo
-  for (let y = buf.H - 1; y >= 0; y--) for (let x = buf.W - 1; x >= 0; x--) {
-    const i = y * buf.W + x;
-    if (src[i]) continue;
-    const a = y > 1 && x > 1 && src[(y - 2) * buf.W + x - 2], b = y > 0 && x > 0 && src[(y - 1) * buf.W + x - 1];
-    if (a || b) buf.d[i] = shadow;
-  }
-  if (opts.sparkles !== false) {
-    const st = (x, y) => { buf.px(x, y, 'w'); buf.px(x - 1, y, 'w'); buf.px(x + 1, y, 'w'); buf.px(x, y - 1, 'w'); buf.px(x, y + 1, 'w'); };
-    st(tw - 3, 1); st(1, th - 4);
-  }
-  return trimCanvas(buf.toCanvas(1));
-}
-
-/* ---------- small icons (cursor, hearts, sparkles, discs...) ---------- */
+/* ---------- the little heart drawn over carried things ---------- */
 const ICONS = {
-  cursor: [
-    'o...........', 'oo..........', 'owo.........', 'owwo........', 'owwwo.......', 'owwwwo......', 'owwwwwo.....', 'owwwwwwo....',
-    'owwwwwwwo...', 'owwwwwwwwo..', 'owwwwwoooo..', 'owwowwo.....', 'owo.owwo....', 'oo..owwo....', 'o....owwo...', '.....oooo...'
-  ],
-  hand: [
-    '....oo......', '...owwo.....', '...owwo.....', '...owwo.....', '...owwooo...', '...owwowwoo.', '.oooww wwowo', 'owwowwwwwwwo',
-    'owwwwwwwwwwo', '.owwwwwwwwwo', '.owwwwwwwwo.', '..owwwwwwwo.', '..owwwwwwo..', '...owwwwwo..', '...oooooo...'
-  ],
-  grab: [
-    '............', '............', '....oooooo..', '...owwowwoo.', '..owwowwowwo', '.oowwwwwwwwo', 'owwowwwwwwwo', 'owwwwwwwwwwo',
-    '.owwwwwwwwwo', '.owwwwwwwwo.', '..owwwwwwwo.', '..owwwwwwo..', '...owwwwwo..', '...oooooo...'
-  ],
-  heart: ['.hh.hh.', 'hwhhhhh', 'hhhhhhh', 'hhhhhhh', '.hhhhh.', '..hhh..', '...h...'],
-  smiley: ['..YYYY..', '.YYYYYY.', 'YYoYYoYY', 'YYYYYYYY', 'YoYYYYoY', 'YYooooYY', '.YYYYYY.', '..YYYY..'],
-  star: ['...w...', '...w...', '..wyw..', 'wwyYyww', '..wyw..', '...w...', '...w...'],
-  sparkle: ['..w..', '..w..', 'wwhww', '..w..', '..w..'],
-  floppy: ['NNNNNNNNNN', 'NNwwwwwwgN', 'NNwwwwwwNN', 'NNNNNNNNNN', 'NNNNNNNNNN', 'NNgggggNNN', 'NNgggoggNN', 'NNgggoggNN', 'NNgggggNNN', 'NNNNNNNNNN']
+  heart: ['.hh.hh.', 'hwhhhhh', 'hhhhhhh', 'hhhhhhh', '.hhhhh.', '..hhh..', '...h...']
 };
 
 function iconBuf(name) {
-  const rows = ICONS[name].map(r => r.replace(/ /g, 'w'));
-  const b = new PixBuf(rows[0].length, rows.length, 1);
-  b.grid(0, 0, rows);
-  if (!['cursor', 'hand', 'grab'].includes(name)) b.outline('o');
-  return b;
-}
-function iconURL(name, scale) { return iconBuf(name).toCanvas(scale || 4).toDataURL(); }
-
-/* pixel CD for the chapter-select discs */
-function discURL(accent, scale) {
-  const b = new PixBuf(22, 22, 1);
-  b.ell(11, 11, 11, 11, 'g');
-  const band = [accent, 'w', 'b', 'p', 'y', accent];
-  for (let y = 0; y < 22; y++) for (let x = 0; x < 22; x++) {
-    if (!b.get(x, y)) continue;
-    const ang = Math.atan2(y + 0.5 - 11, x + 0.5 - 11);
-    const k = Math.floor(((ang + Math.PI) / (Math.PI * 2)) * 12) % band.length;
-    if ((x + y) % 2 === 0 || k % 2 === 0) b.px(x, y, band[k]);
-  }
-  b.ell(11, 11, 4, 4, 'w'); b.ell(11, 11, 2, 2, null);
-  b.ring(11, 11, 4, 4, 'G');
-  b.px(5, 5, 'w'); b.px(6, 4, 'w'); b.px(4, 6, 'w');
+  const b = new PixBuf(ICONS[name][0].length, ICONS[name].length, 1);
+  b.grid(0, 0, ICONS[name]);
   b.outline('o');
-  return b.toCanvas(scale || 4).toDataURL();
+  return b;
 }
 
 /* ---------- 3x5 mini font for tiny in-room labels ---------- */
@@ -289,19 +180,4 @@ function miniText(buf, x, y, str, col) {
     const g = MINI[ch] || MINI['?'];
     g.forEach((row, j) => { for (let i = 0; i < 3; i++) if (row[i] === '#') buf.px(x + k * 4 + i, y + j, col); });
   });
-}
-/* draw mini text straight onto a 2d context (art layer) */
-function miniTextCtx(ctx, x, y, str, col) {
-  ctx.fillStyle = col.length === 1 ? PALETTE[col] : col;
-  [...String(str).toUpperCase()].forEach((ch, k) => {
-    const g = MINI[ch] || MINI['?'];
-    g.forEach((row, j) => { for (let i = 0; i < 3; i++) if (row[i] === '#') ctx.fillRect(x + k * 4 + i, y + j, 1, 1); });
-  });
-}
-
-const _logoCache = {};
-function logoURL(text, opts) {
-  const key = text + JSON.stringify(opts || {});
-  if (!_logoCache[key]) { const cv = pixLogo(text, opts); _logoCache[key] = { url: cv.toDataURL(), w: cv.width, h: cv.height }; }
-  return _logoCache[key];
 }

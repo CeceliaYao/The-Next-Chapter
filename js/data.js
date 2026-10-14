@@ -9,7 +9,6 @@
 
 const MEMORY_BOX_SIZE = 3;          // how many things (besides Teddy) carry over between chapters
 const IDLE_RESET_MS = 150000;       // exhibition: return to title after 2.5 min of no input
-const MEDIA_PIXEL = 0;              // 0 = photos & videos are shown exactly as shot. Set to 3 for a chunky pixel filter
 
 // The note the player reads after the last box is packed, before the summary.
 const ENDING_NOTE = {
@@ -146,7 +145,7 @@ const CHAPTERS = [
   {
     id: 'nursery', kicker: 'Chapter 1', title: 'The Nursery', year: 2000, accent: '#ffc700',
     intro: 'A room painted the colour of butter. Someone very small is about to move in.',
-    tip: 'Drag each thing from the box into the room. Blue pixel dashes show where it can go.',
+    tip: 'Drag each thing from the box into the room. Blue dotted lines show where it can go.',
     bg: bgNursery, layout: L_NURSERY,
     surfaces: [
       { id: 'cot', tag: 'bed', type: 'line', x1: 210, x2: 462, y: 370 },
@@ -268,7 +267,7 @@ const CHAPTERS = [
       { id: 'te-homework', items: ['homework1', 'homework2'], type: 'photo', src: 'assets/photos/04-teen-homework.jpg', caption: '“this is my life now.”' },
       { id: 'te-clothes', items: [], type: 'video', src: 'assets/video/04-teen-clothes-pile.mp4', caption: 'One more on the pile… “CLEAN. YOUR. ROOM.”' },
       { id: 'te-heels', items: ['heels'], type: 'photo', src: 'assets/photos/04-teen-high-heels.jpg', caption: '“stole these from mum”' },
-      { id: 'te-posters', items: ['posterband', 'postermovie'], type: 'photo', src: 'assets/photos/04-teen-posters.jpg', art: 'posters', caption: 'Walls = personality.' },
+      { id: 'te-posters', items: ['posterband', 'postermovie'], type: 'photo', src: 'assets/photos/04-teen-posters.jpg', caption: 'Walls = personality.' },
       { id: 'te-trophy', items: ['trophy', 'medal', 'award'], type: 'photo', src: 'assets/photos/04-teen-trophies.jpg', caption: 'Solo dance: 2nd, 2nd… then 1st! (Still learning to brake.)' }
     ],
     onStart: [{ do: 'wait', ms: 1500 }, { do: 'toast', from: 'Mum', text: 'This room is a DISASTER. Clean it before dinner!!', nudge: true }],

@@ -904,6 +904,7 @@ function bubble(x, y, c, ch) { G.marks.push({ x, y, c, ch }); }   // drawn later
 // a round Y2K "gel" badge: colour gradient, plum rim, white shine on the top half
 function drawMarks(ctx) {
   G.marks.forEach(m => {
+    if (m.ch === 'spark' || m.ch === 'spark-seen') return drawMemorySpark(ctx, (m.x + 0.5) * ART, (m.y + 0.5) * ART, m.ch === 'spark');
     const x = (m.x + 0.5) * ART, y = (m.y + 0.5) * ART, r = 15, col = PALETTE[m.c];
     ctx.save();
     ctx.shadowColor = 'rgba(61,44,74,.3)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
@@ -922,6 +923,20 @@ function drawMarks(ctx) {
     else { ctx.beginPath(); ctx.moveTo(x - 3, y - 6); ctx.lineTo(x + 5, y); ctx.lineTo(x - 3, y + 6); ctx.closePath(); ctx.fillStyle = PALETTE.o; ctx.fill(); }
   });
   G.marks = [];
+}
+
+// the twinkle on a thing that holds a memory: a pink-and-white four-point star with a small one beside it
+function drawMemorySpark(ctx, x, y, unseen) {
+  const t = G.time / 1000, a = unseen ? 0.5 + 0.5 * Math.sin(t * 4) : 0.6;
+  const r = unseen ? 13 + a * 5 : 12;
+  ctx.save();
+  ctx.shadowColor = 'rgba(245,163,210,.95)'; ctx.shadowBlur = 12;
+  ctx.fillStyle = '#f5a3d2'; sparkle(ctx, x, y, r + 3);
+  ctx.shadowBlur = 0; ctx.fillStyle = '#ffffff'; sparkle(ctx, x, y, r - 2);
+  ctx.globalAlpha = unseen ? 1 - a * 0.6 : 0.8;
+  ctx.fillStyle = '#ffffff'; ctx.shadowColor = 'rgba(245,163,210,.9)'; ctx.shadowBlur = 6;
+  sparkle(ctx, x - 14, y + 11, 5 + (1 - a) * 3);
+  ctx.restore();
 }
 
 /* ---------- the room's Y2K finish: smooth light and gloss over the pixel drawing ---------- */
@@ -1059,6 +1074,9 @@ function drawTray() {
 function drawTrayGloss(ctx) {
   if (G.ch.moving) return;
   const x = 5 * ART, y = 145 * ART, w = 310 * ART, h = 16 * ART;
+  ctx.fillStyle = 'rgba(61,44,74,.07)';   // a faint grid, like the reference's panels
+  for (let gx = x + 18; gx < x + w; gx += 22) ctx.fillRect(gx, y, 1, 31 * ART);
+  for (let gy = y + 14; gy < y + 31 * ART; gy += 22) ctx.fillRect(x, gy, w, 1);
   const g = ctx.createLinearGradient(0, y, 0, y + h);
   g.addColorStop(0, 'rgba(255,255,255,.5)'); g.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
@@ -1118,7 +1136,7 @@ function drawMarkers() {
     const unseen = !G.seen.has(mem.id);
     if (!unseen && G.hover !== it) return;
     const [ax, ay] = artPos(it), S = SPR[it.id];
-    bubble(ax + S.w - 2, ay - 5 + (unseen ? Math.floor(G.time / 300) % 2 : 0), unseen ? '3' : 'w', unseen ? '!' : '>');
+    G.marks.push({ x: ax + S.w - 2, y: ay - 3, ch: unseen ? 'spark' : 'spark-seen' });   // a memory twinkles (the "!" is kept for messes)
   });
 }
 

@@ -9,7 +9,7 @@ The visitor tends one bedroom across six chapters of a suburban girl's life, fro
 **▶ Play it online:** https://ceceliayao.github.io/The-Next-Chapter/
 
 > Built with [p5.js](https://p5js.org/), plain HTML/CSS and Web Audio. No install, no internet needed.
-> The look is the early-2000s web game: square windows with navy title bars (Windows 98 as a reference, kept light), buttons that change colour on hover, messenger pop-ups. Only the room and its things are pixel drawings (320 × 180 pixels, scaled up 4× with no blur); every word uses normal, readable fonts.
+> The look is the early-2000s web game: soft pastel colour-block windows with plum outlines, candy gel buttons that change colour on hover, messenger pop-ups (Windows 98 / XP only as a loose reference). Only the room and its things are pixel drawings (320 × 180 pixels, scaled up 4× with no blur); every word uses normal, readable fonts.
 > The page is **4:3** (1280 × 960, scaled to fit). On a wide screen it sits in the middle with black either side, so the eye stays on the game.
 
 ---
@@ -105,16 +105,19 @@ Until a file exists, its frame simply stays empty (the caption still shows). The
 
 The look follows Chloee's **TNC Identity Guideline** and moodboard, and keeps **the room and the frame apart**:
 
-- **Inside the room**: colours and style from the moodboard (its swatches, the Cyworld / My Scene rooms) and a pastel pixel-room reference: soft striped wallpaper and pastel plaid carpets for the younger rooms (lemon + baby blue, pink with a pink / periwinkle / peach / sky plaid, lilac + sky), the teen teal on wood, and pale blue on honey wood for the older rooms.
-- **Outside the room (the frame)**: an early-2000s web game window, with Windows 98 only as a reference: square windows with a black outline, navy title bars and a hint of a bevel, kept light and clean. Windows can be dragged around (like Teleport), and buttons change colour on hover (like Yrs Truly). Only the guideline's colours are used here:
+- **Inside the room**: colours and style from the moodboard (its swatches, the Cyworld / My Scene rooms) and a pastel pixel-room reference: soft two-tone striped wallpaper, a wallpaper border under the ceiling, panelling below a white rail, and pastel plaid carpets for the younger rooms (lemon + baby blue, pink + lilac, lilac + mint); the teen teal on wood; pale blue with white panelling on honey wood for the older rooms. Outlines are a soft plum instead of black, with smooth light, gloss and sparkles on top. Messes show an orange "!" badge; things that hold a memory twinkle.
+- **Outside the room (the frame)**: a Y2K web-game window built from soft colour blocks (after the pastel pixel-room reference's panel, with Windows 98 / XP only as a loose reference): plum outlines, each window with its own pastel title bar and three little colour chips, candy "gel" buttons, nested boxes and a faint grid. Windows can be dragged around (like Teleport), and buttons change colour on hover (like Yrs Truly).
 
-| Colour | Hex | Used for |
+| Colour block | Light / deep | Used for |
 | --- | --- | --- |
-| Black | `#211a14` | outlines, text |
-| White | `#f2f2ed` | the page, window faces |
-| Orange | `#f09000` | main buttons (black text) |
-| Amber | `#ffc700` | the LCD year, Memories, Mum's messages, hover colour |
-| Navy | `#2c2c5b` | title bars (white text), progress blocks, labels |
+| Plum | `#3d2c4a` | outlines and text (the same ink as the room's outlines) |
+| Lilac | `#eadcfd` / `#c7a3f3` | the game window, menu, chapter cards, secondary buttons |
+| Butter | `#fff1b8` / `#ffd24d` | Teddy's tips, the thank-you note, the memory box |
+| Pink | `#ffdcef` / `#f5a3d2` | the start window, memory viewer, Mum's messages, Memories, hover |
+| Sky | `#d8edff` / `#96c9f2` | little bro's messages, saving the memory box, hover on lilac buttons |
+| Mint | `#ddf5cd` / `#a2d98a` | "Room tidy!" |
+| Peach | `#ffe2c9` / `#ffb27a` | progress blocks, packed tags |
+| Orange / Amber | `#f09000` / `#ffc700` | vivid points from the guideline: main buttons, the LCD year |
 
 The start page keeps its soft pastel background with stars, hearts and bubbles floating up.
 
@@ -138,7 +141,7 @@ To try other fonts, change `--font-body` and `--font-ui` at the top of `style.cs
 
 ```
 index.html        page shell: top bar, game screen, Teddy's tips + messages
-style.css         the early-2000s frame (4:3 page, square windows, navy title bars, messenger pop-ups)
+style.css         the Y2K frame (4:3 page, colour-block windows, gel buttons, messenger pop-ups)
 js/data.js        ← edit me: chapters, objects, where things go, captions, file names, Teddy's ages
 js/pixel.js       the pixel engine: palette, crisp shapes, outlines, dithering
 js/sprites.js     every object as pixel art (grids of palette letters, or pixel shapes)

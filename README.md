@@ -9,7 +9,7 @@ The visitor tends one bedroom across six chapters of a suburban girl's life, fro
 **▶ Play it online:** https://ceceliayao.github.io/The-Next-Chapter/
 
 > Built with [p5.js](https://p5js.org/), plain HTML/CSS and Web Audio. No install, no internet needed.
-> The look is the early-2000s web: glossy buttons, rounded windows, messenger pop-ups. Only the room and its things are pixel drawings (320 × 180 pixels, scaled up 4× with no blur); every word uses normal, readable fonts.
+> The look is the early-2000s web, following Chloee's identity guideline: navy Windows-style title bars, glossy buttons with the logo's black outline, messenger pop-ups. Only the room and its things are pixel drawings (320 × 180 pixels, scaled up 4× with no blur); every word uses normal, readable fonts.
 > The page is **4:3** (1280 × 960, scaled to fit). On a wide screen it sits in the middle with black either side, so the eye stays on the game.
 
 ---
@@ -35,7 +35,7 @@ npx serve .        # then open the printed localhost address
 | Action | How |
 | --- | --- |
 | Move things | Click and drag |
-| Move a window | Drag it by its coloured title bar |
+| Move a window | Drag it by its navy title bar |
 | Replay a memory | Click a placed object that shows a ! badge (or hover it: “click to replay”) |
 | Menu (restart chapter, chapter select) | **Esc** or the Menu button |
 | Sound on/off | **M** or the speaker button (it shows a crossed-out speaker when the sound is off) |
@@ -103,19 +103,21 @@ Until a file exists, its frame simply stays empty (the caption still shows). The
 
 ## Brand
 
-The look follows the team's identity board and our colour decision: **orange (two shades) + off-white as the base**, with black and white, and **pink and blue as the cooler accents**. The rooms are warm and muted (like *Unpacking*) and shift colour from stage to stage; the interface is an early-2000s desktop (glossy Windows XP / Frutiger Aero buttons and title bars, MSN-style messages, iridescent CD chapter discs) where the windows can be dragged around.
+The look follows Chloee's **TNC Identity Guideline** (2026): early-internet nostalgia seen with modern design eyes. Keywords: *Nostalgic Digital, Y2K Web Retro, My Scene, Windows 98/XP, Frutiger Aero*. The rooms are warm and muted (like *Unpacking*) and shift colour from stage to stage; around them the interface is an early-2000s desktop: navy Windows-style title bars, glossy gel buttons, a dotted homepage background, buddy-list message pop-ups, iridescent CD chapter discs and little web badges. Windows can be dragged around. Everything has the logo's **black outline and hard offset shadow**, and the brand's **play icon** (the favicon) is the app icon in every title bar and on the Start button. Even the mouse arrow is the blue play triangle.
+
+**Primary colours** carry the interface:
 
 | Colour | Hex | Used for |
 | --- | --- | --- |
-| Orange | `#ff5400` | title bars, main buttons, counters (base) |
-| Light orange | `#ff8f3a` | title bar shine, glossy buttons (base) |
-| Off-white | `#fff6ea` | windows, HUD, background (base) |
-| Ink | `#221a13` | outlines, text |
-| Blue | `#00b5ff` | accent: drop guides, second buttons, messages |
-| Pink | `#ff84e4` | accent: hearts, Mum's messages |
-| Yellow / Lime | `#ffc700` / `#8de328` | the logo, chapter titles, UPKEEP meter |
+| Black | `#211a14` | text, outlines, offset shadows, the page around the game |
+| White | `#f2f2ed` | windows, panels, the page background |
+| Orange | `#f09000` | main buttons (with black text) |
+| Amber | `#ffc700` | the LCD year, Mum's messages, memory badges, "!" markers |
+| Navy | `#2c2c5b` | title bars and the top bar (with white text), labels |
 
-The logo files in `assets/brand/` are Chloee's original vector artwork (SVG: sharp at any size and small to load; no pixels, no drop shadow): `logo-main.svg` on the title screen, `logo-stacked.svg` on the door, `logo-liner.svg` on the ending. To use a new logo, replace those files and keep the same names.
+**Web accents** (blue `#00b5ff`, vermilion `#ff5400`, pink `#ff84e4`, green `#8de328`, lemon `#f6e680`) are only used for graphics: hearts, stars, sparkles, CDs, the progress bar, chapter titles drawn like the logo's letters. Following the guideline's do's and don'ts, they are **never a background**, and text always keeps a contrast of **7:1** (small text) or **4.5:1** (large text): black on white, orange or amber; white on navy or black; amber on black.
+
+The logo files in `assets/brand/` are Chloee's original vector artwork (SVG: sharp at any size and small to load; no pixels, no drop shadow): `logo-main.svg` on the title screen, `logo-stacked.svg` on the door, `logo-liner.svg` on the ending, `favicon.svg` (the play icon) in the browser tab and title bars. As the guideline asks, every logo is at least 95 px tall and keeps a clear space of half its height around it. To use a new logo, replace those files and keep the same names.
 
 **Fonts** (all free for any use, including portfolios: SIL Open Font License, licence files in `fonts/`):
 
@@ -135,7 +137,7 @@ To try other fonts, change `--font-body` and `--font-ui` at the top of `style.cs
 
 ```
 index.html        page shell: top bar, game screen, Teddy's tips + messages
-style.css         the early-2000s skin (4:3 page, glossy buttons, rounded windows, messenger pop-ups)
+style.css         the early-2000s skin in the guideline's colours (4:3 page, title bars, buttons, messenger pop-ups)
 js/data.js        ← edit me: chapters, objects, where things go, captions, file names, Teddy's ages
 js/pixel.js       the pixel engine: palette, crisp shapes, outlines, dithering
 js/sprites.js     every object as pixel art (grids of palette letters, or pixel shapes)

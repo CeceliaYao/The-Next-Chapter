@@ -105,16 +105,16 @@ Until a file exists, its frame simply stays empty (the caption still shows). The
 
 The look follows Chloee's **TNC Identity Guideline** and moodboard, and keeps **the room and the frame apart**:
 
-- **Inside the room**: colours and style from the moodboard (its swatches, the Cyworld / My Scene rooms) and a pastel pixel-room reference, pearly and slightly greyed rather than candy-bright. Each room has its own walls, floor, rug, curtains and furniture, built from flat colour blocks and patterns (checks, hearts, stars, stripes) in the spirit of Y2K pixel games such as *NEEDY STREAMER OVERLOAD*, so no two look alike:
+- **Inside the room**: colours and style from the moodboard (its swatches, the Cyworld / My Scene rooms) and a pastel pixel-room reference, pearly and slightly greyed rather than candy-bright. Each room has two main colours that its walls and floor share (so it looks calm, not flat and not clashing), its own walls, floor, rug, curtains and furniture, and furniture of its year, from 2000 to 2018. The flat colour blocks and patterns (checks, hearts, stars, stripes) follow Y2K pixel games such as *NEEDY STREAMER OVERLOAD*:
 
-  | Room | Walls | Floor | Rug | Curtains | Furniture |
-  | --- | --- | --- | --- | --- | --- |
-  | Nursery | lemon stripes with stars, a dotted border, a bunting garland, powder-blue beadboard and side walls | gingham carpet | cloud | tie-backs under a scalloped valance | drawers in pink, blue and lemon |
-  | Childhood | pearl rose with hearts and dots, a heart border, lavender candy stripes under a scalloped rail, lavender side walls | checkerboard | flower | café curtains with a ruffled valance | shelves backed in pink, lilac and mint; a checked throw |
-  | Tween | silver lilac with butterflies, aqua pinstripes under a pink ribbon, aqua side walls | harlequin diamonds | pink heart | a bead curtain | a round-backed chair, pink and aqua drawers, a checked throw |
-  | Teen | teal stripes with stars | big glossy tiles | round, in purple checks | purple panels on rings | a swivel chair, aqua and pink drawers |
-  | Young adult | pale blue pinstripe over a lilac block, lilac side walls | sparkly speckled carpet | white faux fur, by the bed | a roller blind | a café chair, a checked throw |
-  | Moving out | the same room, with paler patches where things hung | bare pale floorboards | (packed) | taken down, just the rod | a café chair |
+  | Room | Two main colours | Walls | Floor | Rug | Curtains | Furniture (of its time) |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | Nursery (2000) | lemon + powder blue | lemon stripes with stars, a dotted border, a bunting garland, powder-blue beadboard | gingham | cloud | tie-backs under a scalloped valance | a white cot; drawers in pink, blue and lemon |
+  | Childhood (2005) | pearl rose + lavender | rose with hearts and dots, a heart border, lavender candy stripes under a scalloped rail | checkerboard | flower | café curtains with a ruffled valance | a toy box, shelves backed in pink, lilac and mint, a checked throw |
+  | Tween (2010) | lilac + mint | lilac with butterflies, mint pinstripes under a pink ribbon | lilac and mint harlequin | lilac heart | a bead curtain | a beanbag, a round-backed chair, a checked throw |
+  | Teen (2014) | teal + purple | teal stripes with stars | grey-washed laminate | teal chevron | purple panels on rings | a swivel chair, a laundry basket |
+  | Young adult (2017) | blush + sage, on light oak | a two-tone painted wall | light oak | cream, with a diamond trellis | a roller blind | a hairpin-leg desk, a white moulded chair, a monstera, a checked throw |
+  | Moving out (2018) | the same room | paler patches where things hung | light oak | rolled up for the move | taken down, just the rod | a bare mattress, boxes |
 
   Outlines are a soft plum instead of black, colours are smooth (no dithering), and smooth light and gloss go on top: a sheen on the back wall, a soft beam from the window, a shiny floor, twinkling sparkles, and the night-light and fairy-light glows. Messes show a glossy orange ! badge; things that hold a memory twinkle with a pink sparkle.
 - **Outside the room (the frame) and the titles**: a second colour system, the logo's vivid colours ("vivid point colours for frames", from the moodboard) as small colour blocks on white: each window has its own title bar colour and three little colour chips, the main buttons are orange, the chapter titles and discs use the logo colours. Windows 98 / XP is only a loose reference. Windows can be dragged around (like Teleport), and buttons change colour on hover (like Yrs Truly).

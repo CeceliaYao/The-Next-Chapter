@@ -9,23 +9,17 @@
 const RA = { LX: 5, RX: 315, CY: 11, WX1: 42, WX2: 277, WY1: 16, WY2: 105, FY: 141 };
 const q = v => Math.round(v / ART);
 
-/* fill a polygon with an ordered-dither of colour c */
-function polyDither(b, pts, c, level) {
-  const mask = new PixBuf(b.W, b.H, 0);
-  mask.poly(pts, 'w');
-  for (let y = 0; y < b.H; y++) for (let x = 0; x < b.W; x++)
-    if (mask.d[y * b.W + x] && BAYER4[(y & 3) * 4 + (x & 3)] < level) b.px(x, y, c);
-}
-
-/* vertical gradient between 3 colours using ordered dithering */
+/* vertical gradient between 3 colours, one smooth step per row (no dithering) */
+const mixHex = (a, b, t) => '#' + [1, 3, 5].map(i => Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t).toString(16).padStart(2, '0')).join('');
 function skyGrad(b, x, y, w, h, cols) {
   for (let j = 0; j < h; j++) {
     const t = j / Math.max(1, h - 1);
-    const [a, c, k] = t < 0.5 ? [cols[0], cols[1], t * 2] : [cols[1], cols[2], (t - 0.5) * 2];
-    b.rect(x, y + j, w, 1, a);
-    b.dither(x, y + j, w, 1, c, Math.round(k * 16));
+    b.rect(x, y + j, w, 1, t < 0.5 ? mixHex(cols[0], cols[1], t * 2) : mixHex(cols[1], cols[2], (t - 0.5) * 2));
   }
 }
+
+/* soft effects drawn later at full resolution (smooth, not pixel): set while a room is built */
+let ROOM_FX = {};
 
 function stamp(b, x, y, rows, c, clip) {
   rows.forEach((r, j) => { for (let i = 0; i < r.length; i++) if (r[i] === '#' && (!clip || clip(x + i, y + j))) b.px(x + i, y + j, c); });
@@ -39,7 +33,6 @@ function roomShell(b, th) {
   b.poly([[LX, CY], [RX + 1, CY], [WX2 + 1, WY1], [WX1, WY1]], th.ceil);
   b.poly([[LX, CY], [WX1, WY1], [WX1, WY2 + 1], [LX, FY + 1]], th.side);
   b.poly([[WX2 + 1, WY1], [RX + 1, CY], [RX + 1, FY + 1], [WX2 + 1, WY2 + 1]], th.side2 || th.side);
-  b.dither(LX, CY, 12, FY - CY, th.sideShade || th.side, 6);
   b.rect(WX1, WY1, WX2 - WX1 + 1, WY2 - WY1 + 1, th.wall);
   wallpaper(b, th);
   // floor in perspective: wooden planks, or a pastel plaid carpet (th.plaid: base, row stripe, column stripe, crossing)
@@ -65,7 +58,7 @@ function roomShell(b, th) {
       }
     }
   }
-  b.dither(LX, WY2 + 1, RX - LX + 1, 4, th.floor2, 4);
+  for (let y = WY2 + 1; y <= WY2 + 2; y++) b.hline(Math.ceil(xl(y)), y, Math.floor(xr(y)) - Math.ceil(xl(y)) + 1, th.shadow || th.floor2);   // soft shadow under the wall
   // skirting board
   b.rect(WX1, WY2 - 2, WX2 - WX1 + 1, 3, th.base || 'w'); b.hline(WX1, WY2 - 3, WX2 - WX1 + 1, 'o');
   // room edges (dollhouse cut-away)
@@ -150,7 +143,7 @@ function drawWindow(b, sky, curtain) {
   }
 }
 
-function lightBeam(b, level) { polyDither(b, [[138, 72], [182, 72], [214, 141], [142, 141]], 'w', level || 3); }
+function lightBeam(b, level) { ROOM_FX.beam = level || 3; }   // drawn as a soft, smooth beam of light (see drawRoomGlow)
 
 function drawDoor(b, col, deco) {
   const x1 = 253, x2 = 274, y1 = 48, y2 = 105;

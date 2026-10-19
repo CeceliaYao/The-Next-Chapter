@@ -21,7 +21,7 @@ const G = {
   particles: [], timers: [], queue: [], running: false,
   time: 0, lastInput: performance.now(), lastProgress: performance.now(), lastHelp: 0, helpFlash: null,
   memoryBox: ['teddy'], since: { teddy: 0 }, letGo: [], seen: new Set(), fired: new Set(), everTidy: new Set(),
-  yaLayout: null, packed: [], boxClose: 0, gift: false, labels: []
+  yaLayout: null, packed: [], boxClose: 0, gift: false, labels: [], marks: []
 };
 
 let canvasEl, artCv, art, bgCv = null, bgFor = null, trayCv = null, thumbCache = {}, CURSORS = {};
@@ -779,6 +779,7 @@ function arect(x, y, w, h, c) { art.fillStyle = colOf(c); art.fillRect(Math.roun
 
 function buildBg() {
   const b = new PixBuf(ART_W, ART_H, 0);
+  ROOM_FX = {};
   G.ch.bg(b, G.ch.layout);
   bgCv = b.toCanvas(1);
   bgFor = G.idx;
@@ -786,9 +787,9 @@ function buildBg() {
 
 function buildTray() {
   const b = new PixBuf(312, 35, 0);
-  // the shelf the box sits on: the frame's white with a black outline and a soft shadow edge
-  b.rect(0, 0, 312, 35, '#f2f2ed');
-  b.rect(1, 1, 310, 1, '#ffffff'); b.rect(1, 32, 310, 2, '#dedbd1');
+  // the shelf the box sits on: a lavender panel with a light top edge, like the pastel pixel-room reference
+  b.rect(0, 0, 312, 35, '#e6defa');
+  b.rect(1, 1, 310, 2, '#f6f2ff'); b.rect(1, 31, 310, 3, '#cfc3f0');
   b.rect(0, 0, 312, 1, 'o'); b.rect(0, 34, 312, 1, 'o'); b.rect(0, 0, 1, 35, 'o'); b.rect(311, 0, 1, 35, 'o');
   b.box(4, 4, 30, 27, 'r'); b.rect(17, 5, 4, 3, 'y'); b.box(7, 8, 24, 21, 'w');   // cardboard box + label sticker
   trayCv = b.toCanvas(1);
@@ -798,19 +799,21 @@ function render() {
   if (!G.ch || !art) return;
   if (!bgCv || bgFor !== G.idx) buildBg();
   if (!trayCv) buildTray();
+  const ctx = drawingContext;
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(bgCv, 0, 0, W, H);   // the room itself
+  drawRoomGlow(ctx);                 // soft light, gloss and sparkles on top of it (smooth, full resolution)
   art.clearRect(0, 0, ART_W, ART_H);
-  art.drawImage(bgCv, 0, 0);
-  G.labels = [];
-  drawRoomFx();
+  G.labels = []; G.marks = [];
   const guideItem = G.drag ? G.drag.item : (G.helpFlash && G.time < G.helpFlash.until ? G.helpFlash.item : null);
   const list = drawList();
   list.filter(i => i.state !== 'tray' && i.state !== 'drag').forEach(drawItem);
   drawFront();
   if (guideItem) drawGuides(guideItem);
   drawTray();
-  const ctx = drawingContext;
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(artCv, 0, 0, W, H);
+  drawTrayGloss(ctx);
   drawLabels(ctx);               // the words sit on the room and the box...
   art.clearRect(0, 0, ART_W, ART_H);
   list.filter(i => i.state === 'tray').forEach(drawItem);   // ...and the things in the tray / in your hand go over them
@@ -818,6 +821,7 @@ function render() {
   drawMarkers();
   drawParticles();
   ctx.drawImage(artCv, 0, 0, W, H);
+  drawMarks(ctx);
   drawTooltip(ctx);
 }
 
@@ -895,34 +899,87 @@ function drawItem(it) {
 let _heart = null;
 function heartCv() { return _heart || (_heart = iconBuf('heart').toCanvas(1)); }
 
-function bubble(x, y, c, ch) {
-  arect(x - 3, y - 3, 7, 7, 'o'); arect(x - 2, y - 4, 5, 9, 'o'); arect(x - 4, y - 2, 9, 5, 'o');
-  arect(x - 2, y - 3, 5, 7, c); arect(x - 3, y - 2, 7, 5, c);
-  if (ch === '!') { arect(x, y - 2, 1, 3, 'w'); apx(x, y + 2, 'w'); }
-  else { arect(x - 1, y - 2, 1, 5, 'o'); arect(x, y - 1, 1, 3, 'o'); apx(x + 1, y, 'o'); }
+function bubble(x, y, c, ch) { G.marks.push({ x, y, c, ch }); }   // drawn later as glossy gel badges (drawMarks)
+
+// a round Y2K "gel" badge: colour gradient, plum rim, white shine on the top half
+function drawMarks(ctx) {
+  G.marks.forEach(m => {
+    const x = (m.x + 0.5) * ART, y = (m.y + 0.5) * ART, r = 15, col = PALETTE[m.c];
+    ctx.save();
+    ctx.shadowColor = 'rgba(61,44,74,.3)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
+    const g = ctx.createRadialGradient(x - r * .35, y - r * .4, 1, x, y, r);
+    g.addColorStop(0, mixHex(col, '#ffffff', .55)); g.addColorStop(1, col);
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
+    ctx.restore();
+    ctx.lineWidth = 2.5; ctx.strokeStyle = PALETTE.o; ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(x, y - r * .45, r * .62, r * .32, 0, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fill();
+    if (m.ch === '!') {
+      ctx.font = '800 21px ' + FONT_UI; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.lineWidth = 3; ctx.strokeStyle = PALETTE.o; ctx.strokeText('!', x, y + 1);
+      ctx.fillStyle = '#ffffff'; ctx.fillText('!', x, y + 1);
+    }
+    else { ctx.beginPath(); ctx.moveTo(x - 3, y - 6); ctx.lineTo(x + 5, y); ctx.lineTo(x - 3, y + 6); ctx.closePath(); ctx.fillStyle = PALETTE.o; ctx.fill(); }
+  });
+  G.marks = [];
 }
 
-function drawRoomFx() {
+/* ---------- the room's Y2K finish: smooth light and gloss over the pixel drawing ---------- */
+function sparkle(ctx, x, y, r) {   // a four-point twinkle
+  ctx.beginPath();
+  ctx.moveTo(x, y - r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.quadraticCurveTo(x, y, x, y + r);
+  ctx.quadraticCurveTo(x, y, x - r, y); ctx.quadraticCurveTo(x, y, x, y - r);
+  ctx.fill();
+}
+function drawRoomGlow(ctx) {
+  const k = ART, { LX, RX, WX1, WX2, WY1, WY2, FY } = RA;
+  const floor = () => { ctx.beginPath(); ctx.moveTo(WX1 * k, (WY2 + 1) * k); ctx.lineTo((WX2 + 1) * k, (WY2 + 1) * k); ctx.lineTo((RX + 1) * k, (FY + 1) * k); ctx.lineTo(LX * k, (FY + 1) * k); ctx.closePath(); };
+  ctx.save();
+  // a glossy sheen across the back wall, like the shiny plastic screens of the time
+  ctx.save();
+  ctx.beginPath(); ctx.rect((WX1 + 1) * k, (WY1 + 1) * k, (WX2 - WX1 - 1) * k, (WY2 - WY1 - 3) * k); ctx.clip();
+  let g = ctx.createLinearGradient(WX1 * k, WY1 * k, (WX1 + 120) * k, WY2 * k);
+  g.addColorStop(0, 'rgba(255,255,255,.34)'); g.addColorStop(.38, 'rgba(255,255,255,.08)'); g.addColorStop(.39, 'rgba(255,255,255,0)');
+  g.addColorStop(.5, 'rgba(255,255,255,0)'); g.addColorStop(.51, 'rgba(255,255,255,.1)'); g.addColorStop(.6, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g; ctx.fillRect(WX1 * k, WY1 * k, (WX2 - WX1) * k, (WY2 - WY1) * k);
+  ctx.restore();
+  // light from the window
+  if (ROOM_FX.beam) {
+    ctx.beginPath(); ctx.moveTo(138 * k, 72 * k); ctx.lineTo(182 * k, 72 * k); ctx.lineTo(214 * k, 141 * k); ctx.lineTo(142 * k, 141 * k); ctx.closePath();
+    g = ctx.createLinearGradient(0, 72 * k, 0, 141 * k);
+    g.addColorStop(0, 'rgba(255,255,255,' + (0.14 + ROOM_FX.beam * 0.05) + ')'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.fill();
+  }
+  // a shiny floor: the light reflected at the back, fading towards you
+  ctx.save(); floor(); ctx.clip();
+  g = ctx.createLinearGradient(0, WY2 * k, 0, (WY2 + 22) * k);
+  g.addColorStop(0, 'rgba(255,255,255,.4)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g; ctx.fillRect(LX * k, WY2 * k, (RX - LX + 2) * k, 24 * k);
+  ctx.restore();
+  // the night-light's warm glow and the fairy lights' pink glow
   const nl = G.items.find(i => i.id === 'nightlight' && i.state === 'placed' && i.surface === 'socket');
   if (nl) {
-    const cx = Math.round(nl.x / ART), cy = Math.round(nl.y / ART), pulse = Math.floor(G.time / 700) % 2;
-    for (let y = -26; y <= 26; y++) for (let x = -26; x <= 26; x++) {
-      const d = Math.sqrt(x * x + y * y), lvl = d < 9 ? 7 : d < 16 ? 4 : d < 24 + pulse * 2 ? 2 : 0;
-      if (lvl && BAYER4[((cy + y) & 3) * 4 + ((cx + x) & 3)] < lvl) apx(cx + x, cy + y, '#fff3a8');
-    }
+    const r = 120 + Math.sin(G.time / 450) * 10;
+    g = ctx.createRadialGradient(nl.x, nl.y, 0, nl.x, nl.y, r);
+    g.addColorStop(0, 'rgba(255,243,168,.75)'); g.addColorStop(.35, 'rgba(255,243,168,.3)'); g.addColorStop(1, 'rgba(255,243,168,0)');
+    ctx.fillStyle = g; ctx.fillRect(nl.x - r, nl.y - r, r * 2, r * 2);
   }
   const fl = G.items.find(i => i.id === 'fairylights' && i.state === 'placed');
   if (fl) {
-    const cx = Math.round(fl.x / ART), cy = Math.round(fl.y / ART);
-    for (let y = -4; y < 22; y++) for (let x = -50; x <= 50; x++) if (BAYER4[((cy + y) & 3) * 4 + ((cx + x) & 3)] < (y < 10 ? 2 : 1) && Math.abs(x) < 50 - y) apx(cx + x, cy + y, '#ffd6ee');
+    g = ctx.createRadialGradient(fl.x, fl.y + 30, 0, fl.x, fl.y + 30, 230);
+    g.addColorStop(0, 'rgba(255,190,230,.45)'); g.addColorStop(1, 'rgba(255,190,230,0)');
+    ctx.fillStyle = g; ctx.fillRect(fl.x - 230, fl.y - 200, 460, 460);
   }
-  // twinkles on the walls
-  for (let i = 0; i < 6; i++) {
-    const ph = (G.time / 1500 + i * 0.37) % 1;
-    if (ph > 0.4) continue;
-    const x = 50 + ((i * 97) % 220), y = 22 + ((i * 53) % 70), r = ph < 0.13 || ph > 0.27 ? 1 : 2;
-    apx(x, y, 'w'); for (let k = 1; k <= r; k++) { apx(x - k, y, 'w'); apx(x + k, y, 'w'); apx(x, y - k, 'w'); apx(x, y + k, 'w'); }
+  // sparkles that twinkle on the walls
+  ctx.fillStyle = '#ffffff'; ctx.shadowColor = 'rgba(255,255,255,.95)'; ctx.shadowBlur = 10;
+  for (let i = 0; i < 7; i++) {
+    const ph = (G.time / 1700 + i * 0.37) % 1;
+    if (ph > 0.45) continue;
+    const a = Math.sin(ph / 0.45 * Math.PI);
+    ctx.globalAlpha = a;
+    sparkle(ctx, (50 + ((i * 97) % 220)) * k, (22 + ((i * 53) % 70)) * k, 6 + a * 8);
   }
+  ctx.restore();
 }
 
 function dashRect(x1, y1, x2, y2, hot) {
@@ -996,6 +1053,15 @@ function drawTray() {
     G.labels.push({ text: 'ALL', x: cx, y: 630, size: 20 });
     G.labels.push({ text: 'DONE ' + HEART, x: cx, y: 668, size: 20, color: PALETTE['3'] });
   }
+}
+
+// the tray's shine: a soft white sheen across its top half (smooth, over the pixel panel)
+function drawTrayGloss(ctx) {
+  if (G.ch.moving) return;
+  const x = 5 * ART, y = 145 * ART, w = 310 * ART, h = 16 * ART;
+  const g = ctx.createLinearGradient(0, y, 0, y + h);
+  g.addColorStop(0, 'rgba(255,255,255,.5)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
 }
 
 function artPoly(pts, c) {

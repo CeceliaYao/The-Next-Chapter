@@ -13,7 +13,7 @@ const ART_W = 320, ART_H = 180;
 
 /* One shared Y2K pastel palette. Single letters are used in the pixel grids. */
 const PALETTE = {
-  o: '#2a1f1a', // outline / ink (warm, matches the logo's #221a13)
+  o: '#3d2c4a', // outline / ink: a soft plum, like the pastel pixel-room reference (softer than black)
   w: '#ffffff', c: '#fff4e6', g: '#e4def4', G: '#b4abd4', D: '#7d73a8',
   p: '#ffd0ea', P: '#ff9fd6', h: '#ff5fb4', m: '#c93a88',
   l: '#e6d8ff', L: '#c3a6ff', v: '#9a72f0', V: '#6a48c4',

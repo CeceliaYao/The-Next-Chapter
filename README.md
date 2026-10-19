@@ -106,8 +106,9 @@ Until a file exists, its frame simply stays empty (the caption still shows). The
 The look follows Chloee's **TNC Identity Guideline** (2026) and her moodboard: early-internet nostalgia seen with modern design eyes. Keywords: *Nostalgic Digital, Y2K Web Retro, My Scene, Windows 98/XP, Frutiger Aero, Nintendo*. The moodboard's note asks for *"a warmer colour scheme + vivid point colours for frames"*, so:
 
 - **The rooms are warm and sunny** (like *Animal Crossing*) and sit with the terracotta door you open first. It's one room the whole way through: the wooden floor stays and the walls get repainted (butter, rose, lilac, the teen teal, then apricot).
-- **The desktop is a sunny sky with a green hill**, a Frutiger Aero / Windows XP wallpaper drawn for this game (`assets/ui/sky.jpg`) in the colours of Chloee's laptop mock-up.
-- **Every frame is a vivid ring**, the way the favicon is drawn: a black line, a bright colour, a black line, then a hard black offset shadow. Each chapter has its own frame colour (the colour of its CD).
+- **One look with the door page.** The page around the game is the same striped pixel wallpaper as the hallway on the door page, tinted towards each room's wall colour.
+- **Every chapter takes its colours from its room**: the frame, the title bars (an XP-style gloss with black text), the progress bar, the CD and the chapter title all use that room's colours. The door page colours (terracotta and beige) are used for the start page, the thank-you note and the ending.
+- **Every frame is a vivid ring**, the way the favicon is drawn: a black line, a bright colour, a black line, then a hard black offset shadow. 
 - Around the room the interface is an early-2000s desktop: navy Windows-style title bars, glossy gel buttons, buddy-list message pop-ups, iridescent CD chapter discs and little web badges. Windows can be dragged around. The brand's **play icon** (the favicon) is the app icon in every title bar and on the Start button. Even the mouse arrow is the blue play triangle.
 
 **Primary colours** carry the interface:
@@ -153,7 +154,6 @@ js/audio.js       synthesised sound effects + music-box ambience (no audio files
 lib/p5.min.js     p5.js 1.11 (bundled so it works offline)
 fonts/            Jost, Archivo Narrow, VT323 (bundled, SIL Open Font License)
 assets/brand/     team logos (original artwork) and favicon
-assets/ui/        the sky-and-hill desktop wallpaper
 assets/photos/    ← put photos here
 assets/video/     ← put videos here
 ```

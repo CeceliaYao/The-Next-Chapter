@@ -35,7 +35,7 @@ function stamp(b, x, y, rows, c, clip) {
 
 function roomShell(b, th) {
   const { LX, RX, CY, WX1, WX2, WY1, WY2, FY } = RA;
-  b.rect(0, 0, ART_W, ART_H, '#f2f2ed'); b.dither(0, 0, ART_W, ART_H, '#e4e1d6', 6);   // the guideline's white around the room
+  b.rect(0, 0, ART_W, ART_H, th.ceil); b.dither(0, 0, ART_W, ART_H, th.wall, 3);   // a pale tint of the room around it
   b.poly([[LX, CY], [RX + 1, CY], [WX2 + 1, WY1], [WX1, WY1]], th.ceil);
   b.poly([[LX, CY], [WX1, WY1], [WX1, WY2 + 1], [LX, FY + 1]], th.side);
   b.poly([[WX2 + 1, WY1], [RX + 1, CY], [RX + 1, FY + 1], [WX2 + 1, WY2 + 1]], th.side2 || th.side);
@@ -373,11 +373,18 @@ function bgMovingOut(b, L) {
 
 /* ---------- the bedroom door you open first (after Chloee's laptop mock-up) ---------- */
 const DOOR_ART = { x: 84, w: 152, h: 240 };   // door leaf on a 320 x 240 art grid (the 4:3 stage, 4 screen px per pixel)
+// the striped, speckled wallpaper of the hallway (door page); the page around the game uses it too
+const DOOR_PAPER = ['#c9b496', '#c2ad8e', '#b8a284'];
+function paintWallpaper(b, w, h, paper) {
+  b.rect(0, 0, w, h, paper[0]);
+  for (let x = 0; x < w; x += 6) b.vline(x, 0, h, paper[1]);
+  b.dither(0, 0, w, h, paper[2], 3);
+}
+function wallpaperCanvas(paper) { const b = new PixBuf(ART_W, DOOR_ART.h, 0); paintWallpaper(b, ART_W, DOOR_ART.h, paper); return b.toCanvas(1); }
+
 function drawDoorWall() {
   const H = DOOR_ART.h, b = new PixBuf(ART_W, H, 0), x1 = DOOR_ART.x, x2 = DOOR_ART.x + DOOR_ART.w;
-  b.rect(0, 0, ART_W, H, '#c9b496');
-  for (let x = 0; x < ART_W; x += 6) b.vline(x, 0, H, '#c2ad8e');
-  b.dither(0, 0, ART_W, H, '#b8a284', 3);
+  paintWallpaper(b, ART_W, H, DOOR_PAPER);
   // the doorway is left open: when the door swings, the title screen shows through
   b.rect(x1, 0, DOOR_ART.w, H, null);
   for (let y = 0; y < H; y++) for (let x = x1; x < x1 + 6; x++) if ((x + y) % 2) b.px(x, y, '#fff2d8');

@@ -8,6 +8,9 @@
      graphics, outlines and large text on black, never a background
    - text contrast: 7:1 for small text, 4.5:1 for large text
    - black outlines + hard offset shadows, like the logo's letters
+   - frames are a vivid ring between two black lines, like the favicon
+     (the moodboard: "a warmer colour scheme + vivid point colours for frames");
+     each chapter has its own frame colour (--chapter)
    The room itself stays pixel art (it's the drawings).
    Stage is 4:3 (1280 x 960) and scales to fit the screen.
    ========================================================= */
@@ -41,7 +44,8 @@
   --navy-lo: #25254f;
   --shadow: 6px 6px 0 var(--black);
   --shadow-sm: 3px 3px 0 var(--black);
-  --dots: radial-gradient(circle, rgba(33, 26, 20, .15) 1.3px, transparent 1.8px) 12px 12px / 24px 24px;
+  /* the desktop wallpaper: blue sky and a green hill, like the moodboard's Frutiger Aero / XP screens */
+  --sky: url('assets/ui/sky.jpg') center / cover no-repeat, #8fbdec;
   --font-body: 'Jost', 'Trebuchet MS', Verdana, sans-serif;
   --font-ui: 'Archivo Narrow', 'Arial Narrow', Arial, sans-serif;
   --font-lcd: 'VT323', monospace;
@@ -63,7 +67,7 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* the page: brand white with a dotted grid, like an early-2000s homepage */
+/* the page: a desktop with a blue-sky wallpaper */
 #stage {
   position: absolute; left: 50%; top: 50%;
   width: 1280px; height: 960px;
@@ -71,17 +75,26 @@ html, body {
   transform-origin: center center;
   overflow: hidden;
   border-radius: 14px;
-  background: var(--dots), var(--white);
+  background: var(--sky);
 }
 
-/* the game screen: the 16:9 room, a window whose title bar is the top bar (#hud) */
+/* the game window: the top bar (#hud) is its title bar, the room (#screen) its content,
+   and #gameFrame draws the vivid ring around both */
+#gameFrame {
+  position: absolute; left: 30px; top: 30px; width: 1220px; height: 718px; z-index: 0;
+  border: 2px solid var(--black); border-radius: 18px;
+  background: var(--chapter, var(--vermilion));
+  box-shadow: 7px 7px 0 var(--black);
+  transition: background-color .3s;
+}
+#hud.hidden ~ #gameFrame { top: 94px; height: 654px; }
 #screen {
   position: absolute; left: 40px; top: 104px; width: 1200px; height: 634px; z-index: 2;
-  border-radius: 0 0 10px 10px; overflow: hidden;
+  border-radius: 0 0 9px 9px; overflow: hidden;
   background: var(--white);
-  box-shadow: 0 0 0 2px var(--black), 6px 6px 0 2px var(--black);
+  box-shadow: 0 0 0 2px var(--black);
 }
-#hud.hidden + #screen { border-radius: 10px; }
+#hud.hidden ~ #screen { border-radius: 9px; }
 /* p5 sizes the canvas inline; this keeps it at 1200 x 675 and hides the empty strip above the room */
 #screen canvas { position: absolute; left: 0; top: -41.25px; width: 1200px !important; height: 675px !important; image-rendering: pixelated; }
 #screen canvas.blur { filter: saturate(1.05) brightness(.95); }
@@ -120,14 +133,20 @@ button { font-family: var(--font-ui); cursor: var(--cursor-hand); }
 .small-btn.round { width: 44px; height: 44px; padding: 0; }
 .small-btn.round svg { position: relative; width: 24px; height: 24px; }
 
-/* ---------- windows (Windows 98 / XP) ---------- */
-.win {
+/* ---------- windows (Windows 98 / XP), framed like the favicon ---------- */
+.win, .card, .tidy-banner {
   position: relative;
   background: var(--white);
-  border: 2px solid var(--black); border-radius: 12px;
-  box-shadow: var(--shadow);
-  overflow: hidden;
+  border: 6px solid var(--accent, var(--chapter, var(--vermilion))); border-radius: 16px;
+  box-shadow: 0 0 0 2px var(--black), 8px 8px 0 2px var(--black);
 }
+.win { overflow: hidden; }
+.win::after, .card::after, .tidy-banner::after, #hint::after, .toast::after {   /* the inner black line of the ring */
+  content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  border: 2px solid var(--black); border-radius: 10px;
+}
+.title-win, .end-win { --accent: var(--vermilion); }
+.thanks-win { --accent: var(--pink); }
 .titlebar {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
   height: 44px; padding: 0 8px 0 10px;
@@ -154,10 +173,9 @@ button { font-family: var(--font-ui); cursor: var(--cursor-hand); }
 #hud {
   position: absolute; left: 38px; right: 38px; top: 38px; height: 64px; z-index: 1;
   display: flex; align-items: center; gap: 14px; padding: 0 10px 0 14px;
-  border: 2px solid var(--black); border-bottom: 0; border-radius: 12px 12px 0 0;
+  border: 2px solid var(--black); border-bottom: 0; border-radius: 11px 11px 0 0;
   background: linear-gradient(180deg, var(--navy-hi) 0%, var(--navy) 42%, var(--navy-lo) 58%, var(--navy) 100%);
   color: var(--white);
-  box-shadow: var(--shadow);
 }
 .hud-icon { width: 32px; height: 32px; flex: none; }
 .hud-chapter { font: 700 23px/1 var(--font-ui); letter-spacing: .8px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -194,31 +212,32 @@ button { font-family: var(--font-ui); cursor: var(--cursor-hand); }
 #muteBtn { color: var(--black); }
 
 /* ---------- dock (under the game screen): Teddy's tips + messages ---------- */
-#dock { position: absolute; left: 38px; right: 38px; top: 762px; height: 172px; z-index: 10; display: flex; gap: 18px; }
+#dock { position: absolute; left: 32px; right: 32px; top: 770px; height: 164px; z-index: 10; display: flex; gap: 20px; }
 #hint {
-  position: relative; flex: 1; min-width: 0; display: flex; align-items: center; gap: 18px; padding: 10px 26px 8px 12px;
-  border-radius: 12px; border: 2px solid var(--black);
+  position: relative; flex: 1; min-width: 0; display: flex; align-items: center; gap: 18px; padding: 8px 24px 6px 8px;
+  border-radius: 14px; border: 5px solid var(--chapter, var(--vermilion));
   background: var(--white);
-  box-shadow: 5px 5px 0 var(--black);
+  box-shadow: 0 0 0 2px var(--black), 6px 6px 0 2px var(--black);
 }
 #hint::before {   /* a Windows 98 group-box label */
-  content: 'Teddy\2019s tip'; position: absolute; top: -14px; left: 18px;
+  content: 'Teddy\2019s tip'; position: absolute; top: -17px; left: 16px; z-index: 2;
   padding: 4px 10px 3px; border-radius: 6px; border: 2px solid var(--black);
   background: var(--navy); color: var(--white);
   font: 700 14px/1 var(--font-ui); letter-spacing: 1.2px; text-transform: uppercase;
 }
-#hintIcon { width: 132px; height: 132px; flex: none; image-rendering: pixelated; }
+#hintIcon { width: 128px; height: 128px; flex: none; image-rendering: pixelated; }
 .hint-body { position: relative; flex: 1; min-width: 0; }
 #hintText { margin: 0; font: 500 26px/1.3 var(--font-body); }
 .hint-keys { margin: 10px 0 0; font: 700 16px/1.2 var(--font-ui); letter-spacing: .6px; color: var(--navy); }
 .hint-keys b { display: inline-block; width: 21px; height: 21px; margin: 0 1px; text-align: center; font: 700 15px/18px var(--font-ui); border-radius: 50%; border: 2px solid var(--black); background: var(--amber); color: var(--black); }
 #hint.pulse { animation: hintGlow 1.4s var(--ease) 2; }
 #hint.fresh #hintText { animation: fadeIn .35s ease both; }
-@keyframes hintGlow { 40% { box-shadow: 0 0 0 6px rgba(255, 199, 0, .7), 5px 5px 0 var(--black); } }
+@keyframes hintGlow { 40% { box-shadow: 0 0 0 2px var(--black), 0 0 0 9px rgba(255, 199, 0, .75), 6px 6px 0 2px var(--black); } }
 
 /* messenger pop-ups (Mum, little bro): like the buddy-list windows of the time */
 #toasts { width: 410px; flex: none; display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; }
-.toast { pointer-events: auto; cursor: var(--cursor-hand); border-radius: 10px; overflow: hidden; background: var(--white); border: 2px solid var(--black); box-shadow: 4px 4px 0 var(--black); }
+.toast { position: relative; pointer-events: auto; cursor: var(--cursor-hand); border-radius: 12px; overflow: hidden; background: var(--white); border: 4px solid var(--chapter, var(--vermilion)); box-shadow: 0 0 0 2px var(--black), 5px 5px 0 2px var(--black); }
+.toast::after { border-radius: 8px; }
 .toast-bar { display: flex; align-items: center; gap: 8px; padding: 6px 12px; font: 700 16px/1 var(--font-ui); letter-spacing: .4px; color: var(--black); border-bottom: 2px solid var(--black); background: linear-gradient(180deg, #ffcd7a 0%, var(--orange) 60%); }
 .toast.mum .toast-bar { background: linear-gradient(180deg, #ffe680 0%, var(--amber) 60%); }
 .toast-bar svg { width: 18px; height: 18px; }
@@ -234,7 +253,7 @@ button { font-family: var(--font-ui); cursor: var(--cursor-hand); }
 #overlay { position: absolute; inset: 0; z-index: 20; pointer-events: none; }
 #overlay .screen { position: absolute; inset: 0; pointer-events: auto; display: flex; align-items: center; justify-content: center; }
 #overlay .screen.intro-screen, #overlay .screen.keep-screen, #overlay .screen.complete-screen { background: rgba(33, 26, 20, .45); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
-.desk { position: absolute; inset: 0; background: var(--dots), var(--white); }
+.desk { position: absolute; inset: 0; background: var(--sky); }
 .floaters { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .floater { position: absolute; bottom: -70px; animation: floatUp 22s linear infinite; }
 .floater svg { display: block; overflow: visible; }
@@ -251,20 +270,20 @@ button { font-family: var(--font-ui); cursor: var(--cursor-hand); }
 /* the team's logo is always the original vector artwork: no pixels, no shadow, its own clear space */
 .brand-logo, .door-logo { display: block; image-rendering: auto; }
 
-/* title screen: logo on top with half its height kept clear, the start window below */
-#overlay .screen.title-screen { flex-direction: column; justify-content: flex-start; padding-top: 58px; }
-.title-screen .logo { position: relative; z-index: 1; margin: 0 0 116px; }
+/* title screen: logo on the left with half its height kept clear, the start window on the right */
+#overlay .screen.title-screen { gap: 135px; padding-bottom: 40px; }
+.title-screen .logo { position: relative; z-index: 1; margin: 0; }
 .title-screen.door-closed .pop-in { animation-play-state: paused; }
-.title-win { position: relative; width: 640px; }
+.title-win { position: relative; width: 610px; }
 .tagline { margin: 0; font: 500 24px/1.35 var(--font-body); }
 .title-foot { position: absolute; bottom: 20px; left: 0; right: 0; display: flex; justify-content: center; gap: 10px; z-index: 2; }
 /* little 88x31-style web badges */
 .badge { display: inline-flex; align-items: center; gap: 6px; height: 31px; padding: 0 11px; border: 2px solid var(--black); border-radius: 4px; font: 700 15px/1 var(--font-ui); letter-spacing: .6px; white-space: nowrap; background: var(--white); color: var(--black); }
 .badge.navy { background: var(--navy); color: var(--white); }
 .badge.dark { background: var(--black); color: var(--amber); }
-.win-body { padding: 24px 34px 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
+.win-body { padding: 24px 30px 24px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
 .small { margin: 0; font: 500 17px/1.3 var(--font-body); color: var(--black); }
-.discs { display: flex; gap: 16px; margin-top: 6px; }
+.discs { display: flex; gap: 14px; margin-top: 6px; }
 .discs + .small { margin-top: 30px; }
 
 /* CDs for the chapter select (pure CSS, iridescent like the real thing) */
@@ -283,13 +302,11 @@ button { font-family: var(--font-ui); cursor: var(--cursor-hand); }
 
 /* chapter card */
 .card {
-  position: relative; width: 700px; padding: 64px 44px 34px;
-  border-radius: 16px; border: 2px solid var(--black);
-  background: var(--white);
-  box-shadow: var(--shadow);
+  width: 700px; padding: 64px 44px 34px; border-radius: 20px;
   display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
 }
-.card .cd { position: absolute; top: -54px; width: 108px; height: 108px; animation: spin 9s linear infinite; }
+.card::after, .tidy-banner::after { border-radius: 14px; }
+.card .cd { position: absolute; z-index: 2; top: -58px; width: 108px; height: 108px; animation: spin 9s linear infinite; }
 .card .cd span { font-size: 32px; animation: spin 9s linear infinite reverse; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .card-kicker { font: 700 19px/1 var(--font-ui); letter-spacing: 4px; text-transform: uppercase; color: var(--navy); }
@@ -308,9 +325,7 @@ button { font-family: var(--font-ui); cursor: var(--cursor-hand); }
 
 /* room tidy banner */
 .tidy-banner {
-  padding: 34px 56px 30px; text-align: center; border-radius: 16px; border: 2px solid var(--black);
-  background: var(--white);
-  box-shadow: var(--shadow);
+  padding: 34px 56px 30px; text-align: center; border-radius: 20px;
   display: flex; flex-direction: column; align-items: center; gap: 12px;
 }
 .tidy-banner .big-title { font-size: 74px; }
@@ -432,12 +447,11 @@ button.tile:hover { transform: translate(-1px, -3px); box-shadow: 4px 6px 0 var(
 .door-leaf { position: absolute; left: 336px; top: 0; width: 608px; height: 960px; transform-origin: 0 50%; }
 .door-leaf > canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .door-logo { position: absolute; left: 84px; top: 112px; width: 440px; height: 227px; }
-/* a name plate under the logo (half the logo's height kept clear) */
+/* our names on the door, as in Chloee's mock-up (half the logo's height kept clear above) */
 .door-names {
-  position: absolute; left: 50%; top: 456px; transform: translateX(-50%);
-  padding: 9px 16px 8px; border-radius: 6px; border: 2px solid var(--black);
-  background: var(--white); box-shadow: var(--shadow-sm);
-  text-align: center; font: 500 19px/1.35 var(--font-body); letter-spacing: .3px; color: var(--black); white-space: nowrap;
+  position: absolute; left: 0; right: 0; top: 458px;
+  text-align: center; white-space: nowrap; font: 500 22px/1 var(--font-body); letter-spacing: .5px;
+  color: var(--white); text-shadow: 0 1px 0 rgba(33, 26, 20, .55), 0 2px 6px rgba(33, 26, 20, .6);
 }
 .door-hint {
   position: absolute; left: 50%; top: 836px; transform: translateX(-50%);

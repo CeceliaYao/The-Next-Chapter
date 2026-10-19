@@ -113,18 +113,19 @@ const UI = (() => {
   /* ---------------- title ---------------- */
   // withDoor: the visitor first sees the bedroom door (logo + our names on it) and opens it to reach this screen.
   function showTitle(chapters, withDoor) {
+    document.getElementById('stage').style.removeProperty('--chapter');
     const discs = chapters.map((c, i) =>
       '<button class="disc" data-i="' + i + '" style="--accent:' + c.accent + '" aria-label="Chapter ' + (i + 1) + ', ' + c.year + '"><b>' + (i + 1) + '</b><small>' + c.year + '</small></button>').join('');
-    // sparkles drift up the two sides only: the logo in the middle keeps its clear space
-    const kinds = ['star', 'playBlue', 'heart', 'sparkle', 'bubble', 'playPink', 'heart', 'sparkle', 'playGreen', 'star', 'bubble', 'heart'];
+    // bubbles and sparkles drift up behind the start window only: the logo on the left keeps its clear space
+    const kinds = ['bubble', 'star', 'bubble', 'heart', 'playBlue', 'bubble', 'sparkle', 'bubble', 'playPink', 'heart', 'bubble', 'star'];
     const floaters = kinds.map((n, i) =>
-      '<span class="floater" style="left:' + (i % 2 ? 77 + (i >> 1) * 3.4 : 1.5 + (i >> 1) * 3.4) + '%;animation-delay:' + (-i * 2.1) + 's;animation-duration:' + (19 + (i % 4) * 3) + 's">' + svg(n, 22 + (i % 3) * 12) + '</span>').join('');
+      '<span class="floater" style="left:' + (50 + i * 3.9) + '%;animation-delay:' + (-i * 2.1) + 's;animation-duration:' + (19 + (i % 4) * 3) + 's">' + svg(n, 22 + (i % 3) * 12) + '</span>').join('');
     const names = CREDITS.map(c => c[0].replace(/\s*\(.*\)/, '')).join(' · ');   // full names, in CREDITS order
     const short = CREDITS.map(c => c[2]);
     const byLine = short.slice(0, -1).join(', ') + ' &amp; ' + short[short.length - 1];
     const el = setScreen(
       '<div class="desk"></div><div class="floaters">' + floaters + '</div>' +
-      '<div class="logo pop-in"><img class="brand-logo" src="assets/brand/logo-main.svg" alt="The Next Chapter" style="width:331px;height:230px"></div>' +
+      '<div class="logo pop-in"><img class="brand-logo" src="assets/brand/logo-main.svg" alt="The Next Chapter" style="width:389px;height:270px"></div>' +
       '<div class="win title-win pop-in">' +
       '  <div class="titlebar"><span>' + APP_ICON + 'The Next Chapter</span></div>' +
       '  <div class="win-body">' +
@@ -174,6 +175,7 @@ const UI = (() => {
 
   /* ---------------- chapter card ---------------- */
   function showIntro(ch, idx, onBegin, teddy) {
+    document.getElementById('stage').style.setProperty('--chapter', ch.accent);   // this chapter's frame colour
     const el = setScreen(
       '<div class="card pop-in" style="--accent:' + ch.accent + '">' +
       '  <div class="cd"><span>' + (idx + 1) + '</span></div>' +
@@ -538,6 +540,7 @@ const UI = (() => {
       '      <button class="aqua" data-a="resume">▶︎ Keep playing</button>' +
       '      <button class="aqua alt" data-a="restart">Restart chapter</button>' +
       '      <button class="aqua alt" data-a="title">Chapter select</button>' +
+      '      <button class="aqua alt" data-a="door">Back to the door</button>' +
       '      <button class="aqua alt" data-a="sound">' + (Sound.isMuted() ? 'Sound: off' : 'Sound: on') + '</button>' +
       '      <p class="small">keys: Esc menu · M sound</p>' +
       '    </div>' +

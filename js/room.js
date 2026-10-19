@@ -294,10 +294,14 @@ function ceilingStars(b) { [[70, 13], [110, 12], [150, 13], [200, 12], [240, 13]
 
 function hangString(b, x, toY) { b.vline(x, RA.WY1, Math.max(1, toY - RA.WY1), 'o'); }
 
-/* ---------- one background per chapter ---------- */
+/* ---------- one background per chapter ----------
+   It's the same room all the way through: the floor stays, the walls get repainted.
+   Warm, sunny wall colours (Chloee's moodboard asks for a warmer scheme, like Animal Crossing) that sit
+   with the terracotta door: butter, rose, lilac, the teen teal, then apricot, all at the teen room's depth. */
+const YA_ROOM = { ceil: '#fdf1e2', side: '#ebbf96', side2: '#e4b78c', sideShade: '#d9ab80', wall: '#f6d3ae', dots: '#fadfc3', dots2: '#ffffff', floor: '#c69f7a', floor2: '#ae8762', pattern: 'plain' };
 
 function bgNursery(b, L) {
-  roomShell(b, { ceil: '#fbf1d8', side: '#ecd9ac', side2: '#e5d09e', sideShade: '#dcc490', wall: '#f7e8c4', dots: '#c9b8e0', floor: '#d9b48a', floor2: '#c29a6c', pattern: 'stars' });
+  roomShell(b, { ceil: '#faeccb', side: '#e5c47c', side2: '#debb70', sideShade: '#d2ae63', wall: '#f1d68f', dots: '#fff3d6', floor: '#c69f7a', floor2: '#ae8762', pattern: 'stars' });
   ceilingStars(b);
   drawWindow(b, 'night', 'b');
   drawDoor(b, 'p', 'baby');
@@ -310,7 +314,7 @@ function bgNursery(b, L) {
 }
 
 function bgChildhood(b, L) {
-  roomShell(b, { ceil: '#fbeeee', side: '#e5bcc0', side2: '#ddb2b7', sideShade: '#d3a5ab', wall: '#f0d0d2', dots: '#fbeeee', dots2: '#e3a0b2', floor: '#dcb48a', floor2: '#c59a6e', pattern: 'dots' });
+  roomShell(b, { ceil: '#fde4e2', side: '#e8a2ae', side2: '#e199a6', sideShade: '#d68e9b', wall: '#f3b9bf', dots: '#fde9e6', dots2: '#e7707f', floor: '#c69f7a', floor2: '#ae8762', pattern: 'dots' });
   lightBeam(b, 2);
   drawWindow(b, 'day', 'w');
   drawDoor(b, 'w', 'letters');
@@ -323,7 +327,7 @@ function bgChildhood(b, L) {
 }
 
 function bgTween(b, L) {
-  roomShell(b, { ceil: '#f2eef8', side: '#cdc2e2', side2: '#c4b8db', sideShade: '#b9acd2', wall: '#ddd5ec', dots: '#bcaadd', dots2: '#9fcfc6', floor: '#d6ae86', floor2: '#bf956b', pattern: 'butterflies' });
+  roomShell(b, { ceil: '#f3e6f2', side: '#bfa0c9', side2: '#b898c3', sideShade: '#ad8db9', wall: '#d6bcdc', dots: '#fff1c4', dots2: '#7fd3c7', floor: '#c69f7a', floor2: '#ae8762', pattern: 'butterflies' });
   lightBeam(b, 2);
   drawWindow(b, 'afternoon', 'y');
   drawDoor(b, 'l', 'butterfly');
@@ -346,7 +350,7 @@ function bgTeen(b, L) {
 }
 
 function bgYoungAdult(b, L) {
-  roomShell(b, { ceil: '#fffdf6', side: '#e7e1cf', side2: '#dfd8c2', sideShade: '#d6cdb4', wall: '#f3efe2', dots: '#e8e2cf', dots2: '#d9c9f5', floor: '#d8b896', floor2: '#c3a07e', pattern: 'plain' });
+  roomShell(b, YA_ROOM);
   lightBeam(b, 3);
   drawWindow(b, 'morning', null);
   drawDoor(b, 'w', 'wreath');
@@ -357,7 +361,7 @@ function bgYoungAdult(b, L) {
 }
 
 function bgMovingOut(b, L) {
-  roomShell(b, { ceil: '#fffdf6', side: '#e7e1cf', side2: '#dfd8c2', sideShade: '#d6cdb4', wall: '#f3efe2', dots: '#e8e2cf', dots2: '#d9c9f5', floor: '#d8b896', floor2: '#c3a07e', pattern: 'plain' });
+  roomShell(b, YA_ROOM);
   lightBeam(b, 4);
   drawWindow(b, 'morning', null);
   drawDoor(b, 'w', null);

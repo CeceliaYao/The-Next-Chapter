@@ -37,7 +37,7 @@ npx serve .        # then open the printed localhost address
 | Move things | Click and drag |
 | Move a window | Drag it by its navy title bar |
 | Replay a memory | Click a placed object that shows a ! badge (or hover it: “click to replay”) |
-| Menu (restart chapter, chapter select) | **Esc** or the Menu button |
+| Menu (restart chapter, chapter select, back to the door) | **Esc** or the Menu button |
 | Sound on/off | **M** or the speaker button (it shows a crossed-out speaker when the sound is off) |
 | Skip the current chapter (for testing) | **Shift + N** |
 
@@ -103,7 +103,12 @@ Until a file exists, its frame simply stays empty (the caption still shows). The
 
 ## Brand
 
-The look follows Chloee's **TNC Identity Guideline** (2026): early-internet nostalgia seen with modern design eyes. Keywords: *Nostalgic Digital, Y2K Web Retro, My Scene, Windows 98/XP, Frutiger Aero*. The rooms are warm and muted (like *Unpacking*) and shift colour from stage to stage; around them the interface is an early-2000s desktop: navy Windows-style title bars, glossy gel buttons, a dotted homepage background, buddy-list message pop-ups, iridescent CD chapter discs and little web badges. Windows can be dragged around. Everything has the logo's **black outline and hard offset shadow**, and the brand's **play icon** (the favicon) is the app icon in every title bar and on the Start button. Even the mouse arrow is the blue play triangle.
+The look follows Chloee's **TNC Identity Guideline** (2026) and her moodboard: early-internet nostalgia seen with modern design eyes. Keywords: *Nostalgic Digital, Y2K Web Retro, My Scene, Windows 98/XP, Frutiger Aero, Nintendo*. The moodboard's note asks for *"a warmer colour scheme + vivid point colours for frames"*, so:
+
+- **The rooms are warm and sunny** (like *Animal Crossing*) and sit with the terracotta door you open first. It's one room the whole way through: the wooden floor stays and the walls get repainted (butter, rose, lilac, the teen teal, then apricot).
+- **The desktop is a sunny sky with a green hill**, a Frutiger Aero / Windows XP wallpaper drawn for this game (`assets/ui/sky.jpg`) in the colours of Chloee's laptop mock-up.
+- **Every frame is a vivid ring**, the way the favicon is drawn: a black line, a bright colour, a black line, then a hard black offset shadow. Each chapter has its own frame colour (the colour of its CD).
+- Around the room the interface is an early-2000s desktop: navy Windows-style title bars, glossy gel buttons, buddy-list message pop-ups, iridescent CD chapter discs and little web badges. Windows can be dragged around. The brand's **play icon** (the favicon) is the app icon in every title bar and on the Start button. Even the mouse arrow is the blue play triangle.
 
 **Primary colours** carry the interface:
 
@@ -148,6 +153,7 @@ js/audio.js       synthesised sound effects + music-box ambience (no audio files
 lib/p5.min.js     p5.js 1.11 (bundled so it works offline)
 fonts/            Jost, Archivo Narrow, VT323 (bundled, SIL Open Font License)
 assets/brand/     team logos (original artwork) and favicon
+assets/ui/        the sky-and-hill desktop wallpaper
 assets/photos/    ← put photos here
 assets/video/     ← put videos here
 ```

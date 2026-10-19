@@ -923,18 +923,32 @@ function memSpark(x, y, unseen) {
 }
 
 const inPoly = (x, y, pts) => { let c = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [xi, yi] = pts[i], [xj, yj] = pts[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c; } return c; };
-// the light from the window: two crisp steps of light on the wall and floor, worked out once per room
+// the light in the room, worked out once per room in flat pixel steps:
+// the window's panes land on the floor as a patch of light (sunlight, warm afternoon light, dusk or moonlight),
+// and a desk lamp throws a small pool on the desk and the wall behind it
 let fxCv = null;
+const SKY_LIGHT = { day: ['255,252,228', 0.2], morning: ['255,247,230', 0.22], afternoon: ['255,214,168', 0.22], dusk: ['255,176,196', 0.15], night: ['176,192,255', 0.14] };
 function buildFx() {
   fxCv = document.createElement('canvas'); fxCv.width = ART_W; fxCv.height = ART_H;
-  const c = fxCv.getContext('2d');
-  if (!ROOM_FX.beam) return;
-  const outer = [[138, 72], [182, 72], [214, 141], [142, 141]], inner = [[146, 72], [174, 72], [200, 141], [156, 141]];
-  for (let y = 72; y <= 141; y++) for (let x = 136; x <= 216; x++) {
-    const px = x + 0.5, py = y + 0.5;
-    if (!inPoly(px, py, outer)) continue;
-    c.fillStyle = 'rgba(255,255,255,' + (inPoly(px, py, inner) ? 0.12 + ROOM_FX.beam * 0.03 : 0.07 + ROOM_FX.beam * 0.02) + ')';
-    c.fillRect(x, y, 1, 1);
+  const c = fxCv.getContext('2d'), put = (x, y, rgb, a) => { c.fillStyle = 'rgba(' + rgb + ',' + a + ')'; c.fillRect(x, y, 1, 1); };
+  const L = SKY_LIGHT[ROOM_FX.sky];
+  if (L) {
+    const [rgb, a0] = L, a = a0 + (ROOM_FX.beam || 0) * 0.015;
+    const patch = [[150, 109], [191, 109], [217, 135], [168, 135]];
+    for (let y = 109; y <= 135; y++) for (let x = 146; x <= 220; x++) {
+      const px = x + 0.5, py = y + 0.5;
+      if (!inPoly(px, py, patch)) continue;
+      const t = (py - 109) / 26, mx = 170.5 + 23 * t;                       // the mullions' shadows
+      if (Math.abs(px - mx) < 1.2 || Math.abs(py - 121.5) < 1) continue;
+      const edge = !inPoly(px - 1.5, py, patch) || !inPoly(px + 1.5, py, patch) || !inPoly(px, py - 1.5, patch) || !inPoly(px, py + 1.5, patch);
+      put(x, y, rgb, edge ? a * 0.55 : a);
+    }
+    for (let y = 73; y <= 79; y++) for (let x = 134; x <= 186; x++) put(x, y, rgb, a * (y < 76 ? 0.5 : 0.25));   // a little light on the wall under the sill
+  }
+  if (ROOM_FX.lamp) {
+    const [lx, top] = ROOM_FX.lamp, warm = '255,236,170';
+    for (let y = -9; y <= 0; y++) for (let x = -12; x <= 12; x++) { const d = Math.hypot(x / 1.3, y); if (d < 9) put(lx - 2 + x, top - 2 + y, warm, d < 5 ? 0.2 : 0.1); }
+    for (let x = -9; x <= 7; x++) put(lx - 3 + x, top - 2, warm, 0.3);
   }
 }
 // a glow in rings, each ring one flat step lighter than the one outside it

@@ -111,18 +111,20 @@ The look follows Chloee's **TNC Identity Guideline** and moodboard, and keeps **
   | --- | --- | --- | --- | --- | --- | --- |
   | Nursery (2000) | lemon + powder blue | lemon stripes with stars, a dotted border, a bunting garland, powder-blue beadboard | gingham | cloud | tie-backs under a scalloped valance | a white cot; drawers in pink, blue and lemon |
   | Childhood (2005) | pearl rose + lavender | rose with hearts and dots, a heart border, lavender candy stripes under a scalloped rail | checkerboard | flower | café curtains with a ruffled valance | a toy box, shelves backed in pink, lilac and mint, a checked throw |
-  | Tween (2010) | lilac + mint | lilac with butterflies, mint pinstripes under a pink ribbon | lilac and mint harlequin | lilac heart | a bead curtain | a beanbag, a round-backed chair, a checked throw |
-  | Teen (2014) | teal + purple | teal stripes with stars | grey-washed laminate | teal chevron | purple panels on rings | a swivel chair, a laundry basket |
-  | Young adult (2017) | blush + sage, on light oak | a two-tone painted wall | light oak | cream, with a diamond trellis | a roller blind | a hairpin-leg desk, a white moulded chair, a monstera, a checked throw |
-  | Moving out (2018) | the same room | paler patches where things hung | light oak | rolled up for the move | taken down, just the rod | a bare mattress, boxes |
+  | Tween (2010) | lilac + mint | lilac with butterflies, mint pinstripes under a pink ribbon | honey wood | a big pastel harlequin rug and a lilac heart | a bead curtain | a beanbag, a round-backed chair, a checked throw |
+  | Teen (2014) | teal + purple | teal stripes with stars | honey wood | teal chevron | purple panels on rings | a swivel chair, a laundry basket |
+  | Young adult (2017) | blush + sage, on honey wood | a two-tone painted wall | honey wood | cream, with a diamond trellis | a roller blind | a hairpin-leg desk, a white moulded chair, a monstera, a checked throw |
+  | Moving out (2018) | the same room | paler patches where things hung | honey wood | rolled up for the move | taken down, just the rod | a bare mattress, boxes |
 
   **One way of drawing for all six rooms** (after the pixel detail of *NEEDY STREAMER OVERLOAD*, the finely drawn objects of early web dress-up games, and the pastel pixel-room reference):
   - one pixel scale (320 × 180, every pixel drawn on purpose, no blur or filters) and one outline: a dark plum around furniture and objects, a softer line for the room's own edges, so the things in the room stand out from its walls;
+  - thickness: the walls show their cut edges like a dollhouse, the side walls have moulded panels, and furniture is chunky (thick posts, mattresses, desktops, shelves and window frames; full, gathered curtains with ruffled valances);
+  - from 2010 on the room keeps the same honey wood floor, so it reads as one room growing up, with each year's rug on top;
   - one light, from the upper left (through the window): furniture has a lit top, a base-coloured front and a darker side, with seams, recessed drawers and one clear highlight; objects get a lit top edge and a shaded lower edge automatically;
   - materials told apart by their details: fabric has folds and stitched hems, plastic one clean shine, wood its thickness and a little grain;
   - shadows in the corners and along the floor's edges, under each piece of furniture (cast to the lower right) and under every object that is put down;
   - large, warm, light surfaces, with stronger blue, pink, purple or orange only on a few pieces in each room;
-  - the window's light, glows and twinkles are drawn in flat pixel steps; messes show an orange ! badge and things that hold a memory a pink sparkle, both as pixel art.
+  - light is drawn in flat pixel steps: the window's panes land on the floor as a patch of light in that room's time of day (moonlight, sun, afternoon, dusk), desk lamps throw a small pool, and there are glows and twinkles; messes show an orange ! badge and things that hold a memory a pink sparkle, both as pixel art.
 - **Outside the room (the frame) and the titles**: a second colour system, the logo's vivid colours ("vivid point colours for frames", from the moodboard) as small colour blocks on white: each window has its own title bar colour and three little colour chips, the main buttons are orange, the chapter titles and discs use the logo colours. Windows 98 / XP is only a loose reference. Windows can be dragged around (like Teleport), and buttons change colour on hover (like Yrs Truly).
 - **One style for both**: the same plum outline (the frame's line is as thick as one pixel of the room), glossy "gel" fills, nested boxes, a faint grid and four-point sparkles. The box tray and the labels inside the game screen belong to the frame.
 

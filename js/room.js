@@ -42,23 +42,28 @@ function block(b, x1, y1, x2, y2, col, o) {
   if (side === 'R') { b.poly([[x2, y1], [x2 + d, y1 - t], [x2 + d, y2 - t], [x2, y2]], dim(col, 0.24)); b.line(x2 + d, y1 - t, x2 + d, y2 - t, 'o'); b.line(x2 + d, y2 - t, x2, y2, 'o'); }
   if (t > 0) {
     const l = side === 'L' ? x1 - d : x1, r = side === 'R' ? x2 + d : x2;
-    b.rect(l, y1 - t, r - l + 1, t, o.topCol || lit(col, 0.45)); b.hline(l, y1 - t - 1, r - l + 1, 'o');
+    b.rect(l, y1 - t, r - l + 1, t, o.topCol || lit(col, 0.42)); b.hline(l + 1, y1 - t, r - l - 1, lit(col, 0.6)); b.hline(l, y1 - t - 1, r - l + 1, 'o');
     if (side === 'L') b.line(x1 - d, y1 - t, x1, y1, 'o'); if (side === 'R') b.line(x2, y1, x2 + d, y1 - t, 'o');
     b.vline(l, y1 - t - 1, t + 1, 'o'); b.vline(r, y1 - t - 1, t + 1, 'o');
   }
   b.box(x1, y1, x2 - x1 + 1, y2 - y1 + 1, col);
-  b.hline(x1 + 1, y1 + 1, x2 - x1 - 1, lit(col, 0.28));                 // the front's top edge catches the light
-  b.hline(x1 + 1, y2 - 1, x2 - x1 - 1, dim(col, 0.12));                 // and its bottom edge turns away from it
-  if (o.shine !== false) { b.px(x1 + 2, y1 + 2, 'w'); b.px(x1 + 3, y1 + 2, lit(col, 0.6)); }   // one small, clear highlight
+  b.hline(x1 + 1, y1 + 1, x2 - x1 - 1, lit(col, 0.32));                 // the front's top edge catches the light
+  if (y2 - y1 > 5) { b.hline(x1 + 1, y2 - 2, x2 - x1 - 1, dim(col, 0.1)); b.hline(x1 + 1, y2 - 1, x2 - x1 - 1, dim(col, 0.2)); }   // and its lower part turns away from it
+  else b.hline(x1 + 1, y2 - 1, x2 - x1 - 1, dim(col, 0.15));
+  if (side === 'R') b.vline(x2 - 1, y1 + 1, y2 - y1 - 1, dim(col, 0.08)); if (side === 'L') b.vline(x1 + 1, y1 + 1, y2 - y1 - 1, lit(col, 0.15));
+  if (o.shine !== false) { b.px(x1 + 2, y1 + 2, 'w'); b.px(x1 + 3, y1 + 2, lit(col, 0.6)); b.px(x1 + 2, y1 + 3, lit(col, 0.6)); }   // one small, clear highlight
   return { x1, y1, x2, y2 };
 }
 // a drawer or door front set into a carcass: a dark seam round it, light along its top, a pull with a glint
 function drawerFront(b, x, y, w, h, col, pull) {
+  for (let i = x; i < x + w; i++) darkenAt(b, i, y + h, 0.3);   // the gap under the drawer, in shadow
   b.box(x, y, w, h, col);
-  b.hline(x + 1, y + 1, w - 2, lit(col, 0.3)); b.hline(x + 1, y + h - 2, w - 2, dim(col, 0.14));
+  b.hline(x + 1, y + 1, w - 2, lit(col, 0.38)); b.vline(x + 1, y + 1, h - 2, lit(col, 0.22));
+  b.hline(x + 1, y + h - 2, w - 2, dim(col, 0.2)); b.vline(x + w - 2, y + 2, h - 3, dim(col, 0.12));
+  if (h > 6) b.hline(x + 2, y + h - 3, w - 4, dim(col, 0.08));
   const px = x + Math.floor(w / 2) - 2, py = y + Math.floor(h / 2) - 1;
-  if (pull === 'knob') { b.rect(px + 1, py, 2, 2, pull === 'knob' ? 'o' : pull); b.px(px + 1, py, 'w'); }
-  else { b.rect(px, py, 4, 1, 'o'); b.px(px, py, lit(col, 0.7)); b.rect(px, py + 1, 4, 1, dim(col, 0.3)); }
+  if (pull === 'knob') { b.rect(px + 1, py, 2, 2, 'o'); b.px(px + 1, py, 'w'); }
+  else { b.rect(px, py, 4, 2, 'o'); b.rect(px + 1, py, 2, 1, lit(col, 0.75)); }
 }
 
 function stamp(b, x, y, rows, c, clip) {
@@ -76,25 +81,54 @@ function roomShell(b, th) {
   b.poly([[WX2 + 1, WY1], [RX + 1, CY], [RX + 1, FY + 1], [WX2 + 1, WY2 + 1]], th.side2 || th.side);
   b.rect(WX1, WY1, WX2 - WX1 + 1, WY2 - WY1 + 1, th.wall);
   wallpaper(b, th);
+  sidePanels(b, th);
   lowerWall(b, th.lower);
   drawFloor(b, th.floor);
   const xl = y => WX1 + (LX - WX1) * (y - WY2) / (FY - WY2), xr = y => WX2 + (RX - WX2) * (y - WY2) / (FY - WY2);
   // skirting board: a lit top, a white face, a shadow where it meets the floor
   b.rect(WX1, WY2 - 2, WX2 - WX1 + 1, 3, th.base || 'w'); b.hline(WX1, WY2 - 3, WX2 - WX1 + 1, LINE2);
   b.hline(WX1 + 1, WY2, WX2 - WX1 - 1, dim(th.base || 'w', 0.12));
-  // ambient shading in the corners: where walls meet, under the ceiling, along the floor's edges
-  for (let y = WY1 + 1; y < WY2 - 3; y++) { darkenAt(b, WX1 + 1, y, 0.1); darkenAt(b, WX1 + 2, y, 0.05); darkenAt(b, WX2 - 1, y, 0.1); darkenAt(b, WX2 - 2, y, 0.05); }
-  for (let x = WX1 + 1; x < WX2; x++) darkenAt(b, x, WY1 + 1, 0.08);
-  [0.18, 0.1, 0.05].forEach((k, i) => { const y = WY2 + 1 + i; for (let x = Math.ceil(xl(y)); x <= Math.floor(xr(y)); x++) darkenAt(b, x, y, k); });
-  for (let y = WY2 + 1; y <= FY; y++) { darkenAt(b, Math.ceil(xl(y)), y, 0.1); darkenAt(b, Math.ceil(xl(y)) + 1, y, 0.05); darkenAt(b, Math.floor(xr(y)), y, 0.1); darkenAt(b, Math.floor(xr(y)) - 1, y, 0.05); }
+  // ambient shading in steps: darker into the corners, under the ceiling and along the floor's edges
+  for (let y = WY1 + 1; y < WY2 - 3; y++) [0.16, 0.1, 0.05, 0.02].forEach((k, i) => { darkenAt(b, WX1 + 1 + i, y, k); darkenAt(b, WX2 - 1 - i, y, k); });
+  [0.16, 0.09, 0.04].forEach((k, i) => { for (let x = WX1 + 1; x < WX2; x++) darkenAt(b, x, WY1 + 1 + i, k); });
+  [0.24, 0.15, 0.08, 0.03].forEach((k, i) => { const y = WY2 + 1 + i; for (let x = Math.ceil(xl(y)); x <= Math.floor(xr(y)); x++) darkenAt(b, x, y, k); });
+  for (let y = WY2 + 1; y <= FY; y++) [0.14, 0.08, 0.03].forEach((k, i) => { darkenAt(b, Math.ceil(xl(y)) + i, y, k); darkenAt(b, Math.floor(xr(y)) - i, y, k); });
+  // the side walls are darker towards the back corner, where less light reaches
+  const sideAt = (x, top) => top ? CY + (WY1 - CY) * (x - LX) / (WX1 - LX) : FY + (WY2 - FY) * (x - LX) / (WX1 - LX);
+  for (let i = 0; i < 4; i++) { const k = [0.14, 0.08, 0.04, 0.02][i];
+    for (let y = Math.ceil(sideAt(WX1 - 1 - i, 1)); y < sideAt(WX1 - 1 - i, 0); y++) darkenAt(b, WX1 - 1 - i, y, k);
+    const xr2 = WX2 + 1 + i, t = CY + (WY1 - CY) * (RX - xr2) / (RX - WX2), f = FY + (WY2 - FY) * (RX - xr2) / (RX - WX2);
+    for (let y = Math.ceil(t); y < f; y++) darkenAt(b, xr2, y, k); }
   // the room's own edges: a softer line than the outlines of the things in it
   b.vline(WX1, WY1, WY2 - WY1 + 1, LINE2); b.vline(WX2, WY1, WY2 - WY1 + 1, LINE2);
   b.hline(WX1, WY1, WX2 - WX1 + 1, LINE2);
   b.line(WX1, WY2, LX, FY, LINE2); b.line(WX2, WY2, RX, FY, LINE2);
   b.line(WX1, WY1, LX, CY, LINE2); b.line(WX2, WY1, RX, CY, LINE2);
+  // the walls have thickness: where the dollhouse is cut open, their cut faces show as light strips
+  [[LX, th.side], [RX - 3, th.side2 || th.side]].forEach(([x, c]) => {
+    b.rect(x, CY, 4, FY - CY + 1, lit(c, 0.55)); b.vline(x === LX ? x + 3 : x, CY, FY - CY + 1, dim(c, 0.08));
+    b.vline(x === LX ? x + 4 : x - 1, CY, FY - CY + 1, LINE2);
+  });
+  b.rect(LX, CY, RX - LX + 1, 2, lit(th.ceil, 0.5)); b.hline(LX + 4, CY + 2, RX - LX - 7, LINE2);
   // the cut-away frame round the whole room stays in full ink
   b.rect(LX - 1, CY - 1, RX - LX + 3, 1, 'o'); b.rect(LX - 1, CY - 1, 1, FY - CY + 3, 'o'); b.rect(RX + 1, CY - 1, 1, FY - CY + 3, 'o');
   b.rect(LX - 1, FY + 1, RX - LX + 3, 2, 'o');
+}
+
+// a moulded panel on the upper part of each side wall, in perspective: lit on its lower edge, shaded on its upper one
+function sidePanels(b, th) {
+  const { LX, RX, CY, WX1, WX2, WY1, WY2, FY } = RA;
+  const lowTop = th.lower ? (th.lower.h || 24) : 0;
+  [[LX + 12, WX1 - 8, th.side], [WX2 + 8, RX - 12, th.side2 || th.side]].forEach(([a, z, c], side) => {
+    const ceilY = x => side ? CY + (WY1 - CY) * (RX - x) / (RX - WX2) : CY + (WY1 - CY) * (x - LX) / (WX1 - LX);
+    const floorY = x => side ? FY + (WY2 - FY) * (RX - x) / (RX - WX2) : FY + (WY2 - FY) * (x - LX) / (WX1 - LX);
+    const scale = x => (floorY(x) - ceilY(x)) / (WY2 - WY1);
+    const top = x => ceilY(x) + 8 * scale(x), bot = x => floorY(x) - (lowTop + 8) * scale(x);
+    for (let x = a; x <= z; x++) for (let y = Math.ceil(top(x)); y <= Math.floor(bot(x)); y++) {
+      const edgeT = y < top(x) + 1.2, edgeB = y > bot(x) - 1.2, edgeS = x === a || x === z;
+      b.px(x, y, edgeT ? dim(c, 0.16) : edgeB ? lit(c, 0.45) : edgeS ? (x === a ? dim(c, 0.1) : lit(c, 0.3)) : lit(c, 0.12));
+    }
+  });
 }
 
 /* the floor, in perspective. Each room has its own: f.style is
@@ -204,6 +238,7 @@ const SKIES = {
 
 function drawWindow(b, sky, curtain) {
   const x1 = 136, x2 = 183, y1 = 25, y2 = 67;
+  ROOM_FX.sky = sky;   // the light it lets in (see buildFx in game.js)
   skyGrad(b, x1 + 2, y1 + 2, x2 - x1 - 3, y2 - y1 - 3, SKIES[sky]);
   const inSky = (x, y) => x > x1 + 1 && x < x2 - 1 && y > y1 + 1 && y < y2 - 1;
   const put = (x, y, c) => { if (inSky(x, y)) b.px(x, y, c); };
@@ -225,19 +260,20 @@ function drawWindow(b, sky, curtain) {
     [[140, 54, 6], [148, 49, 5], [166, 52, 6], [174, 46, 6]].forEach(([x, y, w]) => { for (let yy = y; yy < y2; yy++) for (let xx = x; xx < x + w; xx++) put(xx, yy, '#2b2160'); put(x + 2, y + 3, 'y'); });
     put(145, 33, 'w'); put(171, 30, 'w');
   }
-  // the recess: the frame's inner top and left edges throw a thin shadow on the glass
-  for (let x = x1 + 2; x < x2 - 1; x++) darkenAt(b, x, y1 + 2, 0.2);
-  for (let y = y1 + 2; y < y2 - 1; y++) darkenAt(b, x1 + 2, y, 0.2);
-  // frame and mullions: lit on the left, a shade on their right edge
-  const shade = '#e3dde8';
-  b.rect(x1, y1, x2 - x1 + 1, 2, 'w'); b.rect(x1, y2 - 1, x2 - x1 + 1, 2, 'w');
-  b.rect(x1, y1, 2, y2 - y1 + 1, 'w'); b.rect(x2 - 1, y1, 2, y2 - y1 + 1, 'w');
-  b.rect(159, y1, 2, y2 - y1, 'w'); b.vline(160, y1 + 2, y2 - y1 - 3, shade);
-  b.rect(x1, 45, x2 - x1, 2, 'w'); b.hline(x1 + 2, 46, x2 - x1 - 3, shade); b.vline(x2, y1 + 1, y2 - y1 - 1, shade);
+  // the recess: the frame's inner top and left edges throw a shadow on the glass, in two steps
+  for (let x = x1 + 3; x < x2 - 2; x++) { darkenAt(b, x, y1 + 3, 0.26); darkenAt(b, x, y1 + 4, 0.12); }
+  for (let y = y1 + 3; y < y2 - 2; y++) { darkenAt(b, x1 + 3, y, 0.26); darkenAt(b, x1 + 4, y, 0.12); }
+  // a chunky frame and mullions: lit faces, shaded lower and right edges
+  const shade = '#e0d9e6', deep = '#c9c0d3';
+  b.rect(x1, y1, x2 - x1 + 1, 3, 'w'); b.rect(x1, y2 - 2, x2 - x1 + 1, 3, 'w');
+  b.rect(x1, y1, 3, y2 - y1 + 1, 'w'); b.rect(x2 - 2, y1, 3, y2 - y1 + 1, 'w');
+  b.hline(x1 + 3, y1 + 2, x2 - x1 - 5, shade); b.vline(x2, y1 + 1, y2 - y1 - 1, shade); b.hline(x1 + 1, y2, x2 - x1, shade);
+  b.rect(159, y1, 2, y2 - y1, 'w'); b.vline(160, y1 + 3, y2 - y1 - 5, shade);
+  b.rect(x1, 45, x2 - x1, 2, 'w'); b.hline(x1 + 3, 46, x2 - x1 - 5, shade);
   b.hline(x1 - 1, y1 - 1, x2 - x1 + 3, 'o'); b.vline(x1 - 1, y1 - 1, y2 - y1 + 2, 'o'); b.vline(x2 + 1, y1 - 1, y2 - y1 + 2, 'o');
   // the sill: a lit top, a shaded front and its shadow on the wall
-  b.box(x1 - 4, 68, x2 - x1 + 9, 4, 'w'); b.hline(x1 - 3, 70, x2 - x1 + 7, shade);
-  for (let x = x1 - 3; x <= x2 + 6; x++) { darkenAt(b, x, 72, 0.14); darkenAt(b, x + 1, 73, 0.07); }
+  b.box(x1 - 5, 67, x2 - x1 + 11, 6, 'w'); b.hline(x1 - 4, 68, x2 - x1 + 9, '#ffffff'); b.hline(x1 - 4, 70, x2 - x1 + 9, shade); b.hline(x1 - 4, 71, x2 - x1 + 9, deep);
+  for (let x = x1 - 4; x <= x2 + 7; x++) { darkenAt(b, x, 73, 0.18); darkenAt(b, x + 1, 74, 0.09); }
   if (curtain) drawCurtains(b, typeof curtain === 'string' ? { style: 'panels', c: curtain } : curtain);
 }
 
@@ -245,61 +281,67 @@ function drawWindow(b, sky, curtain) {
    a bead curtain, straight panels on rings, a roller blind, or just the bare rod */
 function drawCurtains(b, cu) {
   const x1 = 136, x2 = 183, c = cu.c;
-  const outlinePoly = pts => { for (let i = 0; i < pts.length; i++) { const [ax, ay] = pts[i], [bx, by] = pts[(i + 1) % pts.length]; b.line(ax, ay, bx, by, 'o'); } };
-  const rod = () => b.box(x1 - 13, 19, x2 - x1 + 27, 3, 'w');
-  const rings = (xs) => xs.forEach(x => { b.px(x, 21, 'o'); b.px(x, 22, 'o'); });
+  const outlinePoly = pts => { for (let i = 0; i < pts.length; i++) { const [ax, ay] = pts[i], [bx, by] = pts[(i + 1) % pts.length]; b.line(Math.round(ax), Math.round(ay), Math.round(bx), Math.round(by), 'o'); } };
   const mirror = pts => pts.map(([x, y]) => [x1 + x2 - x, y]);
+  // a gathered panel: fabric falls in folds, each a lit ridge, a mid tone and a crease in shade
+  const panel = (pts, col, step) => {
+    const m = new PixBuf(ART_W, ART_H, 0); m.poly(pts, 'w');
+    const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]), x0 = Math.min(...xs);
+    for (let y = Math.min(...ys); y <= Math.max(...ys); y++) for (let x = x0; x <= Math.max(...xs); x++) {
+      if (!m.get(x, y)) continue;
+      const k = (x - x0) % (step || 5);
+      b.px(x, y, k === 0 ? lit(col, 0.4) : k >= (step || 5) - 2 ? dim(col, k === (step || 5) - 1 ? 0.24 : 0.12) : col);
+    }
+    outlinePoly(pts);
+  };
+  // a ruffled valance across the top: gathered folds and a scalloped hem
+  const valance = (y, h, col) => {
+    const a = x1 - 15, z = x2 + 15;
+    for (let x = a; x <= z; x++) { const k = (x - a) % 4; b.vline(x, y, h, k === 0 ? lit(col, 0.4) : k === 3 ? dim(col, 0.18) : col); }
+    for (let x = a; x <= z; x += 6) { b.hline(x + 1, y + h, 4, col); b.hline(x + 2, y + h + 1, 2, col); b.px(x, y + h, 'o'); b.px(x + 1, y + h + 1, 'o'); b.px(x + 4, y + h + 1, 'o'); b.hline(x + 2, y + h + 2, 2, 'o'); b.px(x + 5, y + h, 'o'); }
+    b.hline(a, y - 1, z - a + 1, 'o'); b.vline(a - 1, y, h, 'o'); b.vline(z + 1, y, h, 'o');
+    for (let x = a + 1; x < z; x += 2) b.px(x, y + h - 2, lit(col, 0.55));   // stitching
+  };
+  const rod = () => { b.box(x1 - 17, 18, x2 - x1 + 35, 3, 'w'); b.hline(x1 - 16, 19, x2 - x1 + 33, 'w'); b.box(x1 - 20, 17, 4, 5, cu.knob || 'Y'); b.box(x2 + 17, 17, 4, 5, cu.knob || 'Y'); };
+  const rings = xs => xs.forEach(x => { b.px(x, 21, 'o'); b.px(x, 22, 'o'); });
+  const bow = (x, y, col) => { stamp(b, x - 3, y - 1, ['##.##', '#####', '##.##'], col); b.px(x - 1, y, dim(col, 0.3)); b.px(x, y, 'o'); b.px(x - 2, y + 2, col); b.px(x + 1, y + 2, col); };
   if (cu.style === 'tieback') {
     rod();
-    const left = [[x1 - 11, 22], [x1 + 7, 22], [x1 + 2, 38], [x1 - 3, 49], [x1 + 1, 60], [x1 + 4, 74], [x1 - 11, 74]];
-    [left, mirror(left)].forEach(pts => { b.poly(pts, c); outlinePoly(pts); });
-    [[x1 - 7, 26, 22], [x1 - 4, 54, 18], [x2 + 7, 26, 22], [x2 + 4, 54, 18]].forEach(([x, y, h]) => { b.vline(x, y, h, cu.c2 || 'B'); b.vline(x + 1, y, h, lit(c, 0.5)); });
-    for (let x = x1 - 10; x < x1 + 4; x += 2) { b.px(x, 72, lit(c, 0.5)); b.px(x1 + x2 - x, 72, lit(c, 0.5)); }
-    [[x1 - 11, 48], [x2 - 2, 48]].forEach(([x, y]) => b.box(x, y, 14, 3, 'w'));   // the tie-backs
-    b.rect(x1 - 12, 21, x2 - x1 + 25, 5, c);
-    for (let x = x1 - 12; x <= x2 + 12; x += 6) { b.hline(x + 1, 26, 4, c); b.hline(x + 2, 27, 2, c); b.px(x, 26, 'o'); b.px(x + 1, 27, 'o'); b.px(x + 4, 27, 'o'); b.hline(x + 2, 28, 2, 'o'); }
-    b.hline(x1 - 12, 20, x2 - x1 + 25, 'o');
+    const left = [[x1 - 15, 21], [x1 + 9, 21], [x1 + 4, 36], [x1 - 2, 49], [x1 + 2, 60], [x1 + 6, 77], [x1 - 15, 77]];
+    panel(left, c); panel(mirror(left), c);
+    valance(21, 7, c);
+    bow(x1 - 4, 49, cu.bow || '#f39ab9'); bow(x2 + 4, 49, cu.bow || '#f39ab9');
   } else if (cu.style === 'cafe') {
     b.rect(x1 - 1, 44, x2 - x1 + 3, 1, 'o');
-    [[x1 + 2, 159], [161, x2 - 2]].forEach(([a, z]) => {
-      b.rect(a, 45, z - a + 1, 22, c);
-      for (let x = a + 2; x < z; x += 4) b.vline(x, 47, 19, cu.c3 || 'g');
-      b.rect(a, 63, z - a + 1, 2, cu.c2);
-      b.vline(a - 1, 45, 22, 'o'); b.vline(z + 1, 45, 22, 'o');
-    });
-    b.rect(x1 - 6, 20, x2 - x1 + 13, 5, cu.c2); b.hline(x1 - 6, 19, x2 - x1 + 13, 'o');
-    for (let x = x1 - 6; x <= x2 + 6; x += 4) { b.hline(x, 25, 3, cu.c2); b.px(x + 1, 26, cu.c2); b.px(x + 3, 25, 'o'); b.px(x, 26, 'o'); b.px(x + 2, 26, 'o'); b.px(x + 1, 27, 'o'); }
+    [[x1 + 3, 159], [161, x2 - 3]].forEach(([a, z]) => panel([[a, 45], [z, 45], [z, 66], [a, 66]], c, 4));
+    [[x1 + 3, 159], [161, x2 - 3]].forEach(([a, z]) => { b.rect(a + 1, 62, z - a - 1, 2, cu.c2); });
+    valance(20, 7, cu.c2);
   } else if (cu.style === 'beads') {
     rod();
     const cols = cu.beads;
-    for (let side = 0; side < 2; side++) for (let k = 0; k < 6; k++) {
-      const x = side ? x2 + 11 - k * 3 : x1 - 11 + k * 3, len = 50 - k * 4;
+    for (let side = 0; side < 2; side++) for (let k = 0; k < 7; k++) {
+      const x = side ? x2 + 14 - k * 3 : x1 - 14 + k * 3, len = 54 - k * 4;
       b.vline(x, 22, len, 'o');
-      for (let y = 24, n = 0; y < 22 + len; y += 3, n++) b.px(x, y, cols[(n + k) % cols.length]);
+      for (let y = 24, n = 0; y < 22 + len; y += 3, n++) { b.px(x, y, cols[(n + k) % cols.length]); b.px(x, y + 1, dim(cols[(n + k) % cols.length], 0.2)); }
     }
   } else if (cu.style === 'panels') {
     rod();
-    const left = [[x1 - 10, 22], [x1 + 6, 22], [x1 + 3, 40], [x1 + 7, 60], [x1 + 3, 74], [x1 - 10, 74]];
-    [left, mirror(left)].forEach(pts => {
-      b.poly(pts, c);
-      const xs = pts.map(p => p[0]), mx = (Math.min(...xs) + Math.max(...xs)) / 2;
-      [Math.round(mx) - 3, Math.round(mx) + 2].forEach(fx => { b.vline(fx, 24, 48, dim(c, 0.28)); b.vline(fx + 1, 24, 48, lit(c, 0.3)); });   // folds: a crease in shade, its ridge in light
-      for (let x = Math.min(...xs) + 1; x < Math.max(...xs); x += 2) b.px(x, 71, lit(c, 0.45));                                                // a stitched hem
-      outlinePoly(pts);
-    });
-    rings([x1 - 8, x1 - 3, x1 + 2, x2 - 2, x2 + 3, x2 + 8]);
+    const left = [[x1 - 14, 22], [x1 + 7, 22], [x1 + 4, 40], [x1 + 8, 60], [x1 + 4, 76], [x1 - 14, 76]];
+    panel(left, c, 6); panel(mirror(left), c, 6);
+    for (let x = x1 - 13; x < x1 + 5; x += 2) { b.px(x, 74, lit(c, 0.5)); b.px(x1 + x2 - x, 74, lit(c, 0.5)); }
+    rings([x1 - 12, x1 - 7, x1 - 2, x1 + 3, x2 - 3, x2 + 2, x2 + 7, x2 + 12]);
   } else if (cu.style === 'blind') {
-    b.box(x1 - 2, 22, x2 - x1 + 5, 4, 'w');
-    b.rect(x1 + 1, 26, x2 - x1 - 1, 6, c);
-    b.hline(x1 + 1, 28, x2 - x1 - 1, cu.c2); b.hline(x1 + 1, 30, x2 - x1 - 1, cu.c2);
-    b.box(x1, 32, x2 - x1 + 1, 2, 'w');
-    b.vline(x2 - 6, 34, 9, 'o'); b.box(x2 - 7, 43, 3, 3, 'w');
+    b.box(x1 - 3, 21, x2 - x1 + 7, 5, 'w'); b.hline(x1 - 2, 22, x2 - x1 + 5, 'w'); b.hline(x1 - 2, 24, x2 - x1 + 5, '#e0d9e6');
+    b.rect(x1 + 3, 26, x2 - x1 - 5, 8, c);
+    for (let y = 27; y < 34; y += 2) b.hline(x1 + 3, y, x2 - x1 - 5, cu.c2);
+    b.box(x1 + 2, 34, x2 - x1 - 3, 3, 'w'); b.hline(x1 + 3, 35, x2 - x1 - 5, '#e0d9e6');
+    b.vline(x2 - 7, 37, 9, 'o'); b.box(x2 - 8, 46, 3, 3, 'w');
   } else {   // bare: the curtains are packed, only the rod and its rings are left
-    rod(); rings([x1 - 9, x1 - 5, x1 - 1, x2 + 1, x2 + 5, x2 + 9]);
+    rod(); rings([x1 - 12, x1 - 8, x1 - 4, x2 + 4, x2 + 8, x2 + 12]);
   }
 }
 
-function lightBeam(b, level) { ROOM_FX.beam = level || 3; }   // drawn as a soft, smooth beam of light (see drawRoomGlow)
+function lightBeam(b, level) { ROOM_FX.beam = level || 3; }   // how strong the window's light is (drawn by buildFx in game.js)
 
 function drawDoor(b, col, deco) {
   const x1 = 253, x2 = 274, y1 = 48, y2 = 105;
@@ -323,27 +365,27 @@ function drawDoor(b, col, deco) {
 
 /* ---------- furniture ---------- */
 
-function shelfPlank(b, x1, x2, y, col) {   // a plank two pixels thick: a lit top, its front, its shadow on the wall
-  b.box(x1 - 1, y, x2 - x1 + 3, 4, col);
-  b.hline(x1, y + 1, x2 - x1 + 1, lit(col, 0.4)); b.hline(x1, y + 2, x2 - x1 + 1, col);
-  for (let x = x1; x <= x2 + 2; x++) { darkenAt(b, x + 1, y + 4, 0.16); darkenAt(b, x + 2, y + 5, 0.08); }
-  [x1 + 4, x2 - 4].forEach((x, i) => { b.vline(x, y + 4, 5, 'o'); b.line(x, y + 8, x + (i ? -4 : 4), y + 4, 'o'); });
+function shelfPlank(b, x1, x2, y, col) {   // a plank three pixels thick: a lit top, its front, a shaded underside and its shadow on the wall
+  for (let x = x1; x <= x2 + 3; x++) { darkenAt(b, x + 1, y + 5, 0.22); darkenAt(b, x + 2, y + 6, 0.11); }
+  b.box(x1 - 2, y, x2 - x1 + 5, 5, col);
+  b.hline(x1 - 1, y + 1, x2 - x1 + 3, lit(col, 0.45)); b.hline(x1 - 1, y + 3, x2 - x1 + 3, dim(col, 0.16));
+  [x1 + 4, x2 - 4].forEach((x, i) => { b.rect(x, y + 5, 2, 5, 'o'); b.line(x + (i ? 0 : 1), y + 9, x + (i ? -4 : 5), y + 5, 'o'); b.line(x + (i ? 1 : 0), y + 9, x + (i ? -3 : 4), y + 5, 'o'); });
 }
 
 function drawCot(b, c) {
-  const x1 = q(c.x1), x2 = q(c.x2), top = q(c.top), bot = q(c.bottom);
-  castShadow(b, x1, x2, bot + 1);
-  b.box(x1 + 2, top - 16, x2 - x1 - 3, 3, 'w');
-  for (let x = x1 + 6; x < x2 - 4; x += 5) { b.rect(x, top - 13, 2, 13, 'w'); b.vline(x + 2, top - 13, 13, 'g'); }
+  const x1 = q(c.x1), x2 = q(c.x2), top = q(c.top), bot = q(c.bottom), sh = '#e3dde8', deep = '#cfc7da';
+  castShadow(b, x1, x2, bot + 1, [0.26, 0.15, 0.06]);
+  b.box(x1 + 2, top - 17, x2 - x1 - 3, 4, 'w'); b.hline(x1 + 3, top - 15, x2 - x1 - 5, sh);   // the top rail
+  for (let x = x1 + 6; x < x2 - 5; x += 6) { b.rect(x, top - 13, 3, 13, 'w'); b.vline(x + 2, top - 13, 13, sh); b.vline(x + 3, top - 13, 13, deep); }   // round bars, shaded on the right
   b.box(x1 + 2, top, x2 - x1 - 3, 6, 'b');                                         // the mattress, quilted
-  b.hline(x1 + 3, top + 1, x2 - x1 - 5, lit('b', 0.6));
-  for (let x = x1 + 5; x < x2 - 3; x += 5) b.vline(x, top + 2, 3, 'w');
-  b.rect(x1 + 3, top + 6, x2 - x1 - 5, 4, 'p');                                      // the bumper: fabric with a stitched hem
-  for (let x = x1 + 4; x < x2 - 3; x += 2) b.px(x, top + 7, lit('p', 0.6));
-  for (let x = x1 + 3; x < x2 - 2; x += 4) { b.px(x, top + 10, 'p'); b.px(x + 1, top + 10, 'p'); b.px(x + 1, top + 11, 'o'); b.px(x + 3, top + 10, 'o'); }
-  [x1 - 1, x2 - 3].forEach(x => { b.box(x, top - 20, 4, bot - top + 20, 'w'); b.vline(x + 2, top - 19, bot - top + 18, '#e3dde8'); });   // posts, shaded on the right
-  b.ell(x1 + 1, top - 22, 2.5, 2.5, 'P'); b.ell(x2 - 1, top - 22, 2.5, 2.5, 'P');
-  b.px(x1, top - 23, 'w'); b.px(x2 - 2, top - 23, 'w'); b.px(x1 + 2, top - 21, dim('P', 0.2)); b.px(x2, top - 21, dim('P', 0.2));
+  b.hline(x1 + 3, top + 1, x2 - x1 - 5, lit('b', 0.6)); b.hline(x1 + 3, top + 4, x2 - x1 - 5, dim('b', 0.12));
+  for (let x = x1 + 5; x < x2 - 3; x += 5) b.vline(x, top + 2, 2, 'w');
+  b.rect(x1 + 3, top + 6, x2 - x1 - 5, 5, 'p');                                      // the skirt: fabric with eyelet lace and a stitched hem
+  b.hline(x1 + 3, top + 6, x2 - x1 - 5, lit('p', 0.4)); b.hline(x1 + 3, top + 9, x2 - x1 - 5, dim('p', 0.14));
+  for (let x = x1 + 4; x < x2 - 3; x += 2) b.px(x, top + 7, lit('p', 0.7));
+  for (let x = x1 + 3; x < x2 - 2; x += 4) { b.rect(x, top + 11, 3, 1, 'w'); b.px(x + 1, top + 12, 'w'); b.px(x + 1, top + 11, 'p'); b.px(x + 3, top + 11, 'o'); b.px(x, top + 12, 'o'); b.px(x + 2, top + 12, 'o'); b.px(x + 1, top + 13, 'o'); }
+  [x1 - 2, x2 - 3].forEach(x => { b.box(x, top - 20, 5, bot - top + 20, 'w'); b.vline(x + 3, top - 19, bot - top + 18, sh); b.vline(x + 1, top - 19, bot - top + 18, '#ffffff'); });   // posts
+  [x1 + 0.5, x2 - 0.5].forEach(x => { b.ell(x, top - 23, 3.2, 3.2, 'P'); b.ring(x, top - 23, 3.2, 3.2, 'o'); b.px(Math.floor(x) - 1, top - 25, 'w'); b.px(Math.floor(x) + 1, top - 21, dim('P', 0.25)); });
 }
 
 function drawBed(b, bed, style) {
@@ -355,15 +397,18 @@ function drawBed(b, bed, style) {
     bare: { frame: '#d8b48a', duvet: '#f6f4ef', dark: '#a9bfdc', pillow: null }
   }[style];
   const x1 = q(bed.x1), x2 = q(bed.x2), top = q(bed.top), bot = q(bed.bottom), F = s.frame;
-  castShadow(b, x1 + 2, x2, bot + 1);
-  const post = (x, y, w, h) => { b.box(x, y, w, h, F); b.vline(x + 1, y + 1, h - 2, lit(F, 0.35)); b.vline(x + w - 2, y + 1, h - 2, dim(F, 0.2)); };
-  post(x1, top - 21, 6, bot - top + 21); b.px(x1, top - 21, null); b.px(x1 + 5, top - 21, null);   // headboard
-  post(x2 - 4, top - 7, 5, bot - top + 7);                                                         // footboard
-  b.box(x1 + 5, top + 2, x2 - x1 - 8, 7, 'w'); b.hline(x1 + 6, top + 7, x2 - x1 - 10, '#e3dde8');  // mattress
+  castShadow(b, x1 + 2, x2, bot + 1, [0.26, 0.15, 0.06]);
+  const post = (x, y, w, h) => {   // a thick post: lit on the left, a mid tone, shaded on the right, with a cap
+    b.box(x, y, w, h, F); b.vline(x + 1, y + 1, h - 2, lit(F, 0.42)); b.vline(x + 2, y + 1, h - 2, lit(F, 0.18));
+    b.vline(x + w - 2, y + 1, h - 2, dim(F, 0.24)); b.vline(x + w - 3, y + 1, h - 2, dim(F, 0.1));
+    b.box(x - 1, y - 2, w + 2, 3, F); b.hline(x, y - 1, w, lit(F, 0.45));
+  };
   b.rect(x1 + 6, top + 9, x2 - x1 - 10, bot - top - 12, F); b.hline(x1 + 6, bot - 3, x2 - x1 - 10, 'o');   // side rail
-  b.hline(x1 + 6, top + 9, x2 - x1 - 10, lit(F, 0.3)); b.hline(x1 + 6, bot - 4, x2 - x1 - 10, dim(F, 0.18));
+  b.hline(x1 + 6, top + 9, x2 - x1 - 10, lit(F, 0.35)); b.hline(x1 + 6, bot - 5, x2 - x1 - 10, dim(F, 0.1)); b.hline(x1 + 6, bot - 4, x2 - x1 - 10, dim(F, 0.22));
+  post(x1 - 1, top - 21, 8, bot - top + 21);                                                       // headboard
+  post(x2 - 5, top - 7, 7, bot - top + 7);                                                         // footboard
+  b.box(x1 + 6, top + 1, x2 - x1 - 10, 9, 'w'); b.hline(x1 + 7, top + 6, x2 - x1 - 12, '#ebe6f0'); b.hline(x1 + 7, top + 7, x2 - x1 - 12, '#ddd6e4');   // a thick mattress
   if (F[0] === '#' && style !== 'messy') for (let x = x1 + 12; x < x2 - 8; x += 17) b.hline(x, top + 11, 6, dim(F, 0.1));   // a little wood grain
-  b.rect(x1 + 9, bot - 2, 2, 2, 'o'); b.rect(x2 - 11, bot - 2, 2, 2, 'o');
   if (style === 'bare') {   // a bare mattress in ticking stripes, with buttons
     b.box(x1 + 5, top, x2 - x1 - 8, 10, s.duvet);
     for (let x = x1 + 7; x < x2 - 4; x += 3) b.vline(x, top + 1, 8, s.dark);
@@ -429,13 +474,13 @@ function drawDesk(b, d, o) {
   o = o || {};
   const x1 = q(d.x1), x2 = q(d.x2), top = q(d.top), bot = q(d.bottom), col = o.col || 'w';
   castShadow(b, x1 - 3, x2, bot + 1);
-  for (let x = x1 + 1; x < x2 - 22; x++) { darkenAt(b, x, top + 4, 0.14); darkenAt(b, x + 1, top + 5, 0.07); }   // the desktop's shadow on the wall
+  for (let x = x1 + 1; x < x2 - 22; x++) { darkenAt(b, x, top + 5, 0.2); darkenAt(b, x + 1, top + 6, 0.1); darkenAt(b, x + 2, top + 7, 0.04); }   // the desktop's shadow on the wall
   if (o.hairpin) { b.line(x1 + 2, top + 3, x1, bot, 'o'); b.line(x1 + 2, top + 3, x1 + 5, bot, 'o'); }   // hairpin legs
-  else { b.box(x1 + 1, top + 3, 4, bot - top - 3, col); b.vline(x1 + 2, top + 4, bot - top - 5, lit(col, 0.4)); b.vline(x1 + 3, top + 4, bot - top - 5, dim(col, 0.12)); }
-  block(b, x2 - 19, top + 3, x2, bot, col, { top: 0, shine: false });                       // the drawer unit, its side in shade
+  else { b.box(x1 + 1, top + 4, 5, bot - top - 4, col); b.vline(x1 + 2, top + 5, bot - top - 6, lit(col, 0.4)); b.vline(x1 + 4, top + 5, bot - top - 6, dim(col, 0.18)); }
+  block(b, x2 - 19, top + 5, x2, bot, col, { top: 0, shine: false });                       // the drawer unit, its side in shade
   const dr = o.drawers || [o.drawer || 'L', o.drawer || 'L'];
-  drawerFront(b, x2 - 17, top + 6, 15, 10, dr[0]); drawerFront(b, x2 - 17, top + 18, 15, 10, dr[1]);
-  block(b, x1 - 2, top, x2 + 2, top + 3, col, { depth: 3, top: 2 });                       // the desktop: a lit top, a front edge
+  drawerFront(b, x2 - 17, top + 8, 15, 11, dr[0]); drawerFront(b, x2 - 17, top + 21, 15, 10, dr[1]);
+  block(b, x1 - 2, top, x2 + 2, top + 4, col, { depth: 3, top: 2 });                       // the desktop: a lit top, a thick front edge
   drawChair(b, x1, top, bot, o.chair || 'P', o.chairStyle);
   if (o.lamp) {
     const lx = x2 - 4;
@@ -444,6 +489,7 @@ function drawDesk(b, d, o) {
     b.poly([[lx - 2, top - 17], [lx + 6, top - 21], [lx + 9, top - 14]], o.lamp);
     b.line(lx - 2, top - 17, lx + 6, top - 21, 'o'); b.line(lx + 6, top - 21, lx + 9, top - 14, 'o'); b.line(lx + 9, top - 14, lx - 2, top - 17, 'o');
     b.px(lx + 1, top - 17, lit(o.lamp, 0.6)); b.px(lx + 2, top - 18, lit(o.lamp, 0.6));               // a glint on the shade
+    ROOM_FX.lamp = [lx, top];
   }
   if (o.papers) [[x1 + 4, 'w'], [x1 + 14, 'g'], [x1 + 24, 'w']].forEach(([x, c]) => { b.rect(x, top - 3, 8, 1, c); b.hline(x, top - 4, 8, 'o'); });
 }
@@ -456,7 +502,7 @@ function drawChair(b, x1, top, bot, col, style) {
     b.ell(x1 + 16, top + 11, 9, 7, col); b.ring(x1 + 16, top + 11, 9, 7, 'o'); b.ring(x1 + 16, top + 11, 6, 4, lit(col, 0.6));
     b.px(x1 + 11, top + 7, 'w'); b.px(x1 + 12, top + 6, 'w');
     seat();
-    b.line(x1 + 9, top + 22, x1 + 7, bot, 'o'); b.line(x1 + 23, top + 22, x1 + 25, bot, 'o');
+    b.line(x1 + 9, top + 22, x1 + 7, bot, 'o'); b.line(x1 + 10, top + 22, x1 + 8, bot, dim(col, 0.3)); b.line(x1 + 23, top + 22, x1 + 25, bot, 'o'); b.line(x1 + 22, top + 22, x1 + 24, bot, dim(col, 0.3));
   } else if (style === 'swivel') {
     b.box(x1 + 9, top + 2, 15, 16, col); b.rect(x1 + 10, top + 3, 13, 3, lit(col, 0.45)); b.vline(x1 + 22, top + 6, 11, dim(col, 0.2));
     for (let y = top + 8; y < top + 16; y += 3) b.hline(x1 + 11, y, 10, dim(col, 0.12));   // stitched padding
@@ -500,6 +546,16 @@ function flowerRug(b, cx, cy, rx, ry, fill, trim) {   // a round rug with twelve
 function heartRug(b, cx, cy, rx, ry, fill, trim) {   // a heart, lying on the floor
   shapeRug(b, (x, y) => { const X = (x + 0.5 - cx) / rx * 1.15, Y = -(y + 0.5 - cy) / ry * 1.15 + 0.15; return (X * X + Y * Y - 1) ** 3 - X * X * Y ** 3 <= 0; },
     [cx - rx - 2, cy - ry - 3, cx + rx + 2, cy + ry + 3], fill, trim);
+}
+function harlequinRug(b, cx, cy, w, h, cols, trim) {   // a big rug in pastel diamonds (2010)
+  const y0 = cy - h, y1 = cy + h, sl = 0.25;
+  const inside = (x, y) => y >= y0 && y <= y1 && Math.abs(x + 0.5 - cx) <= w + (y - cy) * sl;
+  shapeRug(b, inside, [cx - w - h, y0, cx + w + h, y1], cols[0], trim);
+  for (let y = y0 + 2; y <= y1 - 3; y++) for (let x = Math.floor(cx - w - h); x <= cx + w + h; x++) {
+    if (!inside(x - 3, y) || !inside(x + 3, y)) continue;
+    const U = (x - cx) / 9 + 0.5, V = (y - y0 - 2) / 4.5, iu = Math.floor(U), iv = Math.floor(V);
+    if (Math.abs(U - iu - 0.5) + Math.abs(V - iv - 0.5) < 0.5) b.px(x, y, cols[1 + ((iu + iv) % (cols.length - 1) + cols.length - 1) % (cols.length - 1)]);
+  }
 }
 function chevronRug(b, cx, cy, w, h, c1, c2, trim) {   // a rectangular rug in zigzag stripes (2014)
   const y0 = cy - h, y1 = cy + h, sl = 0.25;
@@ -615,10 +671,10 @@ function hangString(b, x, toY) { b.vline(x, RA.WY1, Math.max(1, toY - RA.WY1), '
    The pastels are soft and slightly greyed (about as saturated as the teen room's teal), pearly rather than candy. */
 
 function bgNursery(b, L) {   // lemon + powder blue: beadboard, gingham carpet, a cloud rug, tie-back curtains
-  roomShell(b, { ceil: '#f1f5fa', side: '#d3dfec', side2: '#cdd9e7', wall: '#f3edcd', bands: '#f7f3de', dots: '#9cb6d3', pattern: 'stars',
-    border: { style: 'dots', c: ['#d1dbe6', '#ffffff'] },
-    lower: { style: 'beadboard', c: ['#d4dde8', '#b2c1d1', '#c6d0dd'] },
-    floor: { style: 'plaid', c: ['#f7f2e3', '#d0dbe7', '#f3edcd', '#becbd9'], shadow: '#dbd4bd' } });
+  roomShell(b, { ceil: '#f1f6fd', side: '#c9daf3', side2: '#c2d4ef', wall: '#f8eec2', bands: '#fbf4d8', dots: '#8fb2e0', pattern: 'stars',
+    border: { style: 'dots', c: ['#bcd2ee', '#ffffff'] },
+    lower: { style: 'beadboard', c: ['#a9c6ea', '#8bb0de', '#9fbde4'] },
+    floor: { style: 'plaid', c: ['#fbf2d6', '#cfe0f5', '#f6e3a8', '#b5cdee'], shadow: '#dbd4bd' } });
   ceilingStars(b);
   bunting(b, 46, 120, 25, 3, ['#f3b9cc', '#f3dc8e', '#a9c8ea', '#bfe3c8']);
   bunting(b, 198, 248, 25, 2, ['#a9c8ea', '#f3b9cc', '#f3dc8e']);
@@ -633,10 +689,10 @@ function bgNursery(b, L) {   // lemon + powder blue: beadboard, gingham carpet, 
 }
 
 function bgChildhood(b, L) {   // pearl rose + lavender: candy stripes under a scalloped rail, a checkerboard floor, a flower rug, café curtains
-  roomShell(b, { ceil: '#fdf6f4', side: '#ddd4ea', side2: '#d7cee5', wall: '#f4e2e1', dots: '#fdf9f7', dots2: '#e2a3b6', pattern: 'dots',
-    border: { style: 'hearts', c: ['#dcd7e5', '#d9a6b7'] },
-    lower: { style: 'stripes', c: ['#dcd6e6', '#cbc2da', '#cfc8da'] },
-    floor: { style: 'checker', c: ['#f8efe5', '#ead5d2'], shadow: '#d8c8cf' } });
+  roomShell(b, { ceil: '#fdf5f7', side: '#dccff0', side2: '#d5c8ec', wall: '#f9dfe6', dots: '#fff7fa', dots2: '#ec9ab5', pattern: 'dots',
+    border: { style: 'hearts', c: ['#e4d8f4', '#ec9ab5'] },
+    lower: { style: 'stripes', c: ['#d9cdf2', '#c4b4ea', '#cfc2ee'] },
+    floor: { style: 'checker', c: ['#fcf2ec', '#f2c9d7'], shadow: '#d8c8cf' } });
   lightBeam(b, 2);
   drawWindow(b, 'day', { style: 'cafe', c: 'w', c2: '#e9b9c9', c3: '#f1e6ea' });
   drawDoor(b, 'w', 'letters');
@@ -648,23 +704,24 @@ function bgChildhood(b, L) {   // pearl rose + lavender: candy stripes under a s
   drawToyBox(b, L.toybox);
 }
 
-function bgTween(b, L) {   // 2010, lilac + mint: butterflies, mint pinstripes, a lilac-and-mint harlequin floor, a bead curtain, a beanbag
-  roomShell(b, { ceil: '#faf6fb', side: '#ddd2ea', side2: '#d7cbe5', wall: '#e8dfef', dots: '#e6b3cb', dots2: '#86c9c9', pattern: 'butterflies',
-    lower: { style: 'pinstripe', h: 22, c: ['#d4ebe3', '#bfe0d5', '#cbe3db', '#e3b5cc'] },
-    floor: { style: 'harlequin', c: ['#f8f2e8', '#d4ebe2', '#d9cdea'], shadow: '#d5cde3' } });
+function bgTween(b, L) {   // 2010, lilac + mint: butterflies, mint pinstripes, a big harlequin rug on the wooden floor, a heart rug, a bead curtain, a beanbag
+  roomShell(b, { ceil: '#fbf6fd', side: '#ddcdf0', side2: '#d6c6ec', wall: '#ecdef6', dots: '#eaa9c6', dots2: '#7cc7c3', pattern: 'butterflies',
+    lower: { style: 'pinstripe', h: 22, c: ['#c9ecdf', '#ade0cd', '#bfe6d8', '#eaa9c6'] },
+    floor: { style: 'planks', c: ['#e4b78a', '#c99a6b', '#efcda4'], shadow: '#c99a6b' } });
   lightBeam(b, 2);
   drawWindow(b, 'afternoon', { style: 'beads', beads: ['#c9b6ea', '#a9dccb', '#ffffff', '#e3b5cc'] });
   drawDoor(b, 'l', 'butterfly');
   shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'w');
-  heartRug(b, 120, 131, 24, 9, '#c6b2f0', '#efe8fa');
+  harlequinRug(b, 164, 130, 62, 8, ['#fbf3ea', '#f6c4dc', '#c9ecdf', '#d9cbf3', '#fbe7a9'], '#ffffff');
+  heartRug(b, 112, 131, 20, 7, '#b9a2ee', '#ece4fb');
   beanbag(b, 290, 116, '#8f72dd', '#c2b1f3');
   drawDesk(b, L.desk, { lamp: 'P', chair: '#66cdb3', chairStyle: 'round', drawers: ['#a68ce9', '#8fd8c1'] });
   drawBed(b, Object.assign({ throwCols: ['#c9b6ea', '#ffffff'] }, L.bed), 'butterflies');
 }
 
-function bgTeen(b, L) {   // 2014, teal + purple: striped walls, grey-washed laminate, a teal chevron rug, purple panels on rings, a swivel chair
+function bgTeen(b, L) {   // 2014, teal + purple: striped walls, the honey wood floor, a teal chevron rug, purple panels on rings, a swivel chair
   roomShell(b, { ceil: '#eef6f3', side: '#a3c6be', side2: '#99bdb5', wall: '#c0dcd5', dots: '#b0d0c8', dots2: '#f4fbf8', pattern: 'stripes',
-    floor: { style: 'planks', c: ['#e6dfd5', '#cfc5b8', '#f0eae2'], shadow: '#cfc5b8' } });
+    floor: { style: 'planks', c: ['#e4b78a', '#c99a6b', '#efcda4'], shadow: '#c99a6b' } });
   lightBeam(b, 2);
   drawWindow(b, 'dusk', { style: 'panels', c: 'v' });
   drawDoor(b, 'w', 'keepout');
@@ -675,10 +732,10 @@ function bgTeen(b, L) {   // 2014, teal + purple: striped walls, grey-washed lam
   drawBasket(b, L.basket);
 }
 
-// 2017-18: the same room, blush + sage on light oak: a two-tone painted wall, a diamond rug, a hairpin desk, a moulded chair, a big plant
-const YA_SHELL = { ceil: '#fdf9f6', side: '#eddad3', side2: '#e8d3cc', wall: '#f7e9e3', dots: '#fbf1ed', dots2: '#ffffff', pattern: 'plain',
-  lower: { style: 'block', h: 30, c: ['#cfdccb', '#b9cbb5', '#c6d4c2'] },
-  floor: { style: 'planks', c: ['#e2c7a3', '#cdae88', '#ecd8bd'], shadow: '#cdae88' } };
+// 2017-18: the same room, blush + sage on the honey wood: a two-tone painted wall, a diamond rug, a hairpin desk, a moulded chair, a big plant
+const YA_SHELL = { ceil: '#fff9f5', side: '#f2d9cc', side2: '#edd2c4', wall: '#fbe7dd', dots: '#fdf0e9', dots2: '#ffffff', pattern: 'plain',
+  lower: { style: 'block', h: 30, c: ['#c5dcbf', '#a9c8a2', '#bad3b3'] },
+  floor: { style: 'planks', c: ['#e4b78a', '#c99a6b', '#efcda4'], shadow: '#c99a6b' } };
 
 function bgYoungAdult(b, L) {
   roomShell(b, YA_SHELL);

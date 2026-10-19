@@ -9,7 +9,7 @@ The visitor tends one bedroom across six chapters of a suburban girl's life, fro
 **▶ Play it online:** https://ceceliayao.github.io/The-Next-Chapter/
 
 > Built with [p5.js](https://p5js.org/), plain HTML/CSS and Web Audio. No install, no internet needed.
-> The look is the early-2000s web: glossy buttons, rounded windows, messenger pop-ups. Only the room and its things are pixel drawings (320 × 180 pixels, scaled up 4× with no blur); every word uses normal, readable fonts.
+> The look is the early-2000s web game: square windows with navy title bars (Windows 98 as a reference, kept light), buttons that change colour on hover, messenger pop-ups. Only the room and its things are pixel drawings (320 × 180 pixels, scaled up 4× with no blur); every word uses normal, readable fonts.
 > The page is **4:3** (1280 × 960, scaled to fit). On a wide screen it sits in the middle with black either side, so the eye stays on the game.
 
 ---
@@ -37,7 +37,7 @@ npx serve .        # then open the printed localhost address
 | Move things | Click and drag |
 | Move a window | Drag it by its coloured title bar |
 | Replay a memory | Click a placed object that shows a ! badge (or hover it: “click to replay”) |
-| Menu (restart chapter, chapter select) | **Esc** or the Menu button |
+| Menu (restart chapter, chapter select, back to the door) | **Esc** or the Menu button |
 | Sound on/off | **M** or the speaker button (it shows a crossed-out speaker when the sound is off) |
 | Skip the current chapter (for testing) | **Shift + N** |
 
@@ -103,17 +103,20 @@ Until a file exists, its frame simply stays empty (the caption still shows). The
 
 ## Brand
 
-The look follows the team's identity board and our colour decision: **orange (two shades) + off-white as the base**, with black and white, and **pink and blue as the cooler accents**. The rooms are warm and muted (like *Unpacking*) and shift colour from stage to stage; the interface is an early-2000s desktop (glossy Windows XP / Frutiger Aero buttons and title bars, MSN-style messages, iridescent CD chapter discs) where the windows can be dragged around.
+The look follows Chloee's **TNC Identity Guideline** and moodboard, and keeps **the room and the frame apart**:
+
+- **Inside the room**: colours and style from the moodboard (its swatches, the Cyworld / My Scene rooms) and a pastel pixel-room reference: soft striped wallpaper and pastel plaid carpets for the younger rooms (lemon + baby blue, pink with a pink / periwinkle / peach / sky plaid, lilac + sky), the teen teal on wood, and pale blue on honey wood for the older rooms.
+- **Outside the room (the frame)**: an early-2000s web game window, with Windows 98 only as a reference: square windows with a black outline, navy title bars and a hint of a bevel, kept light and clean. Windows can be dragged around (like Teleport), and buttons change colour on hover (like Yrs Truly). Only the guideline's colours are used here:
 
 | Colour | Hex | Used for |
 | --- | --- | --- |
-| Orange | `#ff5400` | title bars, main buttons, counters (base) |
-| Light orange | `#ff8f3a` | title bar shine, glossy buttons (base) |
-| Off-white | `#fff6ea` | windows, HUD, background (base) |
-| Ink | `#221a13` | outlines, text |
-| Blue | `#00b5ff` | accent: drop guides, second buttons, messages |
-| Pink | `#ff84e4` | accent: hearts, Mum's messages |
-| Yellow / Lime | `#ffc700` / `#8de328` | the logo, chapter titles, UPKEEP meter |
+| Black | `#211a14` | outlines, text |
+| White | `#f2f2ed` | the page, window faces |
+| Orange | `#f09000` | main buttons (black text) |
+| Amber | `#ffc700` | the LCD year, Memories, Mum's messages, hover colour |
+| Navy | `#2c2c5b` | title bars (white text), progress blocks, labels |
+
+The start page keeps its soft pastel background with stars, hearts and bubbles floating up.
 
 The logo files in `assets/brand/` are Chloee's original vector artwork (SVG: sharp at any size and small to load; no pixels, no drop shadow): `logo-main.svg` on the title screen, `logo-stacked.svg` on the door, `logo-liner.svg` on the ending. To use a new logo, replace those files and keep the same names.
 
@@ -135,7 +138,7 @@ To try other fonts, change `--font-body` and `--font-ui` at the top of `style.cs
 
 ```
 index.html        page shell: top bar, game screen, Teddy's tips + messages
-style.css         the early-2000s skin (4:3 page, glossy buttons, rounded windows, messenger pop-ups)
+style.css         the early-2000s frame (4:3 page, square windows, navy title bars, messenger pop-ups)
 js/data.js        ← edit me: chapters, objects, where things go, captions, file names, Teddy's ages
 js/pixel.js       the pixel engine: palette, crisp shapes, outlines, dithering
 js/sprites.js     every object as pixel art (grids of palette letters, or pixel shapes)

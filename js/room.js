@@ -35,23 +35,34 @@ function stamp(b, x, y, rows, c, clip) {
 
 function roomShell(b, th) {
   const { LX, RX, CY, WX1, WX2, WY1, WY2, FY } = RA;
-  b.rect(0, 0, ART_W, ART_H, '#fff6ea'); b.dither(0, 0, ART_W, ART_H, '#ffe3c8', 6);
+  b.rect(0, 0, ART_W, ART_H, '#f2f2ed');   // around the room: the frame's white, not part of the room
   b.poly([[LX, CY], [RX + 1, CY], [WX2 + 1, WY1], [WX1, WY1]], th.ceil);
   b.poly([[LX, CY], [WX1, WY1], [WX1, WY2 + 1], [LX, FY + 1]], th.side);
   b.poly([[WX2 + 1, WY1], [RX + 1, CY], [RX + 1, FY + 1], [WX2 + 1, WY2 + 1]], th.side2 || th.side);
   b.dither(LX, CY, 12, FY - CY, th.sideShade || th.side, 6);
   b.rect(WX1, WY1, WX2 - WX1 + 1, WY2 - WY1 + 1, th.wall);
   wallpaper(b, th);
-  // floor + planks in perspective
+  // floor in perspective: wooden planks, or a pastel plaid carpet (th.plaid: base, row stripe, column stripe, crossing)
   b.poly([[WX1, WY2 + 1], [WX2 + 1, WY2 + 1], [RX + 1, FY + 1], [LX, FY + 1]], th.floor);
   const xl = y => WX1 + (LX - WX1) * (y - WY2) / (FY - WY2), xr = y => WX2 + (RX - WX2) * (y - WY2) / (FY - WY2);
   const rows = [WY2 + 1, 110, 116, 123, 131, 141];
-  rows.slice(1, -1).forEach(y => b.hline(Math.ceil(xl(y)), y, Math.floor(xr(y)) - Math.ceil(xl(y)) + 1, th.floor2));
-  const spread = (RX - LX) / (WX2 - WX1);
-  for (let k = 0; k < rows.length - 1; k++) {
-    for (let xb = WX1 + (k % 2 ? 22 : 8); xb < WX2; xb += 30) {
-      const xf = 160 + (xb - 160) * spread, at = y => xb + (xf - xb) * (y - WY2) / (FY - WY2);
-      b.line(at(rows[k] + 1), rows[k] + 1, at(rows[k + 1] - 1), rows[k + 1] - 1, th.floor2);
+  if (th.plaid) {
+    const bands = [WY2 + 1, 107, 109, 112, 115, 119, 123, 128, 133, 139, 142];
+    for (let y = WY2 + 1; y <= FY; y++) {
+      const r = bands.filter(v => v <= y).length % 2, a = xl(y), w = xr(y) - a;
+      for (let x = Math.ceil(a); x <= Math.floor(xr(y)); x++) {
+        const c = Math.floor((x - a) / w * 16) % 2;
+        b.px(x, y, th.plaid[r * 2 + c]);
+      }
+    }
+  } else {
+    rows.slice(1, -1).forEach(y => b.hline(Math.ceil(xl(y)), y, Math.floor(xr(y)) - Math.ceil(xl(y)) + 1, th.floor2));
+    const spread = (RX - LX) / (WX2 - WX1);
+    for (let k = 0; k < rows.length - 1; k++) {
+      for (let xb = WX1 + (k % 2 ? 22 : 8); xb < WX2; xb += 30) {
+        const xf = 160 + (xb - 160) * spread, at = y => xb + (xf - xb) * (y - WY2) / (FY - WY2);
+        b.line(at(rows[k] + 1), rows[k] + 1, at(rows[k + 1] - 1), rows[k + 1] - 1, th.floor2);
+      }
     }
   }
   b.dither(LX, WY2 + 1, RX - LX + 1, 4, th.floor2, 4);
@@ -69,6 +80,7 @@ function roomShell(b, th) {
 function wallpaper(b, th) {
   const { WX1, WX2, WY1, WY2 } = RA;
   const clip = (x, y) => x > WX1 && x < WX2 && y > WY1 && y < WY2 - 3;
+  if (th.bands) for (let y = WY1 + 4; y < WY2 - 3; y += 10) b.rect(WX1 + 1, y, WX2 - WX1 - 1, 5, th.bands);
   const STAR = ['.#.', '###', '.#.'], MOON = ['.##', '#..', '.##'], HEART = ['##.##', '#####', '.###.', '..#..'],
     FLY = ['##.##', '#####', '.###.', '##.##'], DOT = ['##', '##'], TINY = ['#'];
   if (th.pattern === 'stars') {
@@ -294,10 +306,12 @@ function ceilingStars(b) { [[70, 13], [110, 12], [150, 13], [200, 12], [240, 13]
 
 function hangString(b, x, toY) { b.vline(x, RA.WY1, Math.max(1, toY - RA.WY1), 'o'); }
 
-/* ---------- one background per chapter ---------- */
+/* ---------- one background per chapter ----------
+   Colours and style from Chloee's moodboard (its swatches, Cyworld / My Scene rooms) and the pastel pixel-room
+   reference: soft striped walls, pastel plaid carpets for the younger rooms, wood for the older ones. */
 
 function bgNursery(b, L) {
-  roomShell(b, { ceil: '#fbf1d8', side: '#ecd9ac', side2: '#e5d09e', sideShade: '#dcc490', wall: '#f7e8c4', dots: '#c9b8e0', floor: '#d9b48a', floor2: '#c29a6c', pattern: 'stars' });
+  roomShell(b, { ceil: '#fff9dc', side: '#f0df86', side2: '#ebd87b', sideShade: '#e1cc6c', wall: '#fbefa6', bands: '#fdf5c6', dots: '#9cc6ee', floor: '#fff6dc', floor2: '#e9dcae', plaid: ['#fff6dc', '#cfe3f6', '#fbe9a8', '#b9d3f0'], pattern: 'stars' });
   ceilingStars(b);
   drawWindow(b, 'night', 'b');
   drawDoor(b, 'p', 'baby');
@@ -310,7 +324,7 @@ function bgNursery(b, L) {
 }
 
 function bgChildhood(b, L) {
-  roomShell(b, { ceil: '#fbeeee', side: '#e5bcc0', side2: '#ddb2b7', sideShade: '#d3a5ab', wall: '#f0d0d2', dots: '#fbeeee', dots2: '#e3a0b2', floor: '#dcb48a', floor2: '#c59a6e', pattern: 'dots' });
+  roomShell(b, { ceil: '#fdeaf2', side: '#ecbcd1', side2: '#e7b5cb', sideShade: '#ddaac1', wall: '#f6d2e1', bands: '#fbe2ec', dots: '#fff3f8', dots2: '#ec9cc2', floor: '#ffe8c8', floor2: '#d9b8c9', plaid: ['#ffe8c8', '#aeb2f1', '#f9cdc4', '#a2c5ed'], pattern: 'dots' });
   lightBeam(b, 2);
   drawWindow(b, 'day', 'w');
   drawDoor(b, 'w', 'letters');
@@ -323,7 +337,7 @@ function bgChildhood(b, L) {
 }
 
 function bgTween(b, L) {
-  roomShell(b, { ceil: '#f2eef8', side: '#cdc2e2', side2: '#c4b8db', sideShade: '#b9acd2', wall: '#ddd5ec', dots: '#bcaadd', dots2: '#9fcfc6', floor: '#d6ae86', floor2: '#bf956b', pattern: 'butterflies' });
+  roomShell(b, { ceil: '#f3ecfc', side: '#c8b1ea', side2: '#c1a9e5', sideShade: '#b79fdc', wall: '#dcc8f4', bands: '#e7dbf8', dots: '#f4a3cc', dots2: '#6fd3df', floor: '#f2f0ff', floor2: '#c9bde6', plaid: ['#f2f0ff', '#c9dcf6', '#e3d3f7', '#b3c3f0'], pattern: 'butterflies' });
   lightBeam(b, 2);
   drawWindow(b, 'afternoon', 'y');
   drawDoor(b, 'l', 'butterfly');
@@ -346,7 +360,7 @@ function bgTeen(b, L) {
 }
 
 function bgYoungAdult(b, L) {
-  roomShell(b, { ceil: '#fffdf6', side: '#e7e1cf', side2: '#dfd8c2', sideShade: '#d6cdb4', wall: '#f3efe2', dots: '#e8e2cf', dots2: '#d9c9f5', floor: '#d8b896', floor2: '#c3a07e', pattern: 'plain' });
+  roomShell(b, { ceil: '#eef6fb', side: '#bcd5e8', side2: '#b4cee3', sideShade: '#a9c4da', wall: '#d4e6f3', dots: '#e4f0f8', dots2: '#ffffff', floor: '#d2a679', floor2: '#b98b5f', pattern: 'plain' });
   lightBeam(b, 3);
   drawWindow(b, 'morning', null);
   drawDoor(b, 'w', 'wreath');
@@ -357,7 +371,7 @@ function bgYoungAdult(b, L) {
 }
 
 function bgMovingOut(b, L) {
-  roomShell(b, { ceil: '#fffdf6', side: '#e7e1cf', side2: '#dfd8c2', sideShade: '#d6cdb4', wall: '#f3efe2', dots: '#e8e2cf', dots2: '#d9c9f5', floor: '#d8b896', floor2: '#c3a07e', pattern: 'plain' });
+  roomShell(b, { ceil: '#eef6fb', side: '#bcd5e8', side2: '#b4cee3', sideShade: '#a9c4da', wall: '#d4e6f3', dots: '#e4f0f8', dots2: '#ffffff', floor: '#d2a679', floor2: '#b98b5f', pattern: 'plain' });
   lightBeam(b, 4);
   drawWindow(b, 'morning', null);
   drawDoor(b, 'w', null);

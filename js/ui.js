@@ -21,8 +21,8 @@ const UI = (() => {
     bubble: '<circle cx="12" cy="12" r="10" fill="rgba(255,255,255,.3)" stroke="#fff" stroke-width="1.4"/><ellipse cx="8.4" cy="7.8" rx="3.2" ry="2" fill="#fff" opacity=".9"/>',
     smiley: '<circle cx="12" cy="12" r="10" fill="#ffd23a" stroke="#fff" stroke-width="1.6"/><circle cx="8.6" cy="10" r="1.4" fill="#221a13"/><circle cx="15.4" cy="10" r="1.4" fill="#221a13"/><path d="M7.5 14c2.4 3 6.6 3 9 0" stroke="#221a13" stroke-width="1.6" fill="none" stroke-linecap="round"/>',
     floppy: '<path d="M3 3h15l3 3v15H3z" fill="#2f6fd6" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/><rect x="7" y="3.7" width="9" height="5.5" fill="#e8f1ff"/><rect x="13" y="4.6" width="2" height="3.6" fill="#2f6fd6"/><rect x="6" y="12.5" width="12" height="7.5" rx="1" fill="#fff"/>',
-    soundOn: '<path d="M3.5 9h4l5-4v14l-5-4h-4z" fill="#fff"/><path d="M15.8 8.6a4.8 4.8 0 010 6.8M18.4 6a8.5 8.5 0 010 12" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>',
-    soundOff: '<path d="M3.5 9h4l5-4v14l-5-4h-4z" fill="#fff"/><path d="M15.8 8.6a4.8 4.8 0 010 6.8" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" opacity=".45"/><path d="M3 21L21 3" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>',
+    soundOn: '<path d="M3.5 9h4l5-4v14l-5-4h-4z" fill="currentColor"/><path d="M15.8 8.6a4.8 4.8 0 010 6.8M18.4 6a8.5 8.5 0 010 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
+    soundOff: '<path d="M3.5 9h4l5-4v14l-5-4h-4z" fill="currentColor"/><path d="M15.8 8.6a4.8 4.8 0 010 6.8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" opacity=".35"/><path d="M3 21L21 3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>',
     camera: '<path d="M3 7h4l2-3h6l2 3h4v13H3z" fill="none" stroke="#221a13" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" fill="none" stroke="#221a13" stroke-width="1.6"/>',
     film: '<rect x="3" y="4" width="18" height="16" rx="1.5" fill="none" stroke="#fff" stroke-width="1.6"/><path d="M7 4v16M17 4v16M3 8h4M3 12h4M3 16h4M17 8h4M17 12h4M17 16h4" stroke="#fff" stroke-width="1.4"/>'
   };
@@ -531,6 +531,7 @@ const UI = (() => {
       '      <button class="aqua" data-a="resume">▶︎ Keep playing</button>' +
       '      <button class="aqua alt" data-a="restart">Restart chapter</button>' +
       '      <button class="aqua alt" data-a="title">Chapter select</button>' +
+      '      <button class="aqua alt" data-a="door">Back to the door</button>' +
       '      <button class="aqua alt" data-a="sound">' + (Sound.isMuted() ? 'Sound: off' : 'Sound: on') + '</button>' +
       '      <p class="small">keys: Esc menu · M sound</p>' +
       '    </div>' +

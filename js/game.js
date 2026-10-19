@@ -630,6 +630,7 @@ function openMenu() {
     if (a === 'resume') closeMenu();
     if (a === 'restart') { closeMenu(); setupChapter(G.idx); beginChapter(); }
     if (a === 'title') { closeMenu(); goTitle(); }
+    if (a === 'door') { closeMenu(); goTitle(true); }   // all the way back to the closed bedroom door
     if (a === 'sound') { toggleMute(); G.modal = null; openMenu(); }
   });
 }
@@ -785,12 +786,10 @@ function buildBg() {
 
 function buildTray() {
   const b = new PixBuf(312, 35, 0);
-  for (let y = 0; y < 35; y++) { b.rect(0, y, 312, 1, '#fff6dc'); b.dither(0, y, 312, 1, '#ffe2b8', Math.round(y / 34 * 12)); }
-  ['2', '#ff8f3a', '2', '#ff8f3a', '1'].forEach((c, i) => b.rect(1 + i * 62, 1, i === 4 ? 61 : 62, 2, c));   // orange base, one cool accent
-  b.hline(3, 4, 306, 'w'); b.dither(3, 5, 306, 2, 'w', 8);
+  // the shelf the box sits on: the frame's white with a black outline and a soft shadow edge
+  b.rect(0, 0, 312, 35, '#f2f2ed');
+  b.rect(1, 1, 310, 1, '#ffffff'); b.rect(1, 32, 310, 2, '#dedbd1');
   b.rect(0, 0, 312, 1, 'o'); b.rect(0, 34, 312, 1, 'o'); b.rect(0, 0, 1, 35, 'o'); b.rect(311, 0, 1, 35, 'o');
-  [[0, 0], [311, 0], [0, 34], [311, 34]].forEach(([x, y]) => b.px(x, y, null));
-  b.px(1, 1, 'o'); b.px(310, 1, 'o'); b.px(1, 33, 'o'); b.px(310, 33, 'o');
   b.box(4, 4, 30, 27, 'r'); b.rect(17, 5, 4, 3, 'y'); b.box(7, 8, 24, 21, 'w');   // cardboard box + label sticker
   trayCv = b.toCanvas(1);
 }
@@ -1039,8 +1038,8 @@ function drawPackingBox() {
   if (G.state === 'play') {
     const t = (text, x, y, color) => G.labels.push({ text, x, y, size: 27, align: 'left', family: FONT_BODY, color });
     t('Drag what you’ll take', 56, 622); t('into the box', 56, 656);
-    t('Teddy goes in last ' + HEART, 856, 622, PALETTE.m);
-    t(G.packed.length + ' packed', 856, 676, '#c94300');
+    t('Teddy goes in last ' + HEART, 916, 622, PALETTE.m);
+    t(G.packed.length + ' packed', 916, 676, '#c94300');
   }
 }
 

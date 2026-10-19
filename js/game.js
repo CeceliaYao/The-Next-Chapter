@@ -787,12 +787,10 @@ function buildBg() {
 
 function buildTray() {
   const b = new PixBuf(312, 35, 0);
-  for (let y = 0; y < 35; y++) { b.rect(0, y, 312, 1, '#fff6dc'); b.dither(0, y, 312, 1, '#ffe2b8', Math.round(y / 34 * 12)); }
-  ['2', '#ff8f3a', '2', '#ff8f3a', '1'].forEach((c, i) => b.rect(1 + i * 62, 1, i === 4 ? 61 : 62, 2, c));   // orange base, one cool accent
-  b.hline(3, 4, 306, 'w'); b.dither(3, 5, 306, 2, 'w', 8);
+  // the shelf the box sits on is part of the frame (white, plum outline, a faint grid), not the room
+  b.rect(0, 0, 312, 35, '#ffffff');
+  b.rect(1, 31, 310, 3, '#ebe8e1');
   b.rect(0, 0, 312, 1, 'o'); b.rect(0, 34, 312, 1, 'o'); b.rect(0, 0, 1, 35, 'o'); b.rect(311, 0, 1, 35, 'o');
-  [[0, 0], [311, 0], [0, 34], [311, 34]].forEach(([x, y]) => b.px(x, y, null));
-  b.px(1, 1, 'o'); b.px(310, 1, 'o'); b.px(1, 33, 'o'); b.px(310, 33, 'o');
   b.box(4, 4, 30, 27, 'r'); b.rect(17, 5, 4, 3, 'y'); b.box(7, 8, 24, 21, 'w');   // cardboard box + label sticker
   trayCv = b.toCanvas(1);
 }
@@ -815,6 +813,7 @@ function render() {
   drawTray();
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(artCv, 0, 0, W, H);
+  drawTrayGloss(ctx);
   drawLabels(ctx);               // the words sit on the room and the box...
   art.clearRect(0, 0, ART_W, ART_H);
   list.filter(i => i.state === 'tray').forEach(drawItem);   // ...and the things in the tray / in your hand go over them
@@ -838,11 +837,10 @@ function pill(ctx, str, cx, cy, size, accent) {
   const w = ctx.measureText(str).width + size * 1.1, h = size * 1.6;
   // kept inside the visible part of the screen (the top 44 px of the canvas are cropped by #screen)
   const x = Math.round(Math.max(8, Math.min(W - w - 8, cx - w / 2))), y = Math.round(Math.max(50, Math.min(H - h - 6, cy - h / 2)));
-  ctx.save();
-  ctx.shadowColor = 'rgba(34,26,19,.25)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3;
-  ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.fillStyle = '#ffffff'; ctx.fill();
-  ctx.restore();
-  ctx.lineWidth = 2; ctx.strokeStyle = accent || PALETTE.o; ctx.stroke();
+  // a little frame-style label: white, the frame's plum outline and a hard offset shadow
+  ctx.fillStyle = 'rgba(61,44,74,.25)'; ctx.fillRect(x + 4, y + 4, w, h);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(x, y, w, h);
+  ctx.lineWidth = 3; ctx.strokeStyle = accent || PALETTE.o; ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h - 3);
   canvasText(ctx, str, x + w / 2, y + h / 2 + 1, { size });
 }
 const HEART = '\u2665\uFE0E';
@@ -1071,6 +1069,18 @@ function drawTray() {
   }
 }
 
+// the tray's shine: a soft white sheen across its top half (smooth, over the pixel panel)
+function drawTrayGloss(ctx) {
+  if (G.ch.moving) return;
+  const x = 5 * ART, y = 145 * ART, w = 310 * ART, h = 16 * ART;
+  ctx.fillStyle = 'rgba(61,44,74,.07)';   // a faint grid, like the reference's panels
+  for (let gx = x + 18; gx < x + w; gx += 22) ctx.fillRect(gx, y, 1, 31 * ART);
+  for (let gy = y + 14; gy < y + 31 * ART; gy += 22) ctx.fillRect(x, gy, w, 1);
+  const g = ctx.createLinearGradient(0, y, 0, y + h);
+  g.addColorStop(0, 'rgba(255,255,255,.5)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+}
+
 function artPoly(pts, c) {
   const b = new PixBuf(ART_W, ART_H, 0);
   b.poly(pts, c);
@@ -1111,8 +1121,8 @@ function drawPackingBox() {
   if (G.state === 'play') {
     const t = (text, x, y, color) => G.labels.push({ text, x, y, size: 27, align: 'left', family: FONT_BODY, color });
     t('Drag what you’ll take', 56, 622); t('into the box', 56, 656);
-    t('Teddy goes in last ' + HEART, 856, 622, PALETTE.m);
-    t(G.packed.length + ' packed', 856, 676, '#c94300');
+    t('Teddy goes in last ' + HEART, 916, 622, PALETTE.m);
+    t(G.packed.length + ' packed', 916, 676, '#c94300');
   }
 }
 

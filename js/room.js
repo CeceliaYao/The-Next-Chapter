@@ -29,7 +29,7 @@ function stamp(b, x, y, rows, c, clip) {
 
 function roomShell(b, th) {
   const { LX, RX, CY, WX1, WX2, WY1, WY2, FY } = RA;
-  b.rect(0, 0, ART_W, ART_H, '#fff6ea'); b.dither(0, 0, ART_W, ART_H, '#ffe3c8', 6);
+  b.rect(0, 0, ART_W, ART_H, '#fbfaf6');   // around the room: the frame's window face, not part of the room
   b.poly([[LX, CY], [RX + 1, CY], [WX2 + 1, WY1], [WX1, WY1]], th.ceil);
   b.poly([[LX, CY], [WX1, WY1], [WX1, WY2 + 1], [LX, FY + 1]], th.side);
   b.poly([[WX2 + 1, WY1], [RX + 1, CY], [RX + 1, FY + 1], [WX2 + 1, WY2 + 1]], th.side2 || th.side);
@@ -324,10 +324,11 @@ function hangString(b, x, toY) { b.vline(x, RA.WY1, Math.max(1, toY - RA.WY1), '
 
 /* ---------- one background per chapter ----------
    Colours and style from Chloee's moodboard (its swatches, Cyworld / My Scene rooms) and the pastel pixel-room
-   reference: soft striped walls, pastel plaid carpets for the younger rooms, wood for the older ones. */
+   reference: soft striped walls, pastel plaid carpets for the younger rooms, wood for the older ones.
+   The pastels are soft and slightly greyed (about as saturated as the teen room's teal), pearly rather than candy. */
 
 function bgNursery(b, L) {
-  roomShell(b, { ceil: '#fff9dc', side: '#f0df86', side2: '#ebd87b', sideShade: '#e1cc6c', wall: '#fbefa6', bands: '#fdf6d0', dots: '#9cc6ee', border: ['#f9d3e3', '#ffffff'], wains: ['#d6e8f8', '#b4cfec', '#c6dcf2'], floor: '#fff6dc', floor2: '#e9dcae', plaid: ['#fff6dc', '#cfe3f6', '#fbe9a8', '#b9d3f0'], pattern: 'stars' });
+  roomShell(b, { ceil: '#faf8ea', side: '#eae2b8', side2: '#e7deb1', sideShade: '#e0d6a3', wall: '#f3edcd', bands: '#f7f3de', dots: '#9cb6d3', border: ['#d1dbe6', '#ffffff'], wains: ['#d4dde8', '#b2c1d1', '#c6d0dd'], floor: '#f7f2e3', floor2: '#dbd4bd', plaid: ['#f7f2e3', '#d0dbe7', '#f3edcd', '#becbda'], pattern: 'stars' });
   ceilingStars(b);
   drawWindow(b, 'night', 'b');
   drawDoor(b, 'p', 'baby');
@@ -340,7 +341,7 @@ function bgNursery(b, L) {
 }
 
 function bgChildhood(b, L) {
-  roomShell(b, { ceil: '#fdeaf2', side: '#ecbcd1', side2: '#e7b5cb', sideShade: '#ddaac1', wall: '#f6d2e1', bands: '#f1dbf2', dots: '#fff3f8', dots2: '#ec9cc2', border: ['#fbe9a8', '#ec9cc2'], wains: ['#ddd2f7', '#c1b0ee', '#d0c3f1'], floor: '#ffe8c8', floor2: '#d9b8c9', plaid: ['#ffe8c8', '#aeb2f1', '#f9cdc4', '#a2c5ed'], pattern: 'dots' });
+  roomShell(b, { ceil: '#f6eaee', side: '#dabec8', side2: '#d6b8c3', sideShade: '#cdacb8', wall: '#ead1da', bands: '#ecdfe8', dots: '#fcf7f9', dots2: '#d9a6b7', border: ['#dcd7e5', '#d9a6b7'], wains: ['#dcd6e6', '#bfb6ce', '#cfc8da'], floor: '#f2e9e3', floor2: '#d5c3cc', plaid: ['#f2e9e3', '#c4c6de', '#ebd6d9', '#bec6da'], pattern: 'dots' });
   lightBeam(b, 2);
   drawWindow(b, 'day', 'w');
   drawDoor(b, 'w', 'letters');
@@ -353,7 +354,7 @@ function bgChildhood(b, L) {
 }
 
 function bgTween(b, L) {
-  roomShell(b, { ceil: '#f3ecfc', side: '#c8b1ea', side2: '#c1a9e5', sideShade: '#b79fdc', wall: '#dcc8f4', bands: '#ebd8f7', dots: '#f4a3cc', dots2: '#6fd3df', border: ['#f8d2e6', '#6fd3df'], wains: ['#cdeee6', '#a6dccd', '#c0e6db'], floor: '#f2f0ff', floor2: '#c9bde6', plaid: ['#f2f0ff', '#c9dcf6', '#e3d3f7', '#b3c3f0'], pattern: 'butterflies' });
+  roomShell(b, { ceil: '#f2edf7', side: '#c9bcd7', side2: '#c3b6d2', sideShade: '#b9abc9', wall: '#dbd0e7', bands: '#e9dfec', dots: '#e3b5cc', dots2: '#8ecacc', border: ['#ebdbe3', '#8ecacc'], wains: ['#d2e4e2', '#afcac6', '#c5d8d6'], floor: '#f2f1f9', floor2: '#ccc7db', plaid: ['#f2f1f9', '#d7dfea', '#e2dbeb', '#c8cfe0'], pattern: 'butterflies' });
   lightBeam(b, 2);
   drawWindow(b, 'afternoon', 'y');
   drawDoor(b, 'l', 'butterfly');

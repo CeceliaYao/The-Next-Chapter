@@ -27,21 +27,15 @@ const UI = (() => {
   // every window's title bar carries the brand's play icon, like an app icon
   const APP_ICON = '<img class="tb-icon" src="assets/brand/favicon.svg" alt="">';
 
-  /* colour themes: the door page (title, thank-you, ending) and one per chapter, taken from its room.
-     They set the frame colour, the title bars and the wallpaper around the game. */
-  const HOME_THEME = { accent: '#d9604f', bar: ['#fde3d9', '#f4b09e', '#ec9a84'], paper: DOOR_PAPER };
-  const hex = c => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16));
-  const toHex = a => '#' + a.map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
-  const mix = (a, b, t, k) => toHex(hex(a).map((v, i) => (v + (hex(b)[i] - v) * t) * k));
-  // the hallway wallpaper, tinted halfway towards the room's wall colour
-  const paperFor = wall => [mix(DOOR_PAPER[0], wall, 0.5, 0.94), mix(DOOR_PAPER[1], wall, 0.5, 0.94), mix(DOOR_PAPER[2], wall, 0.5, 0.94)];
-  const paperCache = {};
+  /* colour themes: one per chapter, taken from its room, and a holographic one for the start page,
+     the thank-you note and the ending. They set the frame colour, the title bars and the page background. */
+  const HOLO = 'linear-gradient(135deg, #ffd1ef 0%, #e2cbff 26%, #c4e6ff 50%, #c9fbe3 74%, #fff4b8 100%)';
+  const HOME_THEME = { accent: '#ff5400', bar: ['#e6f7ff', '#ade3ff', '#8fd8ff'], holo: HOLO };
   function applyTheme(t) {
-    const st = document.getElementById('stage').style, paper = t.paper || paperFor(t.wall), key = paper.join();
-    if (!paperCache[key]) paperCache[key] = wallpaperCanvas(paper).toDataURL();
+    const st = document.getElementById('stage').style;
     st.setProperty('--chapter', t.accent);
     st.setProperty('--bar-hi', t.bar[0]); st.setProperty('--bar', t.bar[1]); st.setProperty('--bar-lo', t.bar[2]);
-    st.setProperty('--wallpaper', 'url(' + paperCache[key] + ')');
+    st.setProperty('--page', t.holo || 'linear-gradient(180deg, ' + t.page[0] + ' 0%, ' + t.page[1] + ' 100%)');
   }
 
   let H = {};                // handlers from game.js

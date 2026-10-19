@@ -10,9 +10,9 @@
    - black outlines + hard offset shadows, like the logo's letters
    - frames are a vivid ring between two black lines, like the favicon
      (the moodboard: "a warmer colour scheme + vivid point colours for frames")
-   - one look with the door page: the page is the same striped pixel wallpaper,
-     and every chapter takes its colours from its own room (set by ui.js:
-     --chapter frame colour, --bar-hi/--bar/--bar-lo title bars, --wallpaper)
+   - every chapter takes its colours from its own room (set by ui.js:
+     --chapter frame colour, --bar-hi/--bar/--bar-lo title bars, --page background);
+     the page is a candy Y2K background with glossy stripes and sparkles
    The room itself stays pixel art (it's the drawings).
    Stage is 4:3 (1280 x 960) and scales to fit the screen.
    ========================================================= */
@@ -42,9 +42,11 @@
   --green: #8de328;
   --lemon: #f6e680;
   --ink: var(--black);
-  /* theme (the door page's colours until a chapter sets its own) */
-  --chapter: #d9604f;
-  --bar-hi: #fde3d9; --bar: #f4b09e; --bar-lo: #ec9a84;
+  /* theme (the start page's colours until a chapter sets its own) */
+  --chapter: #ff5400;
+  --bar-hi: #e6f7ff; --bar: #ade3ff; --bar-lo: #8fd8ff;
+  --page: linear-gradient(135deg, #ffd1ef 0%, #e2cbff 26%, #c4e6ff 50%, #c9fbe3 74%, #fff4b8 100%);
+  --sparkles: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cg fill='white'%3E%3Cpath d='M32 16c1 8 4.5 11.5 12.5 12.5C36.5 29.5 33 33 32 41c-1-8-4.5-11.5-12.5-12.5C27.5 27.5 31 24 32 16z'/%3E%3Cpath d='M130 92c.7 5.4 3.1 7.8 8.5 8.5-5.4.7-7.8 3.1-8.5 8.5-.7-5.4-3.1-7.8-8.5-8.5 5.4-.7 7.8-3.1 8.5-8.5z' opacity='.85'/%3E%3Cpath d='M74 128c.5 3.8 2.2 5.5 6 6-3.8.5-5.5 2.2-6 6-.5-3.8-2.2-5.5-6-6 3.8-.5 5.5-2.2 6-6z' opacity='.8'/%3E%3Ccircle cx='98' cy='38' r='2.2' opacity='.85'/%3E%3Ccircle cx='158' cy='156' r='2.6' opacity='.7'/%3E%3Ccircle cx='22' cy='112' r='1.8' opacity='.8'/%3E%3Ccircle cx='150' cy='24' r='1.4' opacity='.9'/%3E%3C/g%3E%3C/svg%3E");
   --shadow: 6px 6px 0 var(--black);
   --shadow-sm: 3px 3px 0 var(--black);
   --font-body: 'Jost', 'Trebuchet MS', Verdana, sans-serif;
@@ -68,7 +70,7 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* the page: the hallway's striped pixel wallpaper from the door page, tinted by the room */
+/* the page: a candy Y2K background in the room's colours, with glossy stripes and sparkles */
 #stage {
   position: absolute; left: 50%; top: 50%;
   width: 1280px; height: 960px;
@@ -76,9 +78,15 @@ html, body {
   transform-origin: center center;
   overflow: hidden;
   border-radius: 14px;
-  background: #c9b496;
+  background: #ffd6ee;
 }
-#stage::before, .desk { background: var(--wallpaper, none) 0 0 / 1280px 960px, #c9b496; image-rendering: pixelated; transition: background-color .3s; }
+#stage::before, .desk {
+  background:
+    var(--sparkles) 0 0 / 180px 180px,
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, .2) 0 16px, transparent 16px 32px),
+    radial-gradient(130% 70% at 50% -12%, rgba(255, 255, 255, .7), transparent 62%),
+    var(--page);
+}
 #stage::before { content: ''; position: absolute; inset: 0; z-index: -1; }
 
 /* the game window: the top bar (#hud) is its title bar, the room (#screen) its content,

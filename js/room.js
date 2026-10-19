@@ -42,19 +42,28 @@ function roomShell(b, th) {
   b.dither(LX, CY, 12, FY - CY, th.sideShade || th.side, 6);
   b.rect(WX1, WY1, WX2 - WX1 + 1, WY2 - WY1 + 1, th.wall);
   wallpaper(b, th);
-  // floor + planks in perspective
+  // floor in perspective: a fluffy carpet, a checkerboard, or wooden planks
   b.poly([[WX1, WY2 + 1], [WX2 + 1, WY2 + 1], [RX + 1, FY + 1], [LX, FY + 1]], th.floor);
   const xl = y => WX1 + (LX - WX1) * (y - WY2) / (FY - WY2), xr = y => WX2 + (RX - WX2) * (y - WY2) / (FY - WY2);
   const rows = [WY2 + 1, 110, 116, 123, 131, 141];
-  rows.slice(1, -1).forEach(y => b.hline(Math.ceil(xl(y)), y, Math.floor(xr(y)) - Math.ceil(xl(y)) + 1, th.floor2));
-  const spread = (RX - LX) / (WX2 - WX1);
-  for (let k = 0; k < rows.length - 1; k++) {
-    for (let xb = WX1 + (k % 2 ? 22 : 8); xb < WX2; xb += 30) {
-      const xf = 160 + (xb - 160) * spread, at = y => xb + (xf - xb) * (y - WY2) / (FY - WY2);
-      b.line(at(rows[k] + 1), rows[k] + 1, at(rows[k + 1] - 1), rows[k + 1] - 1, th.floor2);
+  if (th.floorStyle === 'carpet') {
+    for (let y = WY2 + 1; y <= FY; y++) b.dither(Math.ceil(xl(y)), y, Math.floor(xr(y)) - Math.ceil(xl(y)) + 1, 1, th.floor2, 3);
+  } else if (th.floorStyle === 'checker') {
+    for (let y = WY2 + 1; y <= FY; y++) {
+      const r = rows.filter(v => v <= y).length, a = xl(y), w = xr(y) - a;
+      for (let x = Math.ceil(a); x <= Math.floor(xr(y)); x++) if ((Math.floor((x - a) / w * 12) + r) % 2) b.px(x, y, th.floor2);
+    }
+  } else {
+    rows.slice(1, -1).forEach(y => b.hline(Math.ceil(xl(y)), y, Math.floor(xr(y)) - Math.ceil(xl(y)) + 1, th.floor2));
+    const spread = (RX - LX) / (WX2 - WX1);
+    for (let k = 0; k < rows.length - 1; k++) {
+      for (let xb = WX1 + (k % 2 ? 22 : 8); xb < WX2; xb += 30) {
+        const xf = 160 + (xb - 160) * spread, at = y => xb + (xf - xb) * (y - WY2) / (FY - WY2);
+        b.line(at(rows[k] + 1), rows[k] + 1, at(rows[k + 1] - 1), rows[k + 1] - 1, th.floor2);
+      }
     }
   }
-  b.dither(LX, WY2 + 1, RX - LX + 1, 4, th.floor2, 4);
+  b.dither(LX, WY2 + 1, RX - LX + 1, 4, th.shadow || th.floor2, 4);
   // skirting board
   b.rect(WX1, WY2 - 2, WX2 - WX1 + 1, 3, th.base || 'w'); b.hline(WX1, WY2 - 3, WX2 - WX1 + 1, 'o');
   // room edges (dollhouse cut-away)
@@ -295,13 +304,13 @@ function ceilingStars(b) { [[70, 13], [110, 12], [150, 13], [200, 12], [240, 13]
 function hangString(b, x, toY) { b.vline(x, RA.WY1, Math.max(1, toY - RA.WY1), 'o'); }
 
 /* ---------- one background per chapter ----------
-   It's the same room all the way through: the floor stays, the walls get repainted.
-   Warm, sunny wall colours (Chloee's moodboard asks for a warmer scheme, like Animal Crossing) that sit
-   with the terracotta door: butter, rose, lilac, the teen teal, then apricot, all at the teen room's depth. */
-const YA_ROOM = { ceil: '#fdf1e2', side: '#ebbf96', side2: '#e4b78c', sideShade: '#d9ab80', wall: '#f6d3ae', dots: '#fadfc3', dots2: '#ffffff', floor: '#c69f7a', floor2: '#ae8762', pattern: 'plain' };
+   Y2K candy colours, a new paint job and a new floor for every era:
+   lemon + baby-blue carpet, bubblegum + lilac carpet, lavender + aqua carpet,
+   aqua stripes + lilac checkerboard, then mint + pink carpet. */
+const YA_ROOM = { ceil: '#e6fff1', side: '#8de8b6', side2: '#85e2ae', sideShade: '#79d6a2', wall: '#aef5cf', dots: '#c9fbe0', dots2: '#ffffff', floor: '#ffc2e0', floor2: '#ffa8d2', shadow: '#f592c4', floorStyle: 'carpet', pattern: 'plain' };
 
 function bgNursery(b, L) {
-  roomShell(b, { ceil: '#faeccb', side: '#e5c47c', side2: '#debb70', sideShade: '#d2ae63', wall: '#f1d68f', dots: '#fff3d6', floor: '#c69f7a', floor2: '#ae8762', pattern: 'stars' });
+  roomShell(b, { ceil: '#fff6c9', side: '#ffd54a', side2: '#fccd3c', sideShade: '#f2c030', wall: '#ffe676', dots: '#7ccbff', floor: '#a7dcff', floor2: '#8acbf5', shadow: '#74b9ea', floorStyle: 'carpet', pattern: 'stars' });
   ceilingStars(b);
   drawWindow(b, 'night', 'b');
   drawDoor(b, 'p', 'baby');
@@ -314,31 +323,31 @@ function bgNursery(b, L) {
 }
 
 function bgChildhood(b, L) {
-  roomShell(b, { ceil: '#fde4e2', side: '#e8a2ae', side2: '#e199a6', sideShade: '#d68e9b', wall: '#f3b9bf', dots: '#fde9e6', dots2: '#e7707f', floor: '#c69f7a', floor2: '#ae8762', pattern: 'dots' });
+  roomShell(b, { ceil: '#ffe0f1', side: '#ff8fca', side2: '#fb86c3', sideShade: '#f07bb8', wall: '#ffa8d8', dots: '#ffffff', dots2: '#ff4fa8', floor: '#cdb2ff', floor2: '#b99cf5', shadow: '#a88ae8', floorStyle: 'carpet', pattern: 'dots' });
   lightBeam(b, 2);
   drawWindow(b, 'day', 'w');
   drawDoor(b, 'w', 'letters');
   drawHookRail(b, L.hooks);
   drawBookshelf(b, L.shelf, 'y');
-  drawRug(b, 160, 130, 55, 9, 'L', 'w');
+  drawRug(b, 160, 130, 55, 9, 'Y', 'w');
   drawBed(b, L.bed, 'flowers');
   drawTeaTable(b, 640, 476, 240, 530);
   drawToyBox(b, L.toybox);
 }
 
 function bgTween(b, L) {
-  roomShell(b, { ceil: '#f3e6f2', side: '#bfa0c9', side2: '#b898c3', sideShade: '#ad8db9', wall: '#d6bcdc', dots: '#fff1c4', dots2: '#7fd3c7', floor: '#c69f7a', floor2: '#ae8762', pattern: 'butterflies' });
+  roomShell(b, { ceil: '#ede2ff', side: '#ad87f5', side2: '#a57ff0', sideShade: '#9a74e6', wall: '#c4a2ff', dots: '#c6f562', dots2: '#5ee6dc', floor: '#8deee3', floor2: '#6fdccf', shadow: '#5ccabd', floorStyle: 'carpet', pattern: 'butterflies' });
   lightBeam(b, 2);
   drawWindow(b, 'afternoon', 'y');
   drawDoor(b, 'l', 'butterfly');
   shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'w');
-  drawRug(b, 160, 130, 45, 8, 'a', 'w');
+  drawRug(b, 160, 130, 45, 8, 'P', 'w');
   drawDesk(b, L.desk, { lamp: 'P', chair: 'A', drawer: 'L' });
   drawBed(b, L.bed, 'butterflies');
 }
 
 function bgTeen(b, L) {
-  roomShell(b, { ceil: '#eef6f3', side: '#a3c6be', side2: '#99bdb5', sideShade: '#8fb2aa', wall: '#c0dcd5', dots: '#b0d0c8', dots2: '#f4fbf8', floor: '#c69f7a', floor2: '#ae8762', pattern: 'stripes' });
+  roomShell(b, { ceil: '#e6fbf6', side: '#8fd8c9', side2: '#86d1c2', sideShade: '#7cc7b8', wall: '#a9e8dc', dots: '#c4f2e8', dots2: '#ffffff', floor: '#c7b3f7', floor2: '#efe8ff', shadow: '#a993e6', floorStyle: 'checker', pattern: 'stripes' });
   lightBeam(b, 2);
   drawWindow(b, 'dusk', 'v');
   drawDoor(b, 'w', 'keepout');
@@ -373,14 +382,13 @@ function bgMovingOut(b, L) {
 
 /* ---------- the bedroom door you open first (after Chloee's laptop mock-up) ---------- */
 const DOOR_ART = { x: 84, w: 152, h: 240 };   // door leaf on a 320 x 240 art grid (the 4:3 stage, 4 screen px per pixel)
-// the striped, speckled wallpaper of the hallway (door page); the page around the game uses it too
+// the striped, speckled wallpaper of the hallway (door page)
 const DOOR_PAPER = ['#c9b496', '#c2ad8e', '#b8a284'];
 function paintWallpaper(b, w, h, paper) {
   b.rect(0, 0, w, h, paper[0]);
   for (let x = 0; x < w; x += 6) b.vline(x, 0, h, paper[1]);
   b.dither(0, 0, w, h, paper[2], 3);
 }
-function wallpaperCanvas(paper) { const b = new PixBuf(ART_W, DOOR_ART.h, 0); paintWallpaper(b, ART_W, DOOR_ART.h, paper); return b.toCanvas(1); }
 
 function drawDoorWall() {
   const H = DOOR_ART.h, b = new PixBuf(ART_W, H, 0), x1 = DOOR_ART.x, x2 = DOOR_ART.x + DOOR_ART.w;

@@ -787,9 +787,9 @@ function buildBg() {
 
 function buildTray() {
   const b = new PixBuf(312, 35, 0);
-  // the shelf the box sits on: a lavender panel with a light top edge, like the pastel pixel-room reference
-  b.rect(0, 0, 312, 35, '#e6defa');
-  b.rect(1, 1, 310, 2, '#f6f2ff'); b.rect(1, 31, 310, 3, '#cfc3f0');
+  // the shelf the box sits on is part of the frame (white, plum outline, a faint grid), not the room
+  b.rect(0, 0, 312, 35, '#ffffff');
+  b.rect(1, 31, 310, 3, '#ebe8e1');
   b.rect(0, 0, 312, 1, 'o'); b.rect(0, 34, 312, 1, 'o'); b.rect(0, 0, 1, 35, 'o'); b.rect(311, 0, 1, 35, 'o');
   b.box(4, 4, 30, 27, 'r'); b.rect(17, 5, 4, 3, 'y'); b.box(7, 8, 24, 21, 'w');   // cardboard box + label sticker
   trayCv = b.toCanvas(1);
@@ -837,11 +837,10 @@ function pill(ctx, str, cx, cy, size, accent) {
   const w = ctx.measureText(str).width + size * 1.1, h = size * 1.6;
   // kept inside the visible part of the screen (the top 44 px of the canvas are cropped by #screen)
   const x = Math.round(Math.max(8, Math.min(W - w - 8, cx - w / 2))), y = Math.round(Math.max(50, Math.min(H - h - 6, cy - h / 2)));
-  ctx.save();
-  ctx.shadowColor = 'rgba(34,26,19,.25)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3;
-  ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.fillStyle = '#ffffff'; ctx.fill();
-  ctx.restore();
-  ctx.lineWidth = 2; ctx.strokeStyle = accent || PALETTE.o; ctx.stroke();
+  // a little frame-style label: white, the frame's plum outline and a hard offset shadow
+  ctx.fillStyle = 'rgba(61,44,74,.25)'; ctx.fillRect(x + 4, y + 4, w, h);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(x, y, w, h);
+  ctx.lineWidth = 3; ctx.strokeStyle = accent || PALETTE.o; ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h - 3);
   canvasText(ctx, str, x + w / 2, y + h / 2 + 1, { size });
 }
 const HEART = '\u2665\uFE0E';
@@ -930,11 +929,11 @@ function drawMemorySpark(ctx, x, y, unseen) {
   const t = G.time / 1000, a = unseen ? 0.5 + 0.5 * Math.sin(t * 4) : 0.6;
   const r = unseen ? 13 + a * 5 : 12;
   ctx.save();
-  ctx.shadowColor = 'rgba(245,163,210,.95)'; ctx.shadowBlur = 12;
-  ctx.fillStyle = '#f5a3d2'; sparkle(ctx, x, y, r + 3);
+  ctx.shadowColor = 'rgba(255,132,228,.9)'; ctx.shadowBlur = 12;
+  ctx.fillStyle = '#ff84e4'; sparkle(ctx, x, y, r + 3);
   ctx.shadowBlur = 0; ctx.fillStyle = '#ffffff'; sparkle(ctx, x, y, r - 2);
   ctx.globalAlpha = unseen ? 1 - a * 0.6 : 0.8;
-  ctx.fillStyle = '#ffffff'; ctx.shadowColor = 'rgba(245,163,210,.9)'; ctx.shadowBlur = 6;
+  ctx.fillStyle = '#ffffff'; ctx.shadowColor = 'rgba(255,132,228,.9)'; ctx.shadowBlur = 6;
   sparkle(ctx, x - 14, y + 11, 5 + (1 - a) * 3);
   ctx.restore();
 }

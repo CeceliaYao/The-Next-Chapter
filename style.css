@@ -1,9 +1,10 @@
 /* =========================================================
    The Next Chapter: a Y2K web-game frame around the room.
-   After the pastel pixel-room reference and Chloee's moodboard (Y2K web, My Scene,
-   Windows 98/XP, Frutiger Aero): soft colour blocks, each window with its own
-   pastel title bar, candy "gel" buttons, nested boxes with a thick plum outline
-   (the same plum as the room's outlines) and a faint grid on the page.
+   Two colour systems, one style: the rooms keep their own pastels, while the
+   frame and the titles use the logo's vivid colours ("vivid point colours for
+   frames", Chloee's moodboard) as colour blocks on white. Both share the same
+   style: a thick plum outline (one room pixel wide), glossy "gel" fills, nested
+   boxes, a faint grid and four-point sparkles.
    Windows can be dragged (like Teleport); buttons and links change
    colour on hover (like Yrs Truly).
    The room itself stays pixel art (it's the drawings).
@@ -24,25 +25,24 @@
   --s: 1;
   --line: #3d2c4a;        /* plum: outlines and text, the same ink as the room's pixel outlines */
   --ink: var(--line);
-  --violet: #5e3f8f;      /* small labels */
-  --white: #fffafd;
-  --face: #fbf3fc;        /* window face */
-  --page: #f6eef9;        /* the page behind the windows (with a faint grid) */
-  /* colour blocks: a light and a deep tone of each pastel, from the room reference and the moodboard swatches */
-  --lilac: #eadcfd;  --lilac-d: #c7a3f3;
-  --pink: #ffdcef;   --pink-d: #f5a3d2;
-  --sky: #d8edff;    --sky-d: #96c9f2;
-  --mint: #ddf5cd;   --mint-d: #a2d98a;
-  --butter: #fff1b8; --butter-d: #ffd24d;
-  --peach: #ffe2c9;  --peach-d: #ffb27a;
-  /* vivid point colours (logo / guideline) for the main buttons and the year */
+  --violet: #66557a;      /* small labels (a muted plum) */
+  /* Two colour systems, one style. The rooms have their own pastels (js/room.js);
+     the frame and the titles use the logo's vivid colours as small colour blocks on white. */
+  --white: #ffffff;
+  --face: #fbfaf6;        /* window face */
+  --page: #f2f2ed;        /* the page behind the windows: the guideline's white, with a faint grid */
+  --blue: #00b5ff;
+  --pink: #ff84e4;
+  --yellow: #ffc700;
+  --green: #8de328;
   --orange: #f09000;
   --amber: #ffc700;
-  --c: var(--lilac); --cd: var(--lilac-d);   /* each window's own colour block */
-  --outline: 0 0 0 3px var(--line);
+  --neutral: #dcd8cf;     /* plain buttons */
+  --c: var(--blue);       /* each window's own colour block */
+  --outline: 0 0 0 4px var(--line);   /* as thick as one pixel of the room's outline */
   --drop: 6px 6px 0 rgba(61, 44, 74, .22);
   --grid: linear-gradient(rgba(61, 44, 74, .07) 1px, transparent 1px) 0 0 / 22px 22px, linear-gradient(90deg, rgba(61, 44, 74, .07) 1px, transparent 1px) 0 0 / 22px 22px;
-  --chips: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='16'%3E%3Cg stroke='%233d2c4a' stroke-width='2.5'%3E%3Crect x='1.25' y='1.25' width='16.5' height='13.5' fill='%23f5a3d2'/%3E%3Crect x='23.75' y='1.25' width='16.5' height='13.5' fill='%23ffd24d'/%3E%3Crect x='46.25' y='1.25' width='16.5' height='13.5' fill='%2396c9f2'/%3E%3C/g%3E%3C/svg%3E");
+  --chips: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='16'%3E%3Cg stroke='%233d2c4a' stroke-width='2.5'%3E%3Crect x='1.25' y='1.25' width='16.5' height='13.5' fill='%23ff84e4'/%3E%3Crect x='23.75' y='1.25' width='16.5' height='13.5' fill='%23ffc700'/%3E%3Crect x='46.25' y='1.25' width='16.5' height='13.5' fill='%2300b5ff'/%3E%3C/g%3E%3C/svg%3E");
   --font-body: 'Jost', 'Trebuchet MS', Verdana, sans-serif;
   --font-ui: 'Archivo Narrow', 'Arial Narrow', Arial, sans-serif;
   --font-lcd: 'VT323', monospace;
@@ -52,7 +52,8 @@
   --ease: cubic-bezier(.2, .8, .2, 1);
 }
 
-* { box-sizing: border-box; }
+/* the "gel" fill: light at the top, the full colour at the bottom (worked out per element from its --c) */
+* { box-sizing: border-box; --gel: linear-gradient(180deg, color-mix(in srgb, var(--c) 28%, #fff) 0%, color-mix(in srgb, var(--c) 66%, #fff) 46%, var(--c) 100%); }
 html, body {
   margin: 0; height: 100%; overflow: hidden;
   background: #000;
@@ -64,7 +65,7 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* the page: a pale lilac with a faint grid, quiet behind the windows */
+/* the page: the guideline's white with a faint grid, quiet behind the windows */
 #stage {
   position: absolute; left: 50%; top: 50%;
   width: 1280px; height: 960px;
@@ -77,16 +78,16 @@ html, body {
 /* ---------- windows: plum outline, a soft face, a pastel title bar ---------- */
 .win, #gameWin, #hint, .toast, .card, .tidy-banner {
   position: relative;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--c) 18%, #fff), color-mix(in srgb, var(--c) 42%, #fff));   /* a pale tint of the window's colour */
+  background: linear-gradient(180deg, var(--white), var(--face));
   box-shadow: var(--outline), var(--drop);
 }
 .win { padding: 0; overflow: hidden; }
 .titlebar, .card::before, .tidy-banner::before, #hint::before {
   display: flex; align-items: center; gap: 10px;
   height: 32px; padding: 0 6px 0 10px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--c) 35%, #fff) 0%, var(--c) 42%, var(--cd) 100%);
+  background: var(--gel);
   box-shadow: inset 0 2px 0 rgba(255, 255, 255, .75);
-  border-bottom: 3px solid var(--line);
+  border-bottom: 4px solid var(--line);
   color: var(--line); font: 700 18px/1 var(--font-ui); letter-spacing: .4px;
   white-space: nowrap; overflow: hidden;
 }
@@ -104,41 +105,40 @@ html, body {
   font: 700 15px/1 var(--font-ui); color: var(--line);
   background: #fff; box-shadow: 0 0 0 2.5px var(--line);
 }
-.tb-close:hover { background: var(--pink-d); }
+.tb-close:hover { background: var(--pink); }
 .titlebar.grab { cursor: grab; touch-action: none; }
 .titlebar.grabbing { cursor: var(--cursor-grab); }
 
 /* each window has its own colour block */
-#gameWin, .menu-win, .end-win, .card { --c: var(--lilac); --cd: var(--lilac-d); }
-#hint, .thanks-win { --c: var(--butter); --cd: var(--butter-d); }
-.title-win, .mem-win, .toast.mum { --c: var(--pink); --cd: var(--pink-d); }
-.toast, .keep-win { --c: var(--sky); --cd: var(--sky-d); }
-.tidy-banner { --c: var(--mint); --cd: var(--mint-d); }
+#gameWin, .menu-win, .end-win, .card { --c: var(--blue); }
+#hint, .thanks-win, .keep-win { --c: var(--yellow); }
+.title-win, .mem-win, .toast.mum { --c: var(--pink); }
+.toast, .tidy-banner { --c: var(--green); }
 
 /* ---------- buttons: candy gel, plum outline ---------- */
 button { font-family: var(--font-ui); cursor: var(--cursor-hand); }
 .aqua {
-  --c: var(--butter-d); --cd: var(--orange);
+  --c: var(--orange);
   position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   margin: 4px; padding: 11px 26px 12px; border: 0; border-radius: 0;
   font: 700 20px/1 var(--font-ui); letter-spacing: .5px; color: var(--line);
-  background: linear-gradient(180deg, #ffe7b0 0%, #ffc54d 48%, #f59a1b 100%);
-  box-shadow: var(--outline), inset 0 3px 0 rgba(255, 255, 255, .6), 3px 3px 0 3px var(--line);
+  background: var(--gel);
+  box-shadow: var(--outline), inset 0 3px 0 rgba(255, 255, 255, .6), 3px 3px 0 4px var(--line);
   transition: transform .08s, box-shadow .08s;
 }
-.aqua.alt, .small-btn { background: linear-gradient(180deg, #f7f0ff 0%, var(--lilac) 45%, var(--lilac-d) 100%); }
+.aqua.alt, .small-btn { --c: var(--neutral); }
 /* hover: the button changes colour, like the links on Yrs Truly */
-.aqua:hover { background: linear-gradient(180deg, #fff0f8 0%, var(--pink) 42%, var(--pink-d) 100%); }
-.aqua.alt:hover, .small-btn:hover { background: linear-gradient(180deg, #f0f8ff 0%, var(--sky) 42%, var(--sky-d) 100%); }
+.aqua:hover { --c: var(--pink); }
+.aqua.alt:hover, .small-btn:hover { --c: var(--yellow); }
 .aqua:active { transform: translate(3px, 3px); box-shadow: var(--outline), inset 0 3px 0 rgba(255, 255, 255, .6); }
 .aqua:focus-visible { outline: 2px dotted var(--line); outline-offset: -8px; }
 .aqua:disabled { filter: grayscale(.8) opacity(.6); cursor: var(--cursor); }
 .aqua.big { font-size: 28px; padding: 15px 42px 16px; }
-.small-btn { font-size: 17px; min-height: 38px; padding: 8px 16px 9px; margin: 0; color: var(--line); box-shadow: var(--outline), inset 0 2px 0 rgba(255, 255, 255, .7), 2px 2px 0 2px var(--line); }
+.small-btn { font-size: 17px; min-height: 38px; padding: 8px 16px 9px; margin: 0; color: var(--line); background: var(--gel); box-shadow: var(--outline), inset 0 2px 0 rgba(255, 255, 255, .7), 2px 2px 0 4px var(--line); }
 .small-btn:active { transform: translate(2px, 2px); box-shadow: var(--outline); }
 .small-btn.round { width: 44px; height: 38px; padding: 0; }
 .small-btn.round svg { position: relative; width: 22px; height: 22px; }
-.small-btn.off { background: linear-gradient(180deg, #f4f1f6, #d8d2dc); }
+.small-btn.off { --c: #b9b4ab; }
 
 /* ---------- the game window: title bar + top panel + room ---------- */
 #gameWin { position: absolute; left: 30px; top: 16px; width: 1220px; height: 734px; z-index: 0; }
@@ -172,19 +172,25 @@ canvas.photo-canvas { width: 100%; height: 100%; display: block; }
 }
 .hud-meter { margin-left: auto; display: flex; align-items: center; gap: 10px; font: 700 15px/1 var(--font-ui); letter-spacing: 1px; text-transform: uppercase; color: var(--violet); }
 .hud-meter .bar { width: 230px; height: 28px; padding: 5px; background: #fff; box-shadow: inset 0 0 0 3px var(--line); }
-.hud-meter .bar i {   /* progress blocks in the six pastels */
+.hud-meter .bar i {   /* progress blocks in the logo's colours */
   display: block; height: 100%; width: 0%;
   background: repeating-linear-gradient(90deg,
-    var(--pink-d) 0 11px, transparent 11px 14px, var(--peach-d) 14px 25px, transparent 25px 28px,
-    var(--butter-d) 28px 39px, transparent 39px 42px, var(--mint-d) 42px 53px, transparent 53px 56px,
-    var(--sky-d) 56px 67px, transparent 67px 70px, var(--lilac-d) 70px 81px, transparent 81px 84px);
+    var(--blue) 0 11px, transparent 11px 14px, var(--pink) 14px 25px, transparent 25px 28px,
+    var(--yellow) 28px 39px, transparent 39px 42px, var(--green) 42px 53px, transparent 53px 56px,
+    var(--orange) 56px 67px, transparent 67px 70px);
   transition: width .45s var(--ease);
 }
 .hud-meter b { font: 700 20px/1 var(--font-ui); min-width: 78px; letter-spacing: .5px; color: var(--line); }
 .hud-mem {
+  display: inline-flex; align-items: center; gap: 6px;
   font: 700 16px/1 var(--font-ui); letter-spacing: .5px; color: var(--line); padding: 9px 12px 8px; white-space: nowrap;
-  background: linear-gradient(180deg, #fff0f8 0%, var(--pink) 42%, var(--pink-d) 100%);
+  --c: var(--pink); background: var(--gel);
   box-shadow: var(--outline), inset 0 2px 0 rgba(255, 255, 255, .7);
+}
+
+.hud-mem::before {   /* the same sparkle that marks a memory in the room */
+  content: ''; width: 16px; height: 16px; background: #fff; filter: drop-shadow(0 0 1px var(--line)) drop-shadow(0 0 .5px var(--line));
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
 }
 
 /* ---------- dock (under the game window): Teddy's tips + messages ---------- */
@@ -202,19 +208,19 @@ canvas.photo-canvas { width: 100%; height: 100%; display: block; }
 .hint-keys { margin: 10px 0 0; font: 700 15px/1.2 var(--font-ui); letter-spacing: .6px; color: var(--violet); }
 .hint-keys b {   /* the sparkle that marks a memory in the room */
   display: inline-block; width: 22px; height: 22px; vertical-align: -5px; margin: 0 1px;
-  background: radial-gradient(circle, #fff 0 18%, #f07cc0 55%);
+  background: radial-gradient(circle, #fff 0 18%, var(--pink) 55%);
   clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
 }
 #hint.pulse { animation: hintGlow 1.4s var(--ease) 2; }
 #hint.fresh #hintText { animation: fadeIn .35s ease both; }
-@keyframes hintGlow { 40% { box-shadow: var(--outline), 0 0 0 9px var(--butter-d); } }
+@keyframes hintGlow { 40% { box-shadow: var(--outline), 0 0 0 10px var(--yellow); } }
 
 /* messenger pop-ups (Mum, little bro), like the buddy-list windows */
 #toasts { width: 410px; flex: none; display: flex; flex-direction: column; justify-content: flex-end; gap: 12px; }
 .toast { pointer-events: auto; cursor: var(--cursor-hand); }
 .toast-bar {
   display: flex; align-items: center; gap: 8px; padding: 6px 8px;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--c) 35%, #fff) 0%, var(--c) 42%, var(--cd) 100%); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .7); border-bottom: 3px solid var(--line);
+  background: var(--gel); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .7); border-bottom: 3px solid var(--line);
   font: 700 15px/1 var(--font-ui); letter-spacing: .4px; color: var(--line);
 }
 .toast-bar svg { width: 16px; height: 16px; }
@@ -230,9 +236,10 @@ canvas.photo-canvas { width: 100%; height: 100%; display: block; }
 #overlay { position: absolute; inset: 0; z-index: 20; pointer-events: none; }
 #overlay .screen { position: absolute; inset: 0; pointer-events: auto; display: flex; align-items: center; justify-content: center; }
 #overlay .screen.intro-screen, #overlay .screen.keep-screen, #overlay .screen.complete-screen { background: rgba(61, 44, 74, .32); }
-.holo {   /* the start page's soft pastel background */
+.holo {   /* the start page's soft background: light tints of the logo's colours, with the frame's faint grid */
   position: absolute; inset: 0;
   background:
+    var(--grid),
     radial-gradient(50% 40% at 18% 12%, rgba(255, 255, 255, .95), transparent 70%),
     radial-gradient(45% 35% at 88% 85%, rgba(255, 220, 245, .95), transparent 70%),
     radial-gradient(40% 30% at 80% 18%, rgba(205, 240, 255, .9), transparent 70%),
@@ -318,7 +325,7 @@ canvas.photo-canvas { width: 100%; height: 100%; display: block; }
 .keep-lead { margin: 0 0 12px; font: 500 21px/1.35 var(--font-body); text-align: center; }
 .keep-label { font: 700 16px/1 var(--font-ui); letter-spacing: 1.5px; text-transform: uppercase; margin: 16px 0 10px; color: var(--violet); }
 .keep-row { display: flex; flex-wrap: wrap; gap: 14px; min-height: 40px; padding: 4px; }
-.box-row { padding: 18px 16px 16px; justify-content: center; background: var(--grid), var(--butter); box-shadow: inset 0 0 0 3px var(--line); margin: 4px; }
+.box-row { padding: 18px 16px 16px; justify-content: center; background: var(--grid), color-mix(in srgb, var(--yellow) 22%, #fff); box-shadow: inset 0 0 0 3px var(--line); margin: 4px; }
 .box-row.shake { animation: shake .35s ease-in-out; }
 @keyframes shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
 .tile {
@@ -329,15 +336,15 @@ canvas.photo-canvas { width: 100%; height: 100%; display: block; }
   transition: transform .18s var(--ease);
 }
 .tile img { width: 72px; height: 72px; image-rendering: pixelated; }
-.tile em { position: absolute; top: -10px; right: -8px; font: 700 12px/1 var(--font-ui); font-style: normal; letter-spacing: .5px; color: var(--line); padding: 4px 7px; background: var(--lilac-d); box-shadow: 0 0 0 2px var(--line); white-space: nowrap; }
-button.tile:hover { transform: translateY(-3px); background: var(--pink); }
+.tile em { position: absolute; top: -10px; right: -8px; font: 700 12px/1 var(--font-ui); font-style: normal; letter-spacing: .5px; color: var(--line); padding: 4px 7px; background: color-mix(in srgb, var(--blue) 55%, #fff); box-shadow: 0 0 0 2px var(--line); white-space: nowrap; }
+button.tile:hover { transform: translateY(-3px); background: color-mix(in srgb, var(--pink) 22%, #fff); }
 .tile.in { background: var(--white); }
-.tile.in em { background: var(--peach-d); }
-.tile.locked { background: var(--butter); }
+.tile.in em { background: var(--orange); }
+.tile.locked { background: color-mix(in srgb, var(--yellow) 30%, #fff); }
 .tile.locked img { width: 62px; height: 62px; }
 .tile.locked em { background: var(--line); color: #fff; }
 .tile span small { display: block; font-size: 12px; line-height: 1.1; margin-top: 2px; }
-.tile.empty { justify-content: center; background: transparent; box-shadow: none; outline: 3px dashed var(--lilac-d); outline-offset: -4px; font: 700 14px/1 var(--font-ui); letter-spacing: 1px; text-transform: uppercase; color: var(--violet); }
+.tile.empty { justify-content: center; background: transparent; box-shadow: none; outline: 3px dashed rgba(61, 44, 74, .3); outline-offset: -4px; font: 700 14px/1 var(--font-ui); letter-spacing: 1px; text-transform: uppercase; color: var(--violet); }
 .tile.gone img { filter: grayscale(.9) opacity(.55); }
 .tile.mini { width: 88px; height: 92px; font-size: 13px; }
 .tile.mini img { width: 44px; height: 44px; }
@@ -403,10 +410,10 @@ button.tile:hover { transform: translateY(-3px); background: var(--pink); }
 .mem-frame.photo .missing { left: 24px; bottom: 24px; }
 .mem-caption { font: 500 24px/1.35 var(--font-body); text-align: center; max-width: 640px; }
 .mem-controls { display: flex; align-items: center; gap: 10px; width: 620px; }
-.mem-controls .ctl { width: 46px; height: 32px; border: 0; font: 700 15px/1 var(--font-ui); color: var(--ink); background: linear-gradient(180deg, #f7f0ff 0%, var(--lilac) 45%, var(--lilac-d) 100%); box-shadow: var(--outline), inset 0 2px 0 rgba(255, 255, 255, .7); }
-.mem-controls .ctl:hover { background: linear-gradient(180deg, #fff0f8 0%, var(--pink) 42%, var(--pink-d) 100%); }
+.mem-controls .ctl { width: 46px; height: 32px; border: 0; font: 700 15px/1 var(--font-ui); color: var(--ink); --c: var(--neutral); background: var(--gel); box-shadow: 0 0 0 3px var(--line), inset 0 2px 0 rgba(255, 255, 255, .7); }
+.mem-controls .ctl:hover { --c: var(--yellow); }
 .seek { flex: 1; height: 24px; padding: 5px; background: #fff; box-shadow: inset 0 0 0 3px var(--line); }
-.seek i { display: block; height: 100%; width: 0; background: repeating-linear-gradient(90deg, var(--pink-d) 0 9px, transparent 9px 12px); }
+.seek i { display: block; height: 100%; width: 0; background: repeating-linear-gradient(90deg, var(--pink) 0 9px, transparent 9px 12px); }
 .mem-foot { text-align: center; font: 700 14px/1 var(--font-ui); letter-spacing: 1.5px; text-transform: uppercase; color: var(--violet); padding: 6px 0 10px; }
 .paper {
   width: 580px; min-height: 220px; padding: 22px 30px; margin: 4px;
@@ -414,7 +421,7 @@ button.tile:hover { transform: translateY(-3px); background: var(--pink); }
   box-shadow: inset 0 0 0 3px var(--line);
   font: 500 23px/32px var(--font-body); white-space: pre-wrap; text-align: left;
 }
-.paper.letter { background: #fffdf6; border-top: 10px solid var(--lilac-d); }
+.paper.letter { background: #fffdf6; border-top: 10px solid var(--blue); }
 .paper p { margin: 0; animation: fadeIn .35s ease both; }
 .menu-win { width: 400px; }
 .menu-body { padding: 20px 22px 16px; display: flex; flex-direction: column; gap: 10px; align-items: stretch; text-align: center; }

@@ -9,7 +9,7 @@ The visitor tends one bedroom across six chapters of a suburban girl's life, fro
 **▶ Play it online:** https://ceceliayao.github.io/The-Next-Chapter/
 
 > Built with [p5.js](https://p5js.org/), plain HTML/CSS and Web Audio. No install, no internet needed.
-> The look is the early-2000s web game: soft pastel colour-block windows with plum outlines, candy gel buttons that change colour on hover, messenger pop-ups (Windows 98 / XP only as a loose reference). Only the room and its things are pixel drawings (320 × 180 pixels, scaled up 4× with no blur); every word uses normal, readable fonts.
+> The look is the early-2000s web game: white windows with colour-block title bars in the logo's colours, glossy gel buttons that change colour on hover, messenger pop-ups (Windows 98 / XP only as a loose reference). The rooms have their own pastel palette; both share one style. Only the room and its things are pixel drawings (320 × 180 pixels, scaled up 4× with no blur); every word uses normal, readable fonts.
 > The page is **4:3** (1280 × 960, scaled to fit). On a wide screen it sits in the middle with black either side, so the eye stays on the game.
 
 ---
@@ -106,20 +106,20 @@ Until a file exists, its frame simply stays empty (the caption still shows). The
 The look follows Chloee's **TNC Identity Guideline** and moodboard, and keeps **the room and the frame apart**:
 
 - **Inside the room**: colours and style from the moodboard (its swatches, the Cyworld / My Scene rooms) and a pastel pixel-room reference: soft two-tone striped wallpaper, a wallpaper border under the ceiling, panelling below a white rail, and pastel plaid carpets for the younger rooms (lemon + baby blue, pink + lilac, lilac + mint); the teen teal on wood; pale blue with white panelling on honey wood for the older rooms. Outlines are a soft plum instead of black, with smooth light, gloss and sparkles on top. Messes show an orange "!" badge; things that hold a memory twinkle.
-- **Outside the room (the frame)**: a Y2K web-game window built from soft colour blocks (after the pastel pixel-room reference's panel, with Windows 98 / XP only as a loose reference): plum outlines, each window with its own pastel title bar and three little colour chips, candy "gel" buttons, nested boxes and a faint grid. Windows can be dragged around (like Teleport), and buttons change colour on hover (like Yrs Truly).
+- **Outside the room (the frame) and the titles**: a second colour system, the logo's vivid colours ("vivid point colours for frames", from the moodboard) as small colour blocks on white: each window has its own title bar colour and three little colour chips, the main buttons are orange, the chapter titles and discs use the logo colours. Windows 98 / XP is only a loose reference. Windows can be dragged around (like Teleport), and buttons change colour on hover (like Yrs Truly).
+- **One style for both**: the same plum outline (the frame's line is as thick as one pixel of the room), glossy "gel" fills, nested boxes, a faint grid and four-point sparkles. The box tray and the labels inside the game screen belong to the frame.
 
-| Colour block | Light / deep | Used for |
+| Frame colour | Hex | Used for |
 | --- | --- | --- |
-| Plum | `#3d2c4a` | outlines and text (the same ink as the room's outlines) |
-| Lilac | `#eadcfd` / `#c7a3f3` | the game window, menu, chapter cards, secondary buttons |
-| Butter | `#fff1b8` / `#ffd24d` | Teddy's tips, the thank-you note, the memory box |
-| Pink | `#ffdcef` / `#f5a3d2` | the start window, memory viewer, Mum's messages, Memories, hover |
-| Sky | `#d8edff` / `#96c9f2` | little bro's messages, saving the memory box, hover on lilac buttons |
-| Mint | `#ddf5cd` / `#a2d98a` | "Room tidy!" |
-| Peach | `#ffe2c9` / `#ffb27a` | progress blocks, packed tags |
-| Orange / Amber | `#f09000` / `#ffc700` | vivid points from the guideline: main buttons, the LCD year |
+| Plum | `#3d2c4a` | outlines and text (shared with the room) |
+| White | `#ffffff` / `#f2f2ed` | window faces, the page (with a faint grid) |
+| Blue | `#00b5ff` | the game window, menu, chapter cards, the ending |
+| Yellow | `#ffc700` | Teddy's tips, the memory box, the thank-you note, the LCD year |
+| Pink | `#ff84e4` | the start window, memory viewer, Mum's messages, Memories, sparkles, hover |
+| Green | `#8de328` | little bro's messages, "Room tidy!" |
+| Orange | `#f09000` | main buttons, the "!" on messes |
 
-The start page keeps its soft pastel background with stars, hearts and bubbles floating up.
+The start page keeps its soft background (light tints of the logo colours, with the frame's grid) and the stars, hearts and bubbles floating up.
 
 The logo files in `assets/brand/` are Chloee's original vector artwork (SVG: sharp at any size and small to load; no pixels, no drop shadow): `logo-main.svg` on the title screen, `logo-stacked.svg` on the door, `logo-liner.svg` on the ending. To use a new logo, replace those files and keep the same names.
 

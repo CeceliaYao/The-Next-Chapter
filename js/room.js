@@ -35,35 +35,26 @@ function stamp(b, x, y, rows, c, clip) {
 
 function roomShell(b, th) {
   const { LX, RX, CY, WX1, WX2, WY1, WY2, FY } = RA;
-  b.rect(0, 0, ART_W, ART_H, '#f2f2ed'); b.dither(0, 0, ART_W, ART_H, '#e4e1d6', 6);   // the guideline's white around the room: the frame, not the room
+  b.rect(0, 0, ART_W, ART_H, '#fff6ea'); b.dither(0, 0, ART_W, ART_H, '#ffe3c8', 6);
   b.poly([[LX, CY], [RX + 1, CY], [WX2 + 1, WY1], [WX1, WY1]], th.ceil);
   b.poly([[LX, CY], [WX1, WY1], [WX1, WY2 + 1], [LX, FY + 1]], th.side);
   b.poly([[WX2 + 1, WY1], [RX + 1, CY], [RX + 1, FY + 1], [WX2 + 1, WY2 + 1]], th.side2 || th.side);
   b.dither(LX, CY, 12, FY - CY, th.sideShade || th.side, 6);
   b.rect(WX1, WY1, WX2 - WX1 + 1, WY2 - WY1 + 1, th.wall);
   wallpaper(b, th);
-  // floor in perspective: a fluffy carpet, a checkerboard, or wooden planks
+  // floor + planks in perspective
   b.poly([[WX1, WY2 + 1], [WX2 + 1, WY2 + 1], [RX + 1, FY + 1], [LX, FY + 1]], th.floor);
   const xl = y => WX1 + (LX - WX1) * (y - WY2) / (FY - WY2), xr = y => WX2 + (RX - WX2) * (y - WY2) / (FY - WY2);
   const rows = [WY2 + 1, 110, 116, 123, 131, 141];
-  if (th.floorStyle === 'carpet') {
-    for (let y = WY2 + 1; y <= FY; y++) b.dither(Math.ceil(xl(y)), y, Math.floor(xr(y)) - Math.ceil(xl(y)) + 1, 1, th.floor2, 3);
-  } else if (th.floorStyle === 'checker') {
-    for (let y = WY2 + 1; y <= FY; y++) {
-      const r = rows.filter(v => v <= y).length, a = xl(y), w = xr(y) - a;
-      for (let x = Math.ceil(a); x <= Math.floor(xr(y)); x++) if ((Math.floor((x - a) / w * 12) + r) % 2) b.px(x, y, th.floor2);
-    }
-  } else {
-    rows.slice(1, -1).forEach(y => b.hline(Math.ceil(xl(y)), y, Math.floor(xr(y)) - Math.ceil(xl(y)) + 1, th.floor2));
-    const spread = (RX - LX) / (WX2 - WX1);
-    for (let k = 0; k < rows.length - 1; k++) {
-      for (let xb = WX1 + (k % 2 ? 22 : 8); xb < WX2; xb += 30) {
-        const xf = 160 + (xb - 160) * spread, at = y => xb + (xf - xb) * (y - WY2) / (FY - WY2);
-        b.line(at(rows[k] + 1), rows[k] + 1, at(rows[k + 1] - 1), rows[k + 1] - 1, th.floor2);
-      }
+  rows.slice(1, -1).forEach(y => b.hline(Math.ceil(xl(y)), y, Math.floor(xr(y)) - Math.ceil(xl(y)) + 1, th.floor2));
+  const spread = (RX - LX) / (WX2 - WX1);
+  for (let k = 0; k < rows.length - 1; k++) {
+    for (let xb = WX1 + (k % 2 ? 22 : 8); xb < WX2; xb += 30) {
+      const xf = 160 + (xb - 160) * spread, at = y => xb + (xf - xb) * (y - WY2) / (FY - WY2);
+      b.line(at(rows[k] + 1), rows[k] + 1, at(rows[k + 1] - 1), rows[k + 1] - 1, th.floor2);
     }
   }
-  b.dither(LX, WY2 + 1, RX - LX + 1, 4, th.shadow || th.floor2, 4);
+  b.dither(LX, WY2 + 1, RX - LX + 1, 4, th.floor2, 4);
   // skirting board
   b.rect(WX1, WY2 - 2, WX2 - WX1 + 1, 3, th.base || 'w'); b.hline(WX1, WY2 - 3, WX2 - WX1 + 1, 'o');
   // room edges (dollhouse cut-away)
@@ -303,14 +294,10 @@ function ceilingStars(b) { [[70, 13], [110, 12], [150, 13], [200, 12], [240, 13]
 
 function hangString(b, x, toY) { b.vline(x, RA.WY1, Math.max(1, toY - RA.WY1), 'o'); }
 
-/* ---------- one background per chapter ----------
-   Colours from Chloee's moodboard (its swatches, the Cyworld and My Scene rooms), kept soft:
-   lemon + pale-blue carpet, Cyworld pink + cream checkerboard, periwinkle + sage carpet,
-   the teen teal on wood, then sage green on light wood. */
-const YA_ROOM = { ceil: '#eef5e6', side: '#b2cf9f', side2: '#aac898', sideShade: '#a0bf8e', wall: '#c9dfb9', dots: '#d5e7c8', dots2: '#ffffff', floor: '#d9b48a', floor2: '#c29a6c', pattern: 'plain' };
+/* ---------- one background per chapter ---------- */
 
 function bgNursery(b, L) {
-  roomShell(b, { ceil: '#fffbd6', side: '#f0e27e', side2: '#ebdb73', sideShade: '#e2d068', wall: '#fbf0a0', dots: '#95ccea', floor: '#bed4e1', floor2: '#abc5d6', shadow: '#98b6cb', floorStyle: 'carpet', pattern: 'stars' });
+  roomShell(b, { ceil: '#fbf1d8', side: '#ecd9ac', side2: '#e5d09e', sideShade: '#dcc490', wall: '#f7e8c4', dots: '#c9b8e0', floor: '#d9b48a', floor2: '#c29a6c', pattern: 'stars' });
   ceilingStars(b);
   drawWindow(b, 'night', 'b');
   drawDoor(b, 'p', 'baby');
@@ -323,7 +310,7 @@ function bgNursery(b, L) {
 }
 
 function bgChildhood(b, L) {
-  roomShell(b, { ceil: '#f8e2ef', side: '#dea6cc', side2: '#d89fc6', sideShade: '#ce94bc', wall: '#ecbadd', dots: '#fbeef6', dots2: '#d987b8', floor: '#f7f1e1', floor2: '#ead0de', shadow: '#d9afc7', floorStyle: 'checker', pattern: 'dots' });
+  roomShell(b, { ceil: '#fbeeee', side: '#e5bcc0', side2: '#ddb2b7', sideShade: '#d3a5ab', wall: '#f0d0d2', dots: '#fbeeee', dots2: '#e3a0b2', floor: '#dcb48a', floor2: '#c59a6e', pattern: 'dots' });
   lightBeam(b, 2);
   drawWindow(b, 'day', 'w');
   drawDoor(b, 'w', 'letters');
@@ -336,12 +323,12 @@ function bgChildhood(b, L) {
 }
 
 function bgTween(b, L) {
-  roomShell(b, { ceil: '#e4ebfb', side: '#9fb4e8', side2: '#98ade3', sideShade: '#8ea4dc', wall: '#b3c6f0', dots: '#addf4c', dots2: '#f4b6d8', floor: '#d1e0bf', floor2: '#bfd3a9', shadow: '#a9c49a', floorStyle: 'carpet', pattern: 'butterflies' });
+  roomShell(b, { ceil: '#f2eef8', side: '#cdc2e2', side2: '#c4b8db', sideShade: '#b9acd2', wall: '#ddd5ec', dots: '#bcaadd', dots2: '#9fcfc6', floor: '#d6ae86', floor2: '#bf956b', pattern: 'butterflies' });
   lightBeam(b, 2);
   drawWindow(b, 'afternoon', 'y');
   drawDoor(b, 'l', 'butterfly');
   shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'w');
-  drawRug(b, 160, 130, 45, 8, 'P', 'w');
+  drawRug(b, 160, 130, 45, 8, 'a', 'w');
   drawDesk(b, L.desk, { lamp: 'P', chair: 'A', drawer: 'L' });
   drawBed(b, L.bed, 'butterflies');
 }
@@ -359,7 +346,7 @@ function bgTeen(b, L) {
 }
 
 function bgYoungAdult(b, L) {
-  roomShell(b, YA_ROOM);
+  roomShell(b, { ceil: '#fffdf6', side: '#e7e1cf', side2: '#dfd8c2', sideShade: '#d6cdb4', wall: '#f3efe2', dots: '#e8e2cf', dots2: '#d9c9f5', floor: '#d8b896', floor2: '#c3a07e', pattern: 'plain' });
   lightBeam(b, 3);
   drawWindow(b, 'morning', null);
   drawDoor(b, 'w', 'wreath');
@@ -370,7 +357,7 @@ function bgYoungAdult(b, L) {
 }
 
 function bgMovingOut(b, L) {
-  roomShell(b, YA_ROOM);
+  roomShell(b, { ceil: '#fffdf6', side: '#e7e1cf', side2: '#dfd8c2', sideShade: '#d6cdb4', wall: '#f3efe2', dots: '#e8e2cf', dots2: '#d9c9f5', floor: '#d8b896', floor2: '#c3a07e', pattern: 'plain' });
   lightBeam(b, 4);
   drawWindow(b, 'morning', null);
   drawDoor(b, 'w', null);
@@ -382,17 +369,11 @@ function bgMovingOut(b, L) {
 
 /* ---------- the bedroom door you open first (after Chloee's laptop mock-up) ---------- */
 const DOOR_ART = { x: 84, w: 152, h: 240 };   // door leaf on a 320 x 240 art grid (the 4:3 stage, 4 screen px per pixel)
-// the striped, speckled wallpaper of the hallway (door page)
-const DOOR_PAPER = ['#c9b496', '#c2ad8e', '#b8a284'];
-function paintWallpaper(b, w, h, paper) {
-  b.rect(0, 0, w, h, paper[0]);
-  for (let x = 0; x < w; x += 6) b.vline(x, 0, h, paper[1]);
-  b.dither(0, 0, w, h, paper[2], 3);
-}
-
 function drawDoorWall() {
   const H = DOOR_ART.h, b = new PixBuf(ART_W, H, 0), x1 = DOOR_ART.x, x2 = DOOR_ART.x + DOOR_ART.w;
-  paintWallpaper(b, ART_W, H, DOOR_PAPER);
+  b.rect(0, 0, ART_W, H, '#c9b496');
+  for (let x = 0; x < ART_W; x += 6) b.vline(x, 0, H, '#c2ad8e');
+  b.dither(0, 0, ART_W, H, '#b8a284', 3);
   // the doorway is left open: when the door swings, the title screen shows through
   b.rect(x1, 0, DOOR_ART.w, H, null);
   for (let y = 0; y < H; y++) for (let x = x1; x < x1 + 6; x++) if ((x + y) % 2) b.px(x, y, '#fff2d8');

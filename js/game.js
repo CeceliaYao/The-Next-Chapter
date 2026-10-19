@@ -10,7 +10,6 @@
 
 const W = 1280, H = 720;          // the game canvas (16:9)
 const STAGE_W = 1280, STAGE_H = 960, SCREEN_K = 1200 / 1280;   // the 4:3 page it sits in, and its on-page scale
-const NAVY = '#2c2c5b';   // the guideline's navy: text on light surfaces in the room
 const FONT_UI = '"Archivo Narrow", "Arial Narrow", Arial, sans-serif', FONT_BODY = 'Jost, "Trebuchet MS", Verdana, sans-serif';
 const TRAY = { x: 16, y: 576, w: 1248, h: 140 };
 const TRAY_FLOOR = 176;          // art row the tray items stand on
@@ -68,11 +67,9 @@ function fitStage() {
 /* vector cursors (crisp at any size); if a browser can't use them it falls back to the system ones */
 function initCursors() {
   const svg = body => 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">' + body + '</svg>') + '")';
-  // the arrow is the brand's blue play triangle with its black offset
-  const tip = 'M5 3v21l5.2-5 3.6 8.4 3.6-1.6-3.6-8.2H21z';
-  const arrow = '<path d="' + tip + '" transform="translate(1.8 1.8)" fill="#211a14"/><path d="' + tip + '" fill="#00b5ff" stroke="#211a14" stroke-width="2" stroke-linejoin="round"/>';
-  const hand = '<path d="M11 15V5.5a2 2 0 014 0V13h.4v-1.5a2 2 0 014 0V13h.3v-.8a2 2 0 014 0V14h.3a2 2 0 014 0v6.5c0 5-3.4 8.5-8.4 8.5h-2c-3 0-4.8-1.4-6.6-3.8l-4.3-5.8a2 2 0 013-2.6z" fill="#f2f2ed" stroke="#211a14" stroke-width="2" stroke-linejoin="round"/>';
-  const grab = '<path d="M8.5 15.5v-2.4a2 2 0 014 0V12a2 2 0 014 0v.2a2 2 0 014 0v.6a2 2 0 014 0v7.7c0 4.6-3.2 7.9-7.8 7.9h-2.3c-2.8 0-4.6-1.3-6.3-3.6l-2.6-3.6a2 2 0 013-2.6z" fill="#f2f2ed" stroke="#211a14" stroke-width="2" stroke-linejoin="round"/>';
+  const arrow = '<path d="M5 3v21l5.2-5 3.6 8.4 3.6-1.6-3.6-8.2H21z" fill="#fff" stroke="#221a13" stroke-width="2" stroke-linejoin="round"/>';
+  const hand = '<path d="M11 15V5.5a2 2 0 014 0V13h.4v-1.5a2 2 0 014 0V13h.3v-.8a2 2 0 014 0V14h.3a2 2 0 014 0v6.5c0 5-3.4 8.5-8.4 8.5h-2c-3 0-4.8-1.4-6.6-3.8l-4.3-5.8a2 2 0 013-2.6z" fill="#fff" stroke="#221a13" stroke-width="2" stroke-linejoin="round"/>';
+  const grab = '<path d="M8.5 15.5v-2.4a2 2 0 014 0V12a2 2 0 014 0v.2a2 2 0 014 0v.6a2 2 0 014 0v7.7c0 4.6-3.2 7.9-7.8 7.9h-2.3c-2.8 0-4.6-1.3-6.3-3.6l-2.6-3.6a2 2 0 013-2.6z" fill="#fff" stroke="#221a13" stroke-width="2" stroke-linejoin="round"/>';
   CURSORS = { arrow: svg(arrow) + ' 5 3, default', hand: svg(hand) + ' 13 4, pointer', grab: svg(grab) + ' 16 14, grabbing' };
   document.documentElement.style.setProperty('--cursor', CURSORS.arrow);
   document.documentElement.style.setProperty('--cursor-hand', CURSORS.hand);
@@ -633,7 +630,6 @@ function openMenu() {
     if (a === 'resume') closeMenu();
     if (a === 'restart') { closeMenu(); setupChapter(G.idx); beginChapter(); }
     if (a === 'title') { closeMenu(); goTitle(); }
-    if (a === 'door') { closeMenu(); goTitle(true); }   // all the way back to the closed bedroom door
     if (a === 'sound') { toggleMute(); G.modal = null; openMenu(); }
   });
 }
@@ -789,8 +785,8 @@ function buildBg() {
 
 function buildTray() {
   const b = new PixBuf(312, 35, 0);
-  for (let y = 0; y < 35; y++) { b.rect(0, y, 312, 1, '#f7f5ee'); b.dither(0, y, 312, 1, '#e3e0d4', Math.round(y / 34 * 12)); }
-  ['#f09000', '#ffc700', '#f09000', '#ffc700', '#f09000'].forEach((c, i) => b.rect(1 + i * 62, 1, i === 4 ? 61 : 62, 2, c));   // the frame's orange + amber
+  for (let y = 0; y < 35; y++) { b.rect(0, y, 312, 1, '#fff6dc'); b.dither(0, y, 312, 1, '#ffe2b8', Math.round(y / 34 * 12)); }
+  ['2', '#ff8f3a', '2', '#ff8f3a', '1'].forEach((c, i) => b.rect(1 + i * 62, 1, i === 4 ? 61 : 62, 2, c));   // orange base, one cool accent
   b.hline(3, 4, 306, 'w'); b.dither(3, 5, 306, 2, 'w', 8);
   b.rect(0, 0, 312, 1, 'o'); b.rect(0, 34, 312, 1, 'o'); b.rect(0, 0, 1, 35, 'o'); b.rect(311, 0, 1, 35, 'o');
   [[0, 0], [311, 0], [0, 34], [311, 34]].forEach(([x, y]) => b.px(x, y, null));
@@ -839,8 +835,8 @@ function pill(ctx, str, cx, cy, size, accent) {
   // kept inside the visible part of the screen (the top 44 px of the canvas are cropped by #screen)
   const x = Math.round(Math.max(8, Math.min(W - w - 8, cx - w / 2))), y = Math.round(Math.max(50, Math.min(H - h - 6, cy - h / 2)));
   ctx.save();
-  ctx.shadowColor = '#211a14'; ctx.shadowBlur = 0; ctx.shadowOffsetX = 3; ctx.shadowOffsetY = 3;   // hard offset, like the UI windows
-  ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.fillStyle = '#f2f2ed'; ctx.fill();
+  ctx.shadowColor = 'rgba(34,26,19,.25)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3;
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.fillStyle = '#ffffff'; ctx.fill();
   ctx.restore();
   ctx.lineWidth = 2; ctx.strokeStyle = accent || PALETTE.o; ctx.stroke();
   canvasText(ctx, str, x + w / 2, y + h / 2 + 1, { size });
@@ -903,7 +899,7 @@ function heartCv() { return _heart || (_heart = iconBuf('heart').toCanvas(1)); }
 function bubble(x, y, c, ch) {
   arect(x - 3, y - 3, 7, 7, 'o'); arect(x - 2, y - 4, 5, 9, 'o'); arect(x - 4, y - 2, 9, 5, 'o');
   arect(x - 2, y - 3, 5, 7, c); arect(x - 3, y - 2, 7, 5, c);
-  if (ch === '!') { arect(x, y - 2, 1, 3, 'o'); apx(x, y + 2, 'o'); }
+  if (ch === '!') { arect(x, y - 2, 1, 3, 'w'); apx(x, y + 2, 'w'); }
   else { arect(x - 1, y - 2, 1, 5, 'o'); arect(x, y - 1, 1, 3, 'o'); apx(x + 1, y, 'o'); }
 }
 
@@ -995,11 +991,11 @@ function drawTray() {
   const left = G.items.filter(i => i.state === 'tray').length, cx = 23 * ART;   // centred on the box's label sticker
   if (left) {
     G.labels.push({ text: 'BOX', x: cx, y: 621, size: 18 });
-    G.labels.push({ text: String(left), x: cx, y: 650, size: 34, color: NAVY });
+    G.labels.push({ text: String(left), x: cx, y: 650, size: 34, color: PALETTE['2'] });
     G.labels.push({ text: 'LEFT', x: cx, y: 678, size: 18 });
   } else {
     G.labels.push({ text: 'ALL', x: cx, y: 630, size: 20 });
-    G.labels.push({ text: 'DONE ' + HEART, x: cx, y: 668, size: 20, color: NAVY });
+    G.labels.push({ text: 'DONE ' + HEART, x: cx, y: 668, size: 20, color: PALETTE['3'] });
   }
 }
 
@@ -1039,12 +1035,12 @@ function drawPackingBox() {
   });
   art.drawImage(_boxCache.front, 0, 0);
   G.labels.push({ text: 'NEXT CHAPTER ▸', x: 160 * ART, y: (top + 11) * ART, size: 28 });   // printed on the box
-  G.labels.push({ text: 'FRAGILE ' + HEART, x: 160 * ART, y: (top + 19) * ART, size: 24, color: NAVY });
+  G.labels.push({ text: 'FRAGILE ' + HEART, x: 160 * ART, y: (top + 19) * ART, size: 24, color: PALETTE.m });
   if (G.state === 'play') {
     const t = (text, x, y, color) => G.labels.push({ text, x, y, size: 27, align: 'left', family: FONT_BODY, color });
     t('Drag what you’ll take', 56, 622); t('into the box', 56, 656);
-    t('Teddy goes in last ' + HEART, 916, 622, NAVY);
-    t(G.packed.length + ' packed', 916, 676);
+    t('Teddy goes in last ' + HEART, 856, 622, PALETTE.m);
+    t(G.packed.length + ' packed', 856, 676, '#c94300');
   }
 }
 
@@ -1057,7 +1053,7 @@ function drawMarkers() {
     const unseen = !G.seen.has(mem.id);
     if (!unseen && G.hover !== it) return;
     const [ax, ay] = artPos(it), S = SPR[it.id];
-    bubble(ax + S.w - 2, ay - 5 + (unseen ? Math.floor(G.time / 300) % 2 : 0), unseen ? '4' : 'w', unseen ? '!' : '>');
+    bubble(ax + S.w - 2, ay - 5 + (unseen ? Math.floor(G.time / 300) % 2 : 0), unseen ? '3' : 'w', unseen ? '!' : '>');
   });
 }
 

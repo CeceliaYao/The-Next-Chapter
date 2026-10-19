@@ -140,8 +140,7 @@ const YA_SURFACES = [
   { id: 'lights', tag: 'lights', type: 'spot', x: 640, y: 84, r: 110 }
 ];
 
-/* ---------- the six chapters ----------
-   accent = the colour of the chapter's CD and of its big title on the chapter card. */
+/* ---------- the six chapters ---------- */
 const CHAPTERS = [
   {
     id: 'nursery', kicker: 'Chapter 1', title: 'The Nursery', year: 2000, accent: '#ffc700',

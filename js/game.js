@@ -785,14 +785,12 @@ function buildBg() {
   G.ch.bg(b, G.ch.layout);
   bgCv = b.toCanvas(1);
   bgFor = G.idx;
-  trayCv = null;   // the tray band takes this chapter's colours
 }
 
 function buildTray() {
   const b = new PixBuf(312, 35, 0);
-  const bar = G.ch.bar;
-  for (let y = 0; y < 35; y++) { b.rect(0, y, 312, 1, bar[0]); b.dither(0, y, 312, 1, bar[1], Math.round(y / 34 * 10)); }
-  b.rect(1, 1, 310, 2, G.ch.accent);   // a stripe in the chapter's frame colour
+  for (let y = 0; y < 35; y++) { b.rect(0, y, 312, 1, '#f7f5ee'); b.dither(0, y, 312, 1, '#e3e0d4', Math.round(y / 34 * 12)); }
+  ['#f09000', '#ffc700', '#f09000', '#ffc700', '#f09000'].forEach((c, i) => b.rect(1 + i * 62, 1, i === 4 ? 61 : 62, 2, c));   // the frame's orange + amber
   b.hline(3, 4, 306, 'w'); b.dither(3, 5, 306, 2, 'w', 8);
   b.rect(0, 0, 312, 1, 'o'); b.rect(0, 34, 312, 1, 'o'); b.rect(0, 0, 1, 35, 'o'); b.rect(311, 0, 1, 35, 'o');
   [[0, 0], [311, 0], [0, 34], [311, 34]].forEach(([x, y]) => b.px(x, y, null));

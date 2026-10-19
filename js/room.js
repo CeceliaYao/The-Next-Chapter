@@ -35,7 +35,7 @@ function stamp(b, x, y, rows, c, clip) {
 
 function roomShell(b, th) {
   const { LX, RX, CY, WX1, WX2, WY1, WY2, FY } = RA;
-  b.rect(0, 0, ART_W, ART_H, th.ceil); b.dither(0, 0, ART_W, ART_H, th.wall, 3);   // a pale tint of the room around it
+  b.rect(0, 0, ART_W, ART_H, '#f2f2ed'); b.dither(0, 0, ART_W, ART_H, '#e4e1d6', 6);   // the guideline's white around the room: the frame, not the room
   b.poly([[LX, CY], [RX + 1, CY], [WX2 + 1, WY1], [WX1, WY1]], th.ceil);
   b.poly([[LX, CY], [WX1, WY1], [WX1, WY2 + 1], [LX, FY + 1]], th.side);
   b.poly([[WX2 + 1, WY1], [RX + 1, CY], [RX + 1, FY + 1], [WX2 + 1, WY2 + 1]], th.side2 || th.side);
@@ -304,13 +304,13 @@ function ceilingStars(b) { [[70, 13], [110, 12], [150, 13], [200, 12], [240, 13]
 function hangString(b, x, toY) { b.vline(x, RA.WY1, Math.max(1, toY - RA.WY1), 'o'); }
 
 /* ---------- one background per chapter ----------
-   Y2K candy colours, a new paint job and a new floor for every era:
-   lemon + baby-blue carpet, bubblegum + lilac carpet, lavender + aqua carpet,
-   aqua stripes + lilac checkerboard, then mint + pink carpet. */
-const YA_ROOM = { ceil: '#e6fff1', side: '#8de8b6', side2: '#85e2ae', sideShade: '#79d6a2', wall: '#aef5cf', dots: '#c9fbe0', dots2: '#ffffff', floor: '#ffc2e0', floor2: '#ffa8d2', shadow: '#f592c4', floorStyle: 'carpet', pattern: 'plain' };
+   Colours from Chloee's moodboard (its swatches, the Cyworld and My Scene rooms), kept soft:
+   lemon + pale-blue carpet, Cyworld pink + cream checkerboard, periwinkle + sage carpet,
+   the teen teal on wood, then sage green on light wood. */
+const YA_ROOM = { ceil: '#eef5e6', side: '#b2cf9f', side2: '#aac898', sideShade: '#a0bf8e', wall: '#c9dfb9', dots: '#d5e7c8', dots2: '#ffffff', floor: '#d9b48a', floor2: '#c29a6c', pattern: 'plain' };
 
 function bgNursery(b, L) {
-  roomShell(b, { ceil: '#fff6c9', side: '#ffd54a', side2: '#fccd3c', sideShade: '#f2c030', wall: '#ffe676', dots: '#7ccbff', floor: '#a7dcff', floor2: '#8acbf5', shadow: '#74b9ea', floorStyle: 'carpet', pattern: 'stars' });
+  roomShell(b, { ceil: '#fffbd6', side: '#f0e27e', side2: '#ebdb73', sideShade: '#e2d068', wall: '#fbf0a0', dots: '#95ccea', floor: '#bed4e1', floor2: '#abc5d6', shadow: '#98b6cb', floorStyle: 'carpet', pattern: 'stars' });
   ceilingStars(b);
   drawWindow(b, 'night', 'b');
   drawDoor(b, 'p', 'baby');
@@ -323,20 +323,20 @@ function bgNursery(b, L) {
 }
 
 function bgChildhood(b, L) {
-  roomShell(b, { ceil: '#ffe0f1', side: '#ff8fca', side2: '#fb86c3', sideShade: '#f07bb8', wall: '#ffa8d8', dots: '#ffffff', dots2: '#ff4fa8', floor: '#cdb2ff', floor2: '#b99cf5', shadow: '#a88ae8', floorStyle: 'carpet', pattern: 'dots' });
+  roomShell(b, { ceil: '#f8e2ef', side: '#dea6cc', side2: '#d89fc6', sideShade: '#ce94bc', wall: '#ecbadd', dots: '#fbeef6', dots2: '#d987b8', floor: '#f7f1e1', floor2: '#ead0de', shadow: '#d9afc7', floorStyle: 'checker', pattern: 'dots' });
   lightBeam(b, 2);
   drawWindow(b, 'day', 'w');
   drawDoor(b, 'w', 'letters');
   drawHookRail(b, L.hooks);
   drawBookshelf(b, L.shelf, 'y');
-  drawRug(b, 160, 130, 55, 9, 'Y', 'w');
+  drawRug(b, 160, 130, 55, 9, 'L', 'w');
   drawBed(b, L.bed, 'flowers');
   drawTeaTable(b, 640, 476, 240, 530);
   drawToyBox(b, L.toybox);
 }
 
 function bgTween(b, L) {
-  roomShell(b, { ceil: '#ede2ff', side: '#ad87f5', side2: '#a57ff0', sideShade: '#9a74e6', wall: '#c4a2ff', dots: '#c6f562', dots2: '#5ee6dc', floor: '#8deee3', floor2: '#6fdccf', shadow: '#5ccabd', floorStyle: 'carpet', pattern: 'butterflies' });
+  roomShell(b, { ceil: '#e4ebfb', side: '#9fb4e8', side2: '#98ade3', sideShade: '#8ea4dc', wall: '#b3c6f0', dots: '#addf4c', dots2: '#f4b6d8', floor: '#d1e0bf', floor2: '#bfd3a9', shadow: '#a9c49a', floorStyle: 'carpet', pattern: 'butterflies' });
   lightBeam(b, 2);
   drawWindow(b, 'afternoon', 'y');
   drawDoor(b, 'l', 'butterfly');
@@ -347,7 +347,7 @@ function bgTween(b, L) {
 }
 
 function bgTeen(b, L) {
-  roomShell(b, { ceil: '#e6fbf6', side: '#8fd8c9', side2: '#86d1c2', sideShade: '#7cc7b8', wall: '#a9e8dc', dots: '#c4f2e8', dots2: '#ffffff', floor: '#c7b3f7', floor2: '#efe8ff', shadow: '#a993e6', floorStyle: 'checker', pattern: 'stripes' });
+  roomShell(b, { ceil: '#eef6f3', side: '#a3c6be', side2: '#99bdb5', sideShade: '#8fb2aa', wall: '#c0dcd5', dots: '#b0d0c8', dots2: '#f4fbf8', floor: '#c69f7a', floor2: '#ae8762', pattern: 'stripes' });
   lightBeam(b, 2);
   drawWindow(b, 'dusk', 'v');
   drawDoor(b, 'w', 'keepout');

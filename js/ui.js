@@ -16,6 +16,9 @@ const UI = (() => {
   /* small vector icons (smooth at any size) */
   const ICONS = {
     heart: '<path d="M12 21s-7.6-4.7-9.6-9.3C.8 8.2 3 4.5 6.6 4.5c2.1 0 3.6 1.2 4.4 2.6.8-1.4 2.3-2.6 4.4-2.6 3.6 0 5.8 3.7 4.2 7.2C19.6 16.3 12 21 12 21z" fill="#ff84e4" stroke="#211a14" stroke-width="1.8" stroke-linejoin="round"/>',
+    star: '<path d="M12 2.4l2.8 6 6.6.8-4.9 4.5 1.3 6.5L12 16.9l-5.8 3.3 1.3-6.5-4.9-4.5 6.6-.8z" fill="#ffc700" stroke="#211a14" stroke-width="1.6" stroke-linejoin="round"/>',
+    sparkle: '<path d="M12 1c.9 5.6 4.4 9.1 10 10-5.6.9-9.1 4.4-10 10-.9-5.6-4.4-9.1-10-10 5.6-.9 9.1-4.4 10-10z" fill="#fdf167" stroke="#211a14" stroke-width="1.3" stroke-linejoin="round"/>',
+    bubble: '<circle cx="12" cy="12" r="10" fill="rgba(131,204,249,.22)" stroke="#5ba8de" stroke-width="1.6"/><ellipse cx="8.4" cy="7.8" rx="3.2" ry="2" fill="#fff"/>',
     smiley: '<circle cx="12" cy="12" r="10" fill="#ffc700" stroke="#211a14" stroke-width="1.6"/><circle cx="8.6" cy="10" r="1.4" fill="#211a14"/><circle cx="15.4" cy="10" r="1.4" fill="#211a14"/><path d="M7.5 14c2.4 3 6.6 3 9 0" stroke="#211a14" stroke-width="1.6" fill="none" stroke-linecap="round"/>',
     floppy: '<path d="M3 3h15l3 3v15H3z" fill="#00b5ff" stroke="#211a14" stroke-width="1.6" stroke-linejoin="round"/><rect x="7" y="3.8" width="9" height="5.4" fill="#f2f2ed" stroke="#211a14" stroke-width="1"/><rect x="13" y="4.6" width="2" height="3.6" fill="#211a14"/><rect x="6" y="12.5" width="12" height="7.5" rx="1" fill="#f2f2ed" stroke="#211a14" stroke-width="1"/>',
     soundOn: '<path d="M3.5 9h4l5-4v14l-5-4h-4z" fill="currentColor"/><path d="M15.8 8.6a4.8 4.8 0 010 6.8M18.4 6a8.5 8.5 0 010 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
@@ -26,17 +29,6 @@ const UI = (() => {
   const svg = (name, size, extra) => '<svg viewBox="0 0 24 24" width="' + size + '" height="' + size + '" aria-hidden="true"' + (extra || '') + '>' + ICONS[name] + '</svg>';
   // every window's title bar carries the brand's play icon, like an app icon
   const APP_ICON = '<img class="tb-icon" src="assets/brand/favicon.svg" alt="">';
-
-  /* colour themes: one per chapter, taken from its room, and a holographic one for the start page,
-     the thank-you note and the ending. They set the frame colour, the title bars and the page background. */
-  const HOLO = 'linear-gradient(135deg, #ffd1ef 0%, #e2cbff 26%, #c4e6ff 50%, #c9fbe3 74%, #fff4b8 100%)';
-  const HOME_THEME = { accent: '#ff5400', bar: ['#e6f7ff', '#ade3ff', '#8fd8ff'], holo: HOLO };
-  function applyTheme(t) {
-    const st = document.getElementById('stage').style;
-    st.setProperty('--chapter', t.accent);
-    st.setProperty('--bar-hi', t.bar[0]); st.setProperty('--bar', t.bar[1]); st.setProperty('--bar-lo', t.bar[2]);
-    st.setProperty('--page', t.holo || 'linear-gradient(180deg, ' + t.page[0] + ' 0%, ' + t.page[1] + ' 100%)');
-  }
 
   let H = {};                // handlers from game.js
   let overlay, modal, hud, dock, hintEl, hintText, toasts;
@@ -117,14 +109,17 @@ const UI = (() => {
   /* ---------------- title ---------------- */
   // withDoor: the visitor first sees the bedroom door (logo + our names on it) and opens it to reach this screen.
   function showTitle(chapters, withDoor) {
-    applyTheme(HOME_THEME);
+    // stars, hearts, bubbles and sparkles drift up the start page
+    const kinds = ['star', 'bubble', 'heart', 'sparkle', 'bubble', 'star', 'heart', 'sparkle', 'bubble', 'star', 'heart', 'bubble'];
+    const floaters = kinds.map((n, i) =>
+      '<span class="floater" style="left:' + (3 + i * 8.3) + '%;animation-delay:' + (-i * 2.1) + 's;animation-duration:' + (19 + (i % 4) * 3) + 's">' + svg(n, 22 + (i % 3) * 12) + '</span>').join('');
     const discs = chapters.map((c, i) =>
       '<button class="disc" data-i="' + i + '" style="--accent:' + c.accent + '" aria-label="Chapter ' + (i + 1) + ', ' + c.year + '"><b>' + (i + 1) + '</b><small>' + c.year + '</small></button>').join('');
     const names = CREDITS.map(c => c[0].replace(/\s*\(.*\)/, '')).join(' · ');   // full names, in CREDITS order
     const short = CREDITS.map(c => c[2]);
     const byLine = short.slice(0, -1).join(', ') + ' &amp; ' + short[short.length - 1];
     const el = setScreen(
-      '<div class="desk"></div>' +
+      '<div class="desk"></div><div class="floaters">' + floaters + '</div>' +
       '<div class="logo pop-in"><img class="brand-logo" src="assets/brand/logo-main.svg" alt="The Next Chapter" style="width:389px;height:270px"></div>' +
       '<div class="win title-win pop-in">' +
       '  <div class="titlebar"><span>' + APP_ICON + 'The Next Chapter</span></div>' +
@@ -175,7 +170,6 @@ const UI = (() => {
 
   /* ---------------- chapter card ---------------- */
   function showIntro(ch, idx, onBegin, teddy) {
-    applyTheme(ch);   // this chapter's colours, from its room
     const el = setScreen(
       '<div class="card pop-in" style="--accent:' + ch.accent + '">' +
       '  <div class="cd"><span>' + (idx + 1) + '</span></div>' +
@@ -485,7 +479,6 @@ const UI = (() => {
   /* ---------------- thank-you note (after the last box, before the summary) ---------------- */
   // everything is readable straight away; the lines just settle in quickly one after another
   function showThanks(note, teddyThumb, onNext) {
-    applyTheme(HOME_THEME);
     const lines = note.lines.map((t, i) => '<p class="tl" style="--d:' + (0.15 + i * 0.15).toFixed(2) + 's">' + esc(t) + '</p>').join('');
     const el = setScreen(
       '<div class="desk"></div>' +
@@ -508,7 +501,6 @@ const UI = (() => {
 
   /* ---------------- ending ---------------- */
   function showEnding(s, onReplay) {
-    applyTheme(HOME_THEME);
     const tiles = (list, cls) => list.map(x => '<div class="tile mini ' + (cls || '') + '"><img src="' + s.thumb(x.id) + '" alt=""><span>' + esc(s.names(x.id)) + '</span>' + (x.label ? '<em>' + esc(x.label) + '</em>' : '') + '</div>').join('');
     const el = setScreen(
       '<div class="desk"></div>' +

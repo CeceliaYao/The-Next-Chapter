@@ -9,7 +9,7 @@ The visitor tends one bedroom across six chapters of a suburban girl's life, fro
 **▶ Play it online:** https://ceceliayao.github.io/The-Next-Chapter/
 
 > Built with [p5.js](https://p5js.org/), plain HTML/CSS and Web Audio. No install, no internet needed.
-> The look is the early-2000s web, following Chloee's identity guideline: glossy Windows XP-style title bars in each room's colours, glossy buttons with the logo's black outline, messenger pop-ups. Only the room and its things are pixel drawings (320 × 180 pixels, scaled up 4× with no blur); every word uses normal, readable fonts.
+> The look is the early-2000s web, following Chloee's identity guideline: navy Windows-style title bars, glossy buttons with the logo's black outline, messenger pop-ups. Only the room and its things are pixel drawings (320 × 180 pixels, scaled up 4× with no blur); every word uses normal, readable fonts.
 > The page is **4:3** (1280 × 960, scaled to fit). On a wide screen it sits in the middle with black either side, so the eye stays on the game.
 
 ---
@@ -105,8 +105,8 @@ Until a file exists, its frame simply stays empty (the caption still shows). The
 
 The look follows Chloee's **TNC Identity Guideline** (2026) and her moodboard: early-internet nostalgia seen with modern design eyes. Keywords: *Nostalgic Digital, Y2K Web Retro, My Scene, Windows 98/XP, Frutiger Aero, Nintendo*. The moodboard's note asks for *"a warmer colour scheme + vivid point colours for frames"*, so:
 
-- **The rooms are Y2K candy colours**, like the dress-up and room games on 4399 / 7k7k back then. Every era gets a new paint job and a new floor: lemon walls with a baby-blue carpet (2000), bubblegum pink with a lilac carpet (2005), lavender with an aqua carpet and lime butterflies (2010), aqua stripes with a lilac checkerboard (2014), then mint with a pink carpet (2017, 2018).
-- **Every chapter takes its colours from its room**: the page background (a candy gradient with glossy diagonal stripes and sparkles), the frame, the title bars (an XP-style gloss with black text), the progress bar, the tray, the CD and the chapter title all use that room's colours. The start page, the thank-you note and the ending use a holographic pastel background with sky-blue title bars.
+- **The rooms and the frame are kept apart.** The rooms have their own colours, taken from the moodboard (its swatches and the Cyworld / My Scene rooms) and kept soft: lemon with a pale-blue carpet (2000), Cyworld pink with a cream checkerboard (2005), periwinkle with a sage carpet (2010), the teen teal on wood (2014), then sage green on light wood (2017, 2018).
+- **The frame around them is the same in all six chapters**, in the guideline's colours: the guideline's white page with a faint dotted grid, navy Windows-style title bars, and an orange ring around every window. The start page, the thank-you note and the ending sit on a soft holographic pastel, and on the start page stars, hearts, bubbles and sparkles float up.
 - **Every frame is a vivid ring**, the way the favicon is drawn: a black line, a bright colour, a black line, then a hard black offset shadow. 
 - Around the room the interface is an early-2000s desktop: Windows XP-style title bars, glossy gel buttons, buddy-list message pop-ups, iridescent CD chapter discs and little web badges. Windows can be dragged around. The brand's **play icon** (the favicon) is the app icon in every title bar and on the Start button. Even the mouse arrow is the blue play triangle.
 
@@ -118,7 +118,7 @@ The look follows Chloee's **TNC Identity Guideline** (2026) and her moodboard: e
 | White | `#f2f2ed` | windows, panels, the page background |
 | Orange | `#f09000` | main buttons (with black text) |
 | Amber | `#ffc700` | the LCD year, Mum's messages, memory badges, "!" markers |
-| Navy | `#2c2c5b` | labels and small text |
+| Navy | `#2c2c5b` | title bars and the top bar (with white text), labels |
 
 **Web accents** (blue `#00b5ff`, vermilion `#ff5400`, pink `#ff84e4`, green `#8de328`, lemon `#f6e680`) are only used for graphics: hearts, stars, sparkles, CDs, the progress bar, chapter titles drawn like the logo's letters. Following the guideline's do's and don'ts, they are **never a background**, and text always keeps a contrast of **7:1** (small text) or **4.5:1** (large text): black on white, orange or amber; white on navy or black; amber on black.
 

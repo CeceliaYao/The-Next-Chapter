@@ -116,6 +116,22 @@ class PixBuf {
     out.forEach(i => { this.d[i] = ol; });
     return this;
   }
+  /* light from the upper left, the same for every object: the top edge of each flat area catches the light,
+     its bottom and right edges turn into shade. Only flat runs are touched, so hand-drawn details stay as drawn. */
+  shadeEdges() {
+    const W = this.W, H = this.H, src = this.d.slice();
+    const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H ? null : src[y * W + x]);
+    const mix = (c, to, k) => { const h = c[0] === '#' ? c : PALETTE[c]; if (!h) return c; return '#' + [1, 3, 5].map(i => Math.round(parseInt(h.slice(i, i + 2), 16) * (1 - k) + parseInt(to.slice(i, i + 2), 16) * k).toString(16).padStart(2, '0')).join(''); };
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const c = src[y * W + x];
+      if (!c || c === 'o') continue;
+      const up = at(x, y - 1), dn = at(x, y + 1), lf = at(x - 1, y), rt = at(x + 1, y);
+      if (!dn && up === c && lf === c) this.d[y * W + x] = mix(c, '#3d2c4a', 0.2);
+      else if (!rt && lf === c && up === c) this.d[y * W + x] = mix(c, '#3d2c4a', 0.12);
+      else if (!up && dn === c && rt === c && dn !== 'w') this.d[y * W + x] = mix(c, '#ffffff', 0.35);
+    }
+    return this;
+  }
   /* a ring of colour c around everything (used for the hover glow) */
   halo(c) {
     const W = this.W, H = this.H, src = this.d.slice();

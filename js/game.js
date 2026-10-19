@@ -21,7 +21,7 @@ const G = {
   particles: [], timers: [], queue: [], running: false,
   time: 0, lastInput: performance.now(), lastProgress: performance.now(), lastHelp: 0, helpFlash: null,
   memoryBox: ['teddy'], since: { teddy: 0 }, letGo: [], seen: new Set(), fired: new Set(), everTidy: new Set(),
-  yaLayout: null, packed: [], boxClose: 0, gift: false, labels: [], marks: []
+  yaLayout: null, packed: [], boxClose: 0, gift: false, labels: []
 };
 
 let canvasEl, artCv, art, bgCv = null, bgFor = null, trayCv = null, thumbCache = {}, CURSORS = {};
@@ -783,6 +783,7 @@ function buildBg() {
   G.ch.bg(b, G.ch.layout);
   bgCv = b.toCanvas(1);
   bgFor = G.idx;
+  buildFx();
 }
 
 function buildTray() {
@@ -802,9 +803,9 @@ function render() {
   const ctx = drawingContext;
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(bgCv, 0, 0, W, H);   // the room itself
-  drawRoomGlow(ctx);                 // soft light, gloss and sparkles on top of it (smooth, full resolution)
   art.clearRect(0, 0, ART_W, ART_H);
-  G.labels = []; G.marks = [];
+  drawRoomFx();                      // the window's light, glows and twinkles, on the same pixel grid as the room
+  G.labels = [];
   const guideItem = G.drag ? G.drag.item : (G.helpFlash && G.time < G.helpFlash.until ? G.helpFlash.item : null);
   const list = drawList();
   list.filter(i => i.state !== 'tray' && i.state !== 'drag').forEach(drawItem);
@@ -821,7 +822,6 @@ function render() {
   drawMarkers();
   drawParticles();
   ctx.drawImage(artCv, 0, 0, W, H);
-  drawMarks(ctx);
   drawTooltip(ctx);
 }
 
@@ -890,6 +890,11 @@ function drawItem(it) {
   const lifted = it.state === 'drag';
   if (lifted) { const sw = Math.max(4, Math.round(S.w * 0.8)); art.drawImage(shadowCv(sw), ax + Math.round((S.w - sw) / 2), ay + S.h); ay -= 3; }
   const img = it.alpha < 0.6 ? fr.ghost : (lifted || G.hover === it) ? fr.hover : fr.normal;
+  if (it.state === 'placed' && it.alpha >= 0.6) {   // it rests on something: a contact shadow (on a wall, a drop shadow down and to the right)
+    const st = (surfaceById(it.surface) || {}).type;
+    if (st === 'wall' || st === 'hang') art.drawImage(silhouette(fr.normal), ax, ay);
+    else if (st !== 'spot') { art.fillStyle = 'rgba(61,44,74,.24)'; art.fillRect(ax + 1, ay + S.h, S.w, 1); art.fillStyle = 'rgba(61,44,74,.1)'; art.fillRect(ax + 2, ay + S.h + 1, S.w - 1, 1); }
+  }
   art.drawImage(img, ax - 1, ay - 1);
   if (it.state === 'tray' && it.carried) art.drawImage(heartCv(), ax + S.w - 5, ay - 3);
   if (it.mess && it.state === 'placed' && !it.tw && G.state === 'play') bubble(ax + S.w - 3, ay - 6 + (Math.floor(G.time / 300) % 2), '2', '!');
@@ -898,102 +903,76 @@ function drawItem(it) {
 let _heart = null;
 function heartCv() { return _heart || (_heart = iconBuf('heart').toCanvas(1)); }
 
-function bubble(x, y, c, ch) { G.marks.push({ x, y, c, ch }); }   // drawn later as glossy gel badges (drawMarks)
+/* ---------- markers and light, drawn pixel by pixel on the room's grid (no blur, no smooth gradients) ---------- */
+const pxShape = (rows, x, y, map) => rows.forEach((r, j) => { for (let i = 0; i < r.length; i++) if (map[r[i]]) apx(x + i, y + j, map[r[i]]); });
 
-// a round Y2K "gel" badge: colour gradient, plum rim, white shine on the top half
-function drawMarks(ctx) {
-  G.marks.forEach(m => {
-    if (m.ch === 'spark' || m.ch === 'spark-seen') return drawMemorySpark(ctx, (m.x + 0.5) * ART, (m.y + 0.5) * ART, m.ch === 'spark');
-    const x = (m.x + 0.5) * ART, y = (m.y + 0.5) * ART, r = 15, col = PALETTE[m.c];
-    ctx.save();
-    ctx.shadowColor = 'rgba(61,44,74,.3)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
-    const g = ctx.createRadialGradient(x - r * .35, y - r * .4, 1, x, y, r);
-    g.addColorStop(0, mixHex(col, '#ffffff', .55)); g.addColorStop(1, col);
-    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
-    ctx.restore();
-    ctx.lineWidth = 2.5; ctx.strokeStyle = PALETTE.o; ctx.stroke();
-    ctx.beginPath(); ctx.ellipse(x, y - r * .45, r * .62, r * .32, 0, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fill();
-    if (m.ch === '!') {
-      ctx.font = '800 21px ' + FONT_UI; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.lineWidth = 3; ctx.strokeStyle = PALETTE.o; ctx.strokeText('!', x, y + 1);
-      ctx.fillStyle = '#ffffff'; ctx.fillText('!', x, y + 1);
-    }
-    else { ctx.beginPath(); ctx.moveTo(x - 3, y - 6); ctx.lineTo(x + 5, y); ctx.lineTo(x - 3, y + 6); ctx.closePath(); ctx.fillStyle = PALETTE.o; ctx.fill(); }
-  });
-  G.marks = [];
+// a mess: a round orange badge with a "!", lit at the top left, shaded at the bottom right
+const BADGE = ['..ooooo..', '.ollhhho.', 'olllwhhho', 'ohhhwhhho', 'ohhhwhhhd', 'ohhhhhhdo', 'ohhhwhhdo', '.odddddo.', '..ooooo..'];
+function bubble(x, y, c, ch) {
+  const base = PALETTE[c] || c;
+  pxShape(BADGE, x - 4, y - 4, { o: 'o', h: base, l: mixHex(base, '#ffffff', 0.45), d: mixHex(base, '#3d2c4a', 0.25), w: '#ffffff' });
 }
 
-// the twinkle on a thing that holds a memory: a pink-and-white four-point star with a small one beside it
-function drawMemorySpark(ctx, x, y, unseen) {
-  const t = G.time / 1000, a = unseen ? 0.5 + 0.5 * Math.sin(t * 4) : 0.6;
-  const r = unseen ? 13 + a * 5 : 12;
-  ctx.save();
-  ctx.shadowColor = 'rgba(255,132,228,.9)'; ctx.shadowBlur = 12;
-  ctx.fillStyle = '#ff84e4'; sparkle(ctx, x, y, r + 3);
-  ctx.shadowBlur = 0; ctx.fillStyle = '#ffffff'; sparkle(ctx, x, y, r - 2);
-  ctx.globalAlpha = unseen ? 1 - a * 0.6 : 0.8;
-  ctx.fillStyle = '#ffffff'; ctx.shadowColor = 'rgba(255,132,228,.9)'; ctx.shadowBlur = 6;
-  sparkle(ctx, x - 14, y + 11, 5 + (1 - a) * 3);
-  ctx.restore();
+// a memory: a pink four-point sparkle, outlined like a sticker; it pulses while unseen
+const SPARK_BIG = ['....o....', '...oao...', '...oao...', '.ooabaoo.', 'oaabwbaao', '.ooabaoo.', '...oao...', '...oao...', '....o....'];
+const SPARK_SMALL = ['..o..', '.oao.', 'oawao', '.oao.', '..o..'];
+function memSpark(x, y, unseen) {
+  const big = unseen && Math.floor(G.time / 380) % 2 === 0, map = { o: 'o', a: '#ff84e4', b: '#ffc4ef', w: '#ffffff' };
+  if (big) pxShape(SPARK_BIG, x - 4, y - 4, map); else pxShape(SPARK_SMALL, x - 2, y - 2, map);
+  if (unseen) pxShape(['.w.', 'w#w', '.w.'], x - 7, y + 3 - (big ? 1 : 0), { w: big ? '#ffc4ef' : null, '#': '#ffffff' });
 }
 
-/* ---------- the room's Y2K finish: smooth light and gloss over the pixel drawing ---------- */
-function sparkle(ctx, x, y, r) {   // a four-point twinkle
-  ctx.beginPath();
-  ctx.moveTo(x, y - r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.quadraticCurveTo(x, y, x, y + r);
-  ctx.quadraticCurveTo(x, y, x - r, y); ctx.quadraticCurveTo(x, y, x, y - r);
-  ctx.fill();
-}
-function drawRoomGlow(ctx) {
-  const k = ART, { LX, RX, WX1, WX2, WY1, WY2, FY } = RA;
-  const floor = () => { ctx.beginPath(); ctx.moveTo(WX1 * k, (WY2 + 1) * k); ctx.lineTo((WX2 + 1) * k, (WY2 + 1) * k); ctx.lineTo((RX + 1) * k, (FY + 1) * k); ctx.lineTo(LX * k, (FY + 1) * k); ctx.closePath(); };
-  ctx.save();
-  // a glossy sheen across the back wall, like the shiny plastic screens of the time
-  ctx.save();
-  ctx.beginPath(); ctx.rect((WX1 + 1) * k, (WY1 + 1) * k, (WX2 - WX1 - 1) * k, (WY2 - WY1 - 3) * k); ctx.clip();
-  let g = ctx.createLinearGradient(WX1 * k, WY1 * k, (WX1 + 120) * k, WY2 * k);
-  g.addColorStop(0, 'rgba(255,255,255,.34)'); g.addColorStop(.38, 'rgba(255,255,255,.08)'); g.addColorStop(.39, 'rgba(255,255,255,0)');
-  g.addColorStop(.5, 'rgba(255,255,255,0)'); g.addColorStop(.51, 'rgba(255,255,255,.1)'); g.addColorStop(.6, 'rgba(255,255,255,0)');
-  ctx.fillStyle = g; ctx.fillRect(WX1 * k, WY1 * k, (WX2 - WX1) * k, (WY2 - WY1) * k);
-  ctx.restore();
-  // light from the window
-  if (ROOM_FX.beam) {
-    ctx.beginPath(); ctx.moveTo(138 * k, 72 * k); ctx.lineTo(182 * k, 72 * k); ctx.lineTo(214 * k, 141 * k); ctx.lineTo(142 * k, 141 * k); ctx.closePath();
-    g = ctx.createLinearGradient(0, 72 * k, 0, 141 * k);
-    g.addColorStop(0, 'rgba(255,255,255,' + (0.14 + ROOM_FX.beam * 0.05) + ')'); g.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = g; ctx.fill();
+const inPoly = (x, y, pts) => { let c = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [xi, yi] = pts[i], [xj, yj] = pts[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c; } return c; };
+// the light from the window: two crisp steps of light on the wall and floor, worked out once per room
+let fxCv = null;
+function buildFx() {
+  fxCv = document.createElement('canvas'); fxCv.width = ART_W; fxCv.height = ART_H;
+  const c = fxCv.getContext('2d');
+  if (!ROOM_FX.beam) return;
+  const outer = [[138, 72], [182, 72], [214, 141], [142, 141]], inner = [[146, 72], [174, 72], [200, 141], [156, 141]];
+  for (let y = 72; y <= 141; y++) for (let x = 136; x <= 216; x++) {
+    const px = x + 0.5, py = y + 0.5;
+    if (!inPoly(px, py, outer)) continue;
+    c.fillStyle = 'rgba(255,255,255,' + (inPoly(px, py, inner) ? 0.12 + ROOM_FX.beam * 0.03 : 0.07 + ROOM_FX.beam * 0.02) + ')';
+    c.fillRect(x, y, 1, 1);
   }
-  // a shiny floor: the light reflected at the back, fading towards you
-  ctx.save(); floor(); ctx.clip();
-  g = ctx.createLinearGradient(0, WY2 * k, 0, (WY2 + 22) * k);
-  g.addColorStop(0, 'rgba(255,255,255,.4)'); g.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = g; ctx.fillRect(LX * k, WY2 * k, (RX - LX + 2) * k, 24 * k);
-  ctx.restore();
-  // the night-light's warm glow and the fairy lights' pink glow
+}
+// a glow in rings, each ring one flat step lighter than the one outside it
+function ringGlow(cx, cy, rings, col, sy) {
+  cx = Math.round(cx); cy = Math.round(cy);
+  const R = rings[0][0];
+  for (let y = -R; y <= R; y++) for (let x = -R; x <= R; x++) {
+    const d = Math.hypot(x, y / (sy || 1));
+    let a = 0; rings.forEach(([r, k]) => { if (d <= r) a = k; });
+    if (a) { art.fillStyle = 'rgba(' + col + ',' + a + ')'; art.fillRect(cx + x, cy + y, 1, 1); }
+  }
+}
+function drawRoomFx() {
+  if (fxCv) art.drawImage(fxCv, 0, 0);
   const nl = G.items.find(i => i.id === 'nightlight' && i.state === 'placed' && i.surface === 'socket');
-  if (nl) {
-    const r = 120 + Math.sin(G.time / 450) * 10;
-    g = ctx.createRadialGradient(nl.x, nl.y, 0, nl.x, nl.y, r);
-    g.addColorStop(0, 'rgba(255,243,168,.75)'); g.addColorStop(.35, 'rgba(255,243,168,.3)'); g.addColorStop(1, 'rgba(255,243,168,0)');
-    ctx.fillStyle = g; ctx.fillRect(nl.x - r, nl.y - r, r * 2, r * 2);
-  }
+  if (nl) { const p = Math.floor(G.time / 700) % 2; ringGlow(nl.x / ART, nl.y / ART, [[17 + p, 0.1], [12, 0.18], [7, 0.3]], '255,243,168'); }
   const fl = G.items.find(i => i.id === 'fairylights' && i.state === 'placed');
-  if (fl) {
-    g = ctx.createRadialGradient(fl.x, fl.y + 30, 0, fl.x, fl.y + 30, 230);
-    g.addColorStop(0, 'rgba(255,190,230,.45)'); g.addColorStop(1, 'rgba(255,190,230,0)');
-    ctx.fillStyle = g; ctx.fillRect(fl.x - 230, fl.y - 200, 460, 460);
-  }
-  // sparkles that twinkle on the walls
-  ctx.fillStyle = '#ffffff'; ctx.shadowColor = 'rgba(255,255,255,.95)'; ctx.shadowBlur = 10;
+  if (fl) ringGlow(fl.x / ART, fl.y / ART + 9, [[40, 0.07], [26, 0.12]], '255,190,230', 0.32);
+  // twinkles on the walls: a dot that opens into a little plus, then closes again
   for (let i = 0; i < 7; i++) {
     const ph = (G.time / 1700 + i * 0.37) % 1;
     if (ph > 0.45) continue;
-    const a = Math.sin(ph / 0.45 * Math.PI);
-    ctx.globalAlpha = a;
-    sparkle(ctx, (50 + ((i * 97) % 220)) * k, (22 + ((i * 53) % 70)) * k, 6 + a * 8);
+    const x = 50 + ((i * 97) % 220), y = 22 + ((i * 53) % 70), r = ph < 0.12 || ph > 0.33 ? 1 : 2;
+    apx(x, y, 'w');
+    for (let k = 1; k <= r; k++) { const c = k === r && r > 1 ? '#fff4fb' : 'w'; apx(x - k, y, c); apx(x + k, y, c); apx(x, y - k, c); apx(x, y + k, c); }
   }
-  ctx.restore();
+}
+
+// a sprite's shape in see-through ink, for drop shadows (cached per image)
+const _sil = new Map();
+function silhouette(img) {
+  let c = _sil.get(img);
+  if (!c) {
+    c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+    const x = c.getContext('2d'); x.drawImage(img, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = 'rgba(61,44,74,.22)'; x.fillRect(0, 0, c.width, c.height);
+    _sil.set(img, c);
+  }
+  return c;
 }
 
 function dashRect(x1, y1, x2, y2, hot) {
@@ -1135,7 +1114,7 @@ function drawMarkers() {
     const unseen = !G.seen.has(mem.id);
     if (!unseen && G.hover !== it) return;
     const [ax, ay] = artPos(it), S = SPR[it.id];
-    G.marks.push({ x: ax + S.w - 2, y: ay - 3, ch: unseen ? 'spark' : 'spark-seen' });   // a memory twinkles (the "!" is kept for messes)
+    memSpark(ax + S.w - 2, ay - 3, unseen);   // a memory twinkles (the "!" is kept for messes)
   });
 }
 

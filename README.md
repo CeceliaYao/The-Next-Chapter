@@ -116,7 +116,13 @@ The look follows Chloee's **TNC Identity Guideline** and moodboard, and keeps **
   | Young adult (2017) | blush + sage, on light oak | a two-tone painted wall | light oak | cream, with a diamond trellis | a roller blind | a hairpin-leg desk, a white moulded chair, a monstera, a checked throw |
   | Moving out (2018) | the same room | paler patches where things hung | light oak | rolled up for the move | taken down, just the rod | a bare mattress, boxes |
 
-  Outlines are a soft plum instead of black, colours are smooth (no dithering), and smooth light and gloss go on top: a sheen on the back wall, a soft beam from the window, a shiny floor, twinkling sparkles, and the night-light and fairy-light glows. Messes show a glossy orange ! badge; things that hold a memory twinkle with a pink sparkle.
+  **One way of drawing for all six rooms** (after the pixel detail of *NEEDY STREAMER OVERLOAD*, the finely drawn objects of early web dress-up games, and the pastel pixel-room reference):
+  - one pixel scale (320 × 180, every pixel drawn on purpose, no blur or filters) and one outline: a dark plum around furniture and objects, a softer line for the room's own edges, so the things in the room stand out from its walls;
+  - one light, from the upper left (through the window): furniture has a lit top, a base-coloured front and a darker side, with seams, recessed drawers and one clear highlight; objects get a lit top edge and a shaded lower edge automatically;
+  - materials told apart by their details: fabric has folds and stitched hems, plastic one clean shine, wood its thickness and a little grain;
+  - shadows in the corners and along the floor's edges, under each piece of furniture (cast to the lower right) and under every object that is put down;
+  - large, warm, light surfaces, with stronger blue, pink, purple or orange only on a few pieces in each room;
+  - the window's light, glows and twinkles are drawn in flat pixel steps; messes show an orange ! badge and things that hold a memory a pink sparkle, both as pixel art.
 - **Outside the room (the frame) and the titles**: a second colour system, the logo's vivid colours ("vivid point colours for frames", from the moodboard) as small colour blocks on white: each window has its own title bar colour and three little colour chips, the main buttons are orange, the chapter titles and discs use the logo colours. Windows 98 / XP is only a loose reference. Windows can be dragged around (like Teleport), and buttons change colour on hover (like Yrs Truly).
 - **One style for both**: the same plum outline (the frame's line is as thick as one pixel of the room), glossy "gel" fills, nested boxes, a faint grid and four-point sparkles. The box tray and the labels inside the game screen belong to the frame.
 

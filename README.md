@@ -105,16 +105,16 @@ Until a file exists, its frame simply stays empty (the caption still shows). The
 
 The look follows Chloee's **TNC Identity Guideline** and moodboard, and keeps **the room and the frame apart**:
 
-- **Inside the room**: colours and style from the moodboard (its swatches, the Cyworld / My Scene rooms) and a pastel pixel-room reference, pearly and slightly greyed rather than candy-bright. Each room has its own walls, floor, rug, curtains and chair, so no two look alike:
+- **Inside the room**: colours and style from the moodboard (its swatches, the Cyworld / My Scene rooms) and a pastel pixel-room reference, pearly and slightly greyed rather than candy-bright. Each room has its own walls, floor, rug, curtains and furniture, built from flat colour blocks and patterns (checks, hearts, stars, stripes) in the spirit of Y2K pixel games such as *NEEDY STREAMER OVERLOAD*, so no two look alike:
 
-  | Room | Walls | Floor | Rug | Curtains | Chair |
+  | Room | Walls | Floor | Rug | Curtains | Furniture |
   | --- | --- | --- | --- | --- | --- |
-  | Nursery | lemon stripes with stars, a dotted border, powder-blue beadboard | gingham carpet | cloud | tie-backs under a scalloped valance | (cot) |
-  | Childhood | pearl rose with hearts and dots, a heart border, lavender candy stripes under a scalloped rail | checkerboard | flower | café curtains with a ruffled valance | |
-  | Tween | silver lilac with butterflies, aqua pinstripes under a pink ribbon | harlequin diamonds | star | a bead curtain | round-backed |
-  | Teen | teal stripes with stars | big glossy tiles | fluffy pink | purple panels on rings | swivel chair |
-  | Young adult | pale blue pinstripe | sparkly speckled carpet | white faux fur, by the bed | a roller blind | café chair |
-  | Moving out | the same room, with paler patches where things hung | bare pale floorboards | (packed) | taken down, just the rod | café chair |
+  | Nursery | lemon stripes with stars, a dotted border, a bunting garland, powder-blue beadboard and side walls | gingham carpet | cloud | tie-backs under a scalloped valance | drawers in pink, blue and lemon |
+  | Childhood | pearl rose with hearts and dots, a heart border, lavender candy stripes under a scalloped rail, lavender side walls | checkerboard | flower | café curtains with a ruffled valance | shelves backed in pink, lilac and mint; a checked throw |
+  | Tween | silver lilac with butterflies, aqua pinstripes under a pink ribbon, aqua side walls | harlequin diamonds | pink heart | a bead curtain | a round-backed chair, pink and aqua drawers, a checked throw |
+  | Teen | teal stripes with stars | big glossy tiles | round, in purple checks | purple panels on rings | a swivel chair, aqua and pink drawers |
+  | Young adult | pale blue pinstripe over a lilac block, lilac side walls | sparkly speckled carpet | white faux fur, by the bed | a roller blind | a café chair, a checked throw |
+  | Moving out | the same room, with paler patches where things hung | bare pale floorboards | (packed) | taken down, just the rod | a café chair |
 
   Outlines are a soft plum instead of black, colours are smooth (no dithering), and smooth light and gloss go on top: a sheen on the back wall, a soft beam from the window, a shiny floor, twinkling sparkles, and the night-light and fairy-light glows. Messes show a glossy orange ! badge; things that hold a memory twinkle with a pink sparkle.
 - **Outside the room (the frame) and the titles**: a second colour system, the logo's vivid colours ("vivid point colours for frames", from the moodboard) as small colour blocks on white: each window has its own title bar colour and three little colour chips, the main buttons are orange, the chapter titles and discs use the logo colours. Windows 98 / XP is only a loose reference. Windows can be dragged around (like Teleport), and buttons change colour on hover (like Yrs Truly).

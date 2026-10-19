@@ -135,7 +135,7 @@ function wallpaper(b, th) {
 }
 
 /* the lower part of the walls, different in each room: beadboard, candy stripes under a scalloped rail,
-   or pinstripes under a ribbon (l.c: base, line, side-wall base) */
+   pinstripes under a ribbon, or a flat two-tone block (l.c: base, line, side-wall base) */
 function lowerWall(b, l) {
   if (!l) return;
   const { LX, RX, WX1, WX2, WY2, FY } = RA, top = WY2 - (l.h || 24), H = WY2 - top, front = FY - Math.round(H * 1.46);
@@ -149,6 +149,8 @@ function lowerWall(b, l) {
     for (let x = WX1 + 2; x < WX2 - 1; x += 6) b.rect(x, top + 2, 3, H - 2, l.c[1]);
     b.rect(WX1 + 1, top - 2, WX2 - WX1 - 1, 3, 'w');
     for (let x = WX1 + 2; x < WX2 - 3; x += 5) { b.hline(x, top + 1, 3, 'w'); b.px(x + 1, top + 2, 'w'); }   // scalloped edge
+  } else if (l.style === 'block') {   // a plain two-tone wall: a flat colour block under a white line
+    b.rect(WX1 + 1, top - 1, WX2 - WX1 - 1, 2, 'w');
   } else if (l.style === 'pinstripe') {
     for (let y = top + 3; y < WY2 - 2; y += 3) b.hline(WX1 + 1, y, WX2 - WX1 - 1, l.c[1]);
     b.rect(WX1 + 1, top - 1, WX2 - WX1 - 1, 2, l.c[3] || 'w');
@@ -320,22 +322,28 @@ function drawBed(b, bed, style) {
   if (style === 'flowers') for (let x = x1 + 20, k = 0; x < x2 - 6; x += 9, k++) { const y = top + 3 + (k % 2) * 2; stamp(b, x, y, ['.#.', '#.#', '.#.'], 'w'); b.px(x + 1, y + 1, 'Y'); }
   if (style === 'butterflies') for (let x = x1 + 20, k = 0; x < x2 - 6; x += 10, k++) stamp(b, x, top + 3 + (k % 2), ['#.#', '###', '#.#'], k % 2 ? 'L' : 'h');
   if (style === 'linen') { b.hline(x1 + 16, top + 3, x2 - x1 - 20, 'g'); b.hline(x1 + 16, top + 5, x2 - x1 - 20, 'L'); }
+  // a checked throw over the foot of the bed: a little block of pattern
+  if (bed.throwCols) {
+    const tx = x2 - 26, c2 = bed.throwCols;
+    b.box(tx, top - 1, 20, 15, c2[0]);
+    for (let y = top; y < top + 13; y++) for (let x = tx + 1; x < tx + 19; x++) if ((Math.floor((x - tx) / 3) + Math.floor((y - top) / 3)) % 2) b.px(x, y, c2[1]);
+  }
 }
 
-function drawDresser(b, d, col) {
+function drawDresser(b, d, col, fronts) {   // fronts: a colour per drawer (colour blocks), or all in col
   const x1 = q(d.x1), x2 = q(d.x2), top = q(d.top), bot = q(d.bottom);
   b.box(x1 - 2, top, x2 - x1 + 5, 3, 'w');
   b.box(x1, top + 3, x2 - x1 + 1, bot - top - 5, col);
   const h = Math.floor((bot - top - 9) / 3);
-  for (let i = 0; i < 3; i++) { b.box(x1 + 3, top + 6 + i * h, x2 - x1 - 5, h - 1, col); b.rect(Math.round((x1 + x2) / 2) - 1, top + 6 + i * h + Math.floor(h / 2) - 1, 2, 2, 'h'); }
+  for (let i = 0; i < 3; i++) { b.box(x1 + 3, top + 6 + i * h, x2 - x1 - 5, h - 1, fronts ? fronts[i] : col); b.rect(Math.round((x1 + x2) / 2) - 1, top + 6 + i * h + Math.floor(h / 2) - 1, 2, 2, fronts ? 'w' : 'h'); }
   b.rect(x1 + 2, bot - 2, 3, 2, 'o'); b.rect(x2 - 4, bot - 2, 3, 2, 'o');
 }
 
-function drawBookshelf(b, s, col) {
+function drawBookshelf(b, s, col, backs) {   // backs: the colour behind each of the three shelves
   const x1 = q(s.x1), x2 = q(s.x2), top = q(s.top - 4), mid = q(s.mid), low = q(s.low), bot = q(s.bottom);
   b.box(x1, top + 3, x2 - x1 + 1, bot - top - 3, col);
-  b.rect(x1 + 2, top + 4, x2 - x1 - 3, bot - top - 6, '#f2d98e');
-  b.vline(x1 + 2, top + 4, bot - top - 6, '#e2c070');
+  if (backs) [[top + 4, mid], [mid + 3, low], [low + 3, bot - 2]].forEach(([y1, y2], i) => b.rect(x1 + 2, y1, x2 - x1 - 3, y2 - y1, backs[i]));
+  else { b.rect(x1 + 2, top + 4, x2 - x1 - 3, bot - top - 6, '#f2d98e'); b.vline(x1 + 2, top + 4, bot - top - 6, '#e2c070'); }
   b.box(x1, mid, x2 - x1 + 1, 3, col); b.box(x1, low, x2 - x1 + 1, 3, col);
   b.box(x1 - 2, top, x2 - x1 + 5, 3, 'w');
 }
@@ -345,7 +353,8 @@ function drawDesk(b, d, o) {
   const x1 = q(d.x1), x2 = q(d.x2), top = q(d.top), bot = q(d.bottom), col = o.col || 'w';
   b.box(x1 + 1, top + 3, 3, bot - top - 3, col);
   b.box(x2 - 19, top + 3, 19, bot - top - 3, col);
-  b.box(x2 - 17, top + 6, 15, 10, o.drawer || 'L'); b.box(x2 - 17, top + 18, 15, 10, o.drawer || 'L');
+  const dr = o.drawers || [o.drawer || 'L', o.drawer || 'L'];
+  b.box(x2 - 17, top + 6, 15, 10, dr[0]); b.box(x2 - 17, top + 18, 15, 10, dr[1]);
   b.rect(x2 - 11, top + 10, 3, 2, 'Y'); b.rect(x2 - 11, top + 22, 3, 2, 'Y');
   b.box(x1 - 2, top, x2 - x1 + 5, 3, col);
   drawChair(b, x1, top, bot, o.chair || 'P', o.chairStyle);
@@ -408,18 +417,32 @@ function flowerRug(b, cx, cy, rx, ry, fill, trim) {   // a round rug with twelve
   shapeRug(b, (x, y) => inEll(x, y, cx, cy, rx * 0.9, ry * 0.86) || petals.some(([px, py]) => inEll(x, y, px, py, rx * 0.15, ry * 0.32)),
     [cx - rx - 4, cy - ry - 3, cx + rx + 4, cy + ry + 3], fill, trim);
 }
-function starRug(b, cx, cy, r, sy, fill, inner) {
-  const star = k => Array.from({ length: 10 }, (_, i) => { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.48 * k : r * k; return [cx + Math.cos(a) * rr, cy + Math.sin(a) * rr * sy]; });
-  const pts = star(1);
-  b.poly(pts, fill);
-  for (let i = 0; i < pts.length; i++) { const [ax, ay] = pts[i], [bx, by] = pts[(i + 1) % pts.length]; b.line(Math.round(ax), Math.round(ay), Math.round(bx), Math.round(by), 'o'); }
-  b.poly(star(0.42), inner);
-}
 function fuzzyRug(b, cx, cy, rx, ry, fill, trim, speck) {
   const h = x => ((x * 2654435761) >>> 0) % 3;   // a ragged, furry edge
   shapeRug(b, (x, y) => { const dx = (x + 0.5 - cx) / rx, dy = (y + 0.5 - cy) / ry; return dx * dx + dy * dy <= 1 + 0.07 * (h(x + y * 7) - 1); },
     [cx - rx - 3, cy - ry - 2, cx + rx + 3, cy + ry + 2], fill, trim);
   if (speck) for (let y = cy - ry + 2; y < cy + ry - 1; y++) for (let x = cx - rx + 4; x < cx + rx - 4; x++) if (((x * 31 + y * 17) % 11) === 0 && inEll(x, y, cx, cy, rx - 4, ry - 2)) b.px(x, y, speck);
+}
+
+function heartRug(b, cx, cy, rx, ry, fill, trim) {   // a heart, lying on the floor
+  shapeRug(b, (x, y) => { const X = (x + 0.5 - cx) / rx * 1.15, Y = -(y + 0.5 - cy) / ry * 1.15 + 0.15; return (X * X + Y * Y - 1) ** 3 - X * X * Y ** 3 <= 0; },
+    [cx - rx - 2, cy - ry - 3, cx + rx + 2, cy + ry + 3], fill, trim);
+}
+function checkerRug(b, cx, cy, rx, ry, c1, c2, trim) {   // a round rug in big checks
+  shapeRug(b, (x, y) => inEll(x, y, cx, cy, rx, ry), [cx - rx - 1, cy - ry - 1, cx + rx + 1, cy + ry + 1], c1, trim);
+  for (let y = Math.floor(cy - ry); y <= cy + ry; y++) for (let x = Math.floor(cx - rx); x <= cx + rx; x++)
+    if (inEll(x, y, cx, cy, rx - 3, ry - 2) && (Math.floor((x - cx + 60) / 5) + Math.floor((y - cy + 30) / 2.5)) % 2) b.px(x, y, c2);
+}
+
+// a garland of little triangle flags across the wall: a row of colour blocks
+function bunting(b, x1, x2, y, sag, cols) {
+  const at = x => y + Math.round(sag * Math.sin(Math.PI * (x - x1) / (x2 - x1)));
+  for (let x = x1; x <= x2; x++) b.px(x, at(x), 'o');
+  for (let x = x1 + 3, k = 0; x < x2 - 5; x += 8, k++) {
+    const yy = at(x + 2) + 1;
+    b.poly([[x, yy], [x + 5, yy], [x + 2.5, yy + 5]], cols[k % cols.length]);
+    b.line(x, yy, x + 2, yy + 5, 'o'); b.line(x + 5, yy, x + 3, yy + 5, 'o');
+  }
 }
 
 function drawToyBox(b, t) {
@@ -471,15 +494,17 @@ function hangString(b, x, toY) { b.vline(x, RA.WY1, Math.max(1, toY - RA.WY1), '
    The pastels are soft and slightly greyed (about as saturated as the teen room's teal), pearly rather than candy. */
 
 function bgNursery(b, L) {   // lemon + powder blue: beadboard, gingham carpet, a cloud rug, tie-back curtains
-  roomShell(b, { ceil: '#faf8ea', side: '#eae2b8', side2: '#e7deb1', wall: '#f3edcd', bands: '#f7f3de', dots: '#9cb6d3', pattern: 'stars',
+  roomShell(b, { ceil: '#f1f5fa', side: '#d3dfec', side2: '#cdd9e7', wall: '#f3edcd', bands: '#f7f3de', dots: '#9cb6d3', pattern: 'stars',
     border: { style: 'dots', c: ['#d1dbe6', '#ffffff'] },
     lower: { style: 'beadboard', c: ['#d4dde8', '#b2c1d1', '#c6d0dd'] },
     floor: { style: 'plaid', c: ['#f7f2e3', '#d0dbe7', '#f3edcd', '#becbd9'], shadow: '#dbd4bd' } });
   ceilingStars(b);
+  bunting(b, 46, 120, 25, 3, ['#f3b9cc', '#f3dc8e', '#a9c8ea', '#bfe3c8']);
+  bunting(b, 198, 248, 25, 2, ['#a9c8ea', '#f3b9cc', '#f3dc8e']);
   drawWindow(b, 'night', { style: 'tieback', c: 'b', c2: 'B' });
   drawDoor(b, 'p', 'baby');
   shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'w');
-  drawDresser(b, L.dresser, 'b');
+  drawDresser(b, L.dresser, 'b', ['#f6c9d7', '#bcd6ee', '#f4e3a4']);
   drawSocket(b, q(L.socket.x), q(L.socket.y) + 2);
   cloudRug(b, 160, 129, 'w', '#dbe7f3');
   drawCot(b, L.cot);
@@ -487,7 +512,7 @@ function bgNursery(b, L) {   // lemon + powder blue: beadboard, gingham carpet, 
 }
 
 function bgChildhood(b, L) {   // pearl rose + lavender: candy stripes under a scalloped rail, a checkerboard floor, a flower rug, café curtains
-  roomShell(b, { ceil: '#f6eaee', side: '#dabec8', side2: '#d6b8c3', wall: '#ead1da', dots: '#fcf7f9', dots2: '#d9a6b7', pattern: 'dots',
+  roomShell(b, { ceil: '#fbf3f6', side: '#d9d0e8', side2: '#d3cae3', wall: '#ead1da', dots: '#fcf7f9', dots2: '#d9a6b7', pattern: 'dots',
     border: { style: 'hearts', c: ['#dcd7e5', '#d9a6b7'] },
     lower: { style: 'stripes', c: ['#dcd6e6', '#cbc2da', '#cfc8da'] },
     floor: { style: 'checker', c: ['#f4ece6', '#e0cdd6'], shadow: '#d8c8cf' } });
@@ -495,60 +520,62 @@ function bgChildhood(b, L) {   // pearl rose + lavender: candy stripes under a s
   drawWindow(b, 'day', { style: 'cafe', c: 'w', c2: '#e9b9c9', c3: '#f1e6ea' });
   drawDoor(b, 'w', 'letters');
   drawHookRail(b, L.hooks);
-  drawBookshelf(b, L.shelf, 'y');
+  drawBookshelf(b, L.shelf, 'y', ['#f7d0dc', '#d9cff0', '#cdeee0']);
   flowerRug(b, 160, 130, 56, 9, '#ddd3f2', 'w');
-  drawBed(b, L.bed, 'flowers');
+  drawBed(b, Object.assign({ throwCols: ['#c8b6ea', '#ffffff'] }, L.bed), 'flowers');
   drawTeaTable(b, 640, 476, 240, 530);
   drawToyBox(b, L.toybox);
 }
 
-function bgTween(b, L) {   // silver lilac + soft aqua: pinstripes under a pink ribbon, harlequin floor, a star rug, a bead curtain, a round chair
-  roomShell(b, { ceil: '#f2edf7', side: '#c9bcd7', side2: '#c3b6d2', wall: '#dbd0e7', dots: '#e3b5cc', dots2: '#8ecacc', pattern: 'butterflies',
+function bgTween(b, L) {   // silver lilac + soft aqua: pinstripes under a pink ribbon, harlequin floor, a heart rug, a bead curtain, a round chair
+  roomShell(b, { ceil: '#f6f2fb', side: '#c9e0de', side2: '#c2dad8', wall: '#dbd0e7', dots: '#e3b5cc', dots2: '#8ecacc', pattern: 'butterflies',
     lower: { style: 'pinstripe', h: 22, c: ['#d2e4e2', '#bdd6d3', '#c5d8d6', '#e3b5cc'] },
     floor: { style: 'harlequin', c: ['#f2f1f9', '#dfd8ee', '#c6dfe0'], shadow: '#d5d0e3' } });
   lightBeam(b, 2);
   drawWindow(b, 'afternoon', { style: 'beads', beads: ['#e3b5cc', '#8ecacc', '#f1e3a6', '#c4b3e6'] });
   drawDoor(b, 'l', 'butterfly');
   shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'w');
-  starRug(b, 118, 131, 32, 0.26, '#cdeae6', '#f4fbfa');
-  drawDesk(b, L.desk, { lamp: 'P', chair: 'A', chairStyle: 'round', drawer: 'L' });
-  drawBed(b, L.bed, 'butterflies');
+  heartRug(b, 120, 131, 24, 9, '#f3b6cf', '#fbe3ec');
+  drawDesk(b, L.desk, { lamp: 'P', chair: 'A', chairStyle: 'round', drawers: ['#f3b6cf', '#b9e3df'] });
+  drawBed(b, Object.assign({ throwCols: ['#f3b6cf', '#ffffff'] }, L.bed), 'butterflies');
 }
 
-function bgTeen(b, L) {   // the teen teal: striped walls, big glossy tiles, a fluffy pink rug, purple panels on rings, a swivel chair
+function bgTeen(b, L) {   // the teen teal: striped walls, big glossy tiles, a round checkerboard rug, purple panels on rings, a swivel chair
   roomShell(b, { ceil: '#eef6f3', side: '#a3c6be', side2: '#99bdb5', wall: '#c0dcd5', dots: '#b0d0c8', dots2: '#f4fbf8', pattern: 'stripes',
     floor: { style: 'tiles', c: ['#dcd6e8', '#d3cce2', '#f5f3f9', '#ebe7f4'], shadow: '#c3bcd3' } });
   lightBeam(b, 2);
   drawWindow(b, 'dusk', { style: 'panels', c: 'v' });
   drawDoor(b, 'w', 'keepout');
   shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'V');
-  fuzzyRug(b, 176, 130, 38, 8, 'P', 'p');
-  drawDesk(b, L.desk, { lamp: 'V', chair: 'v', chairStyle: 'swivel', drawer: 'A', papers: true });
+  checkerRug(b, 176, 130, 30, 8, '#f3effa', '#b7a3e3', '#9a86d4');
+  drawDesk(b, L.desk, { lamp: 'V', chair: 'v', chairStyle: 'swivel', drawers: ['A', '#f3a6cf'], papers: true });
   drawBed(b, L.bed, 'messy');
   drawBasket(b, L.basket);
 }
 
 function bgYoungAdult(b, L) {   // pale blue: soft carpet, a white faux-fur rug by the bed, a roller blind, a café chair
-  roomShell(b, { ceil: '#eef6fb', side: '#bcd5e8', side2: '#b4cee3', wall: '#d4e6f3', dots: '#e4f0f8', dots2: '#ffffff', pattern: 'plain',
+  roomShell(b, { ceil: '#f7f9fc', side: '#d8d6ec', side2: '#d2d0e8', wall: '#d4e6f3', dots: '#e4f0f8', dots2: '#ffffff', pattern: 'plain',
+    lower: { style: 'block', h: 30, c: ['#d9d7ee', '#c9c6e3', '#cfcde6'] },
     floor: { style: 'carpet', c: ['#ccd0e6', '#bec2dc', '#dcdeee'], shadow: '#b8bcd6' } });
   lightBeam(b, 3);
   drawWindow(b, 'morning', { style: 'blind', c: '#f6f8fc', c2: '#dfe5ef' });
   drawDoor(b, 'w', 'wreath');
   shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'R');
   fuzzyRug(b, 104, 132, 36, 7, 'w', '#eef0f7', '#dfe2ee');
-  drawDesk(b, L.desk, { col: 'c', chair: 'R', chairStyle: 'cafe', drawer: 'g' });
-  drawBed(b, L.bed, 'linen');
+  drawDesk(b, L.desk, { col: 'c', chair: 'R', chairStyle: 'cafe', drawers: ['g', '#bfe0f2'] });
+  drawBed(b, Object.assign({ throwCols: ['#f2b8cd', '#ffffff'] }, L.bed), 'linen');
 }
 
 function bgMovingOut(b, L) {   // the same room, packed up: bare pale floorboards, no rug, curtains down, marks where things hung
-  roomShell(b, { ceil: '#eef6fb', side: '#bcd5e8', side2: '#b4cee3', wall: '#d4e6f3', dots: '#e4f0f8', dots2: '#ffffff', pattern: 'plain',
+  roomShell(b, { ceil: '#f7f9fc', side: '#d8d6ec', side2: '#d2d0e8', wall: '#d4e6f3', dots: '#e4f0f8', dots2: '#ffffff', pattern: 'plain',
     ghosts: [[58, 36, 20, 15], [88, 42, 12, 16], [204, 28, 18, 13]], ghostCol: '#e6f0f8',
+    lower: { style: 'block', h: 30, c: ['#d9d7ee', '#c9c6e3', '#cfcde6'] },
     floor: { style: 'planks', c: ['#ece5df', '#d6ccc4', '#f7f2ee'], shadow: '#d6ccc4' } });
   lightBeam(b, 4);
   drawWindow(b, 'morning', { style: 'bare' });
   drawDoor(b, 'w', null);
   shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'R');
-  drawDesk(b, L.desk, { col: 'c', chair: 'R', chairStyle: 'cafe', drawer: 'g' });
+  drawDesk(b, L.desk, { col: 'c', chair: 'R', chairStyle: 'cafe', drawers: ['g', '#bfe0f2'] });
   drawBed(b, L.bed, 'bare');
   drawStackedBoxes(b);
 }

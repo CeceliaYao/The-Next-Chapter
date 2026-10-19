@@ -35,31 +35,10 @@ function roomShell(b, th) {
   b.poly([[WX2 + 1, WY1], [RX + 1, CY], [RX + 1, FY + 1], [WX2 + 1, WY2 + 1]], th.side2 || th.side);
   b.rect(WX1, WY1, WX2 - WX1 + 1, WY2 - WY1 + 1, th.wall);
   wallpaper(b, th);
-  sideWainscot(b, th);
-  // floor in perspective: wooden planks, or a pastel plaid carpet (th.plaid: base, row stripe, column stripe, crossing)
-  b.poly([[WX1, WY2 + 1], [WX2 + 1, WY2 + 1], [RX + 1, FY + 1], [LX, FY + 1]], th.floor);
+  lowerWall(b, th.lower);
+  drawFloor(b, th.floor);
   const xl = y => WX1 + (LX - WX1) * (y - WY2) / (FY - WY2), xr = y => WX2 + (RX - WX2) * (y - WY2) / (FY - WY2);
-  const rows = [WY2 + 1, 110, 116, 123, 131, 141];
-  if (th.plaid) {
-    const bands = [WY2 + 1, 107, 109, 112, 115, 119, 123, 128, 133, 139, 142];
-    for (let y = WY2 + 1; y <= FY; y++) {
-      const r = bands.filter(v => v <= y).length % 2, a = xl(y), w = xr(y) - a;
-      for (let x = Math.ceil(a); x <= Math.floor(xr(y)); x++) {
-        const c = Math.floor((x - a) / w * 16) % 2;
-        b.px(x, y, th.plaid[r * 2 + c]);
-      }
-    }
-  } else {
-    rows.slice(1, -1).forEach(y => b.hline(Math.ceil(xl(y)), y, Math.floor(xr(y)) - Math.ceil(xl(y)) + 1, th.floor2));
-    const spread = (RX - LX) / (WX2 - WX1);
-    for (let k = 0; k < rows.length - 1; k++) {
-      for (let xb = WX1 + (k % 2 ? 22 : 8); xb < WX2; xb += 30) {
-        const xf = 160 + (xb - 160) * spread, at = y => xb + (xf - xb) * (y - WY2) / (FY - WY2);
-        b.line(at(rows[k] + 1), rows[k] + 1, at(rows[k + 1] - 1), rows[k + 1] - 1, th.floor2);
-      }
-    }
-  }
-  for (let y = WY2 + 1; y <= WY2 + 2; y++) b.hline(Math.ceil(xl(y)), y, Math.floor(xr(y)) - Math.ceil(xl(y)) + 1, th.shadow || th.floor2);   // soft shadow under the wall
+  for (let y = WY2 + 1; y <= WY2 + 2; y++) b.hline(Math.ceil(xl(y)), y, Math.floor(xr(y)) - Math.ceil(xl(y)) + 1, th.floor.shadow);   // soft shadow under the wall
   // skirting board
   b.rect(WX1, WY2 - 2, WX2 - WX1 + 1, 3, th.base || 'w'); b.hline(WX1, WY2 - 3, WX2 - WX1 + 1, 'o');
   // room edges (dollhouse cut-away)
@@ -69,6 +48,55 @@ function roomShell(b, th) {
   b.line(WX1, WY1, LX, CY, 'o'); b.line(WX2, WY1, RX, CY, 'o');
   b.rect(LX - 1, CY - 1, RX - LX + 3, 1, 'o'); b.rect(LX - 1, CY - 1, 1, FY - CY + 3, 'o'); b.rect(RX + 1, CY - 1, 1, FY - CY + 3, 'o');
   b.rect(LX - 1, FY + 1, RX - LX + 3, 2, 'o');
+}
+
+/* the floor, in perspective. Each room has its own: f.style is
+   plaid (gingham carpet), checker (tiles), harlequin (diamonds), tiles (big glossy tiles),
+   carpet (speckled wall-to-wall) or planks (floorboards); f.c are its colours */
+function drawFloor(b, f) {
+  const { LX, RX, WX1, WX2, WY2, FY } = RA;
+  const xl = y => WX1 + (LX - WX1) * (y - WY2) / (FY - WY2), xr = y => WX2 + (RX - WX2) * (y - WY2) / (FY - WY2);
+  const c = f.c;
+  b.poly([[WX1, WY2 + 1], [WX2 + 1, WY2 + 1], [RX + 1, FY + 1], [LX, FY + 1]], c[0]);
+  // rows get deeper towards you; v is a smooth "how far back" coordinate (row number + fraction)
+  const rowsOf = edges => y => { let k = 0; while (k < edges.length - 2 && y >= edges[k + 1]) k++; return k + (y - edges[k]) / (edges[k + 1] - edges[k]); };
+  const each = fn => { for (let y = WY2 + 1; y <= FY; y++) { const a = xl(y), w = xr(y) - a; for (let x = Math.ceil(a); x <= Math.floor(xr(y)); x++) fn(x, y, (x - a) / w); } };
+  const hash = (x, y) => ((x * 73856093) ^ (y * 19349663)) >>> 0;
+  if (f.style === 'plaid') {
+    const v = rowsOf([WY2 + 1, 107, 109, 112, 115, 119, 123, 128, 133, 139, 142]);
+    each((x, y, u) => b.px(x, y, c[(Math.floor(v(y)) % 2) * 2 + Math.floor(u * 16) % 2]));
+  } else if (f.style === 'checker') {
+    const v = rowsOf([WY2 + 1, 109, 113, 118, 124, 131, 142]);
+    each((x, y, u) => { if ((Math.floor(v(y)) + Math.floor(u * 12)) % 2) b.px(x, y, c[1]); });
+  } else if (f.style === 'harlequin') {
+    const v = rowsOf([WY2 + 1, 111, 118, 127, 142]);
+    each((x, y, u) => {
+      const U = u * 9, V = v(y), fu = U - Math.floor(U) - 0.5, fv = V - Math.floor(V) - 0.5;
+      if (Math.abs(fu) + Math.abs(fv) < 0.5) b.px(x, y, c[1]);
+      if (Math.abs(fu) + Math.abs(fv) > 0.47 && Math.abs(fu) + Math.abs(fv) < 0.53) b.px(x, y, c[2]);
+    });
+  } else if (f.style === 'tiles') {
+    const v = rowsOf([WY2 + 1, 112, 120, 130, 142]);
+    each((x, y, u) => {
+      const U = u * 7, V = v(y), fu = U - Math.floor(U), fv = V - Math.floor(V);
+      if ((Math.floor(U) + Math.floor(V)) % 2) b.px(x, y, c[1]);
+      if (fu < 0.04 || fv < 0.1) b.px(x, y, c[2]);                       // white grout
+      else if (fu > 0.18 && fu < 0.3 && fv > 0.25 && fv < 0.75) b.px(x, y, c[3]);   // a shine on each tile
+    });
+  } else if (f.style === 'carpet') {
+    each((x, y) => { const h = hash(x, y) % 13; if (h === 0) b.px(x, y, c[1]); else if (h === 1) b.px(x, y, c[2]); });
+  } else {   // planks
+    const rows = [WY2 + 1, 110, 116, 123, 131, 141];
+    rows.slice(1, -1).forEach(y => b.hline(Math.ceil(xl(y)), y, Math.floor(xr(y)) - Math.ceil(xl(y)) + 1, c[1]));
+    const spread = (RX - LX) / (WX2 - WX1);
+    for (let k = 0; k < rows.length - 1; k++) {
+      for (let xb = WX1 + (k % 2 ? 22 : 8); xb < WX2; xb += 30) {
+        const xf = 160 + (xb - 160) * spread, at = y => xb + (xf - xb) * (y - WY2) / (FY - WY2);
+        b.line(at(rows[k] + 1), rows[k] + 1, at(rows[k + 1] - 1), rows[k + 1] - 1, c[1]);
+      }
+    }
+    if (c[2]) rows.slice(0, -1).forEach((y, k) => b.hline(Math.ceil(xl(y + 1)) + 3, y + 1, Math.floor(xr(y + 1)) - Math.ceil(xl(y + 1)) - 6, c[2]));   // a light edge on each board
+  }
 }
 
 function wallpaper(b, th) {
@@ -92,28 +120,41 @@ function wallpaper(b, th) {
     for (let x = WX1 + 3; x < WX2; x += 6) b.vline(x, WY1 + 1, WY2 - WY1 - 4, th.dots);
     for (let y = WY1 + 6; y < WY2 - 4; y += 12) for (let x = WX1 + 6; x < WX2; x += 24) stamp(b, x, y, TINY, th.dots2 || th.dots, clip);
   }
-  // colour blocks, like a real 2000s bedroom: a wallpaper border under the ceiling and panelling below a white rail
-  if (th.border) {
-    b.rect(WX1 + 1, WY1 + 1, WX2 - WX1 - 1, 6, th.border[0]);
-    b.hline(WX1 + 1, WY1 + 7, WX2 - WX1 - 1, th.border[1]);
-    for (let x = WX1 + 4; x < WX2 - 2; x += 8) stamp(b, x, WY1 + 3, ['##', '##'], th.border[1]);
+  // a wallpaper border under the ceiling (its own motif in each room that has one)
+  const bd = th.border;
+  if (bd) {
+    b.rect(WX1 + 1, WY1 + 1, WX2 - WX1 - 1, 6, bd.c[0]);
+    b.hline(WX1 + 1, WY1 + 7, WX2 - WX1 - 1, bd.c[1]);
+    if (bd.style === 'hearts') for (let x = WX1 + 4; x < WX2 - 5; x += 10) stamp(b, x, WY1 + 2, ['##.##', '#####', '.###.', '..#..'], bd.c[1]);
+    else for (let x = WX1 + 4; x < WX2 - 2; x += 8) stamp(b, x, WY1 + 3, ['##', '##'], bd.c[1]);
   }
-  if (th.wains) {
-    const top = WY2 - 26;
-    b.rect(WX1 + 1, top, WX2 - WX1 - 1, WY2 - top, th.wains[0]);
-    for (let x = WX1 + 9; x < WX2 - 4; x += 18) { b.vline(x, top + 5, WY2 - top - 9, th.wains[1]); b.vline(x + 12, top + 5, WY2 - top - 9, th.wains[1]); b.hline(x, top + 5, 13, th.wains[1]); b.hline(x, WY2 - 5, 13, th.wains[1]); }
-    b.rect(WX1 + 1, top - 2, WX2 - WX1 - 1, 2, 'w'); b.hline(WX1 + 1, top, WX2 - WX1 - 1, th.wains[1]);
-  }
+  // ghost marks: lighter patches where posters and frames used to hang (the room being packed up)
+  if (th.ghosts) th.ghosts.forEach(([x, y, w, h]) => {
+    b.rect(x, y, w, h, th.ghostCol); b.px(x, y, 'w'); b.px(x + w - 1, y, 'w'); b.px(x + 1, y, 'w'); b.px(x + w - 2, y, 'w');
+  });
 }
 
-// the panelling carries on along the side walls, in perspective
-function sideWainscot(b, th) {
-  if (!th.wains) return;
-  const { LX, RX, WX1, WX2, WY2, FY } = RA, back = WY2 - 26, front = FY - 38;
-  b.poly([[WX1, back], [WX1, WY2], [LX, FY], [LX, front]], th.wains[2]);
-  b.poly([[WX2 + 1, back], [RX + 1, front], [RX + 1, FY], [WX2 + 1, WY2]], th.wains[2]);
-  b.line(WX1, back - 1, LX, front - 1, 'w'); b.line(WX1, back, LX, front, th.wains[1]);
-  b.line(WX2, back - 1, RX, front - 1, 'w'); b.line(WX2, back, RX, front, th.wains[1]);
+/* the lower part of the walls, different in each room: beadboard, candy stripes under a scalloped rail,
+   or pinstripes under a ribbon (l.c: base, line, side-wall base) */
+function lowerWall(b, l) {
+  if (!l) return;
+  const { LX, RX, WX1, WX2, WY2, FY } = RA, top = WY2 - (l.h || 24), H = WY2 - top, front = FY - Math.round(H * 1.46);
+  b.rect(WX1 + 1, top, WX2 - WX1 - 1, H, l.c[0]);
+  b.poly([[WX1, top], [WX1, WY2], [LX, FY], [LX, front]], l.c[2]);
+  b.poly([[WX2 + 1, top], [RX + 1, front], [RX + 1, FY], [WX2 + 1, WY2]], l.c[2]);
+  if (l.style === 'beadboard') {
+    for (let x = WX1 + 3; x < WX2 - 1; x += 4) b.vline(x, top + 2, H - 2, l.c[1]);
+    b.rect(WX1 + 1, top - 2, WX2 - WX1 - 1, 2, 'w'); b.hline(WX1 + 1, top, WX2 - WX1 - 1, l.c[1]);
+  } else if (l.style === 'stripes') {
+    for (let x = WX1 + 2; x < WX2 - 1; x += 6) b.rect(x, top + 2, 3, H - 2, l.c[1]);
+    b.rect(WX1 + 1, top - 2, WX2 - WX1 - 1, 3, 'w');
+    for (let x = WX1 + 2; x < WX2 - 3; x += 5) { b.hline(x, top + 1, 3, 'w'); b.px(x + 1, top + 2, 'w'); }   // scalloped edge
+  } else if (l.style === 'pinstripe') {
+    for (let y = top + 3; y < WY2 - 2; y += 3) b.hline(WX1 + 1, y, WX2 - WX1 - 1, l.c[1]);
+    b.rect(WX1 + 1, top - 1, WX2 - WX1 - 1, 2, l.c[3] || 'w');
+  }
+  b.line(WX1, top - 1, LX, front - 1, 'w'); b.line(WX1, top, LX, front, l.c[1]);
+  b.line(WX2, top - 1, RX, front - 1, 'w'); b.line(WX2, top, RX, front, l.c[1]);
 }
 
 const SKIES = {
@@ -153,16 +194,62 @@ function drawWindow(b, sky, curtain) {
   b.rect(159, y1, 2, y2 - y1, 'w'); b.rect(x1, 45, x2 - x1, 2, 'w');
   b.hline(x1 - 1, y1 - 1, x2 - x1 + 3, 'o'); b.vline(x1 - 1, y1 - 1, y2 - y1 + 2, 'o'); b.vline(x2 + 1, y1 - 1, y2 - y1 + 2, 'o');
   b.box(x1 - 4, 68, x2 - x1 + 9, 3, 'w');
-  if (curtain) {
-    b.box(x1 - 13, 19, x2 - x1 + 27, 3, 'w');
+  if (curtain) drawCurtains(b, typeof curtain === 'string' ? { style: 'panels', c: curtain } : curtain);
+}
+
+/* curtains, a different kind in each room: tie-backs with a scalloped valance, café curtains,
+   a bead curtain, straight panels on rings, a roller blind, or just the bare rod */
+function drawCurtains(b, cu) {
+  const x1 = 136, x2 = 183, c = cu.c;
+  const outlinePoly = pts => { for (let i = 0; i < pts.length; i++) { const [ax, ay] = pts[i], [bx, by] = pts[(i + 1) % pts.length]; b.line(ax, ay, bx, by, 'o'); } };
+  const rod = () => b.box(x1 - 13, 19, x2 - x1 + 27, 3, 'w');
+  const rings = (xs) => xs.forEach(x => { b.px(x, 21, 'o'); b.px(x, 22, 'o'); });
+  const mirror = pts => pts.map(([x, y]) => [x1 + x2 - x, y]);
+  if (cu.style === 'tieback') {
+    rod();
+    const left = [[x1 - 11, 22], [x1 + 7, 22], [x1 + 2, 38], [x1 - 3, 49], [x1 + 1, 60], [x1 + 4, 74], [x1 - 11, 74]];
+    [left, mirror(left)].forEach(pts => { b.poly(pts, c); outlinePoly(pts); });
+    [[x1 - 7, 26, 22], [x1 - 4, 54, 18], [x2 + 7, 26, 22], [x2 + 4, 54, 18]].forEach(([x, y, h]) => b.vline(x, y, h, cu.c2 || 'B'));
+    [[x1 - 11, 48], [x2 - 2, 48]].forEach(([x, y]) => b.box(x, y, 14, 3, 'w'));   // the tie-backs
+    b.rect(x1 - 12, 21, x2 - x1 + 25, 5, c);
+    for (let x = x1 - 12; x <= x2 + 12; x += 6) { b.hline(x + 1, 26, 4, c); b.hline(x + 2, 27, 2, c); b.px(x, 26, 'o'); b.px(x + 1, 27, 'o'); b.px(x + 4, 27, 'o'); b.hline(x + 2, 28, 2, 'o'); }
+    b.hline(x1 - 12, 20, x2 - x1 + 25, 'o');
+  } else if (cu.style === 'cafe') {
+    b.rect(x1 - 1, 44, x2 - x1 + 3, 1, 'o');
+    [[x1 + 2, 159], [161, x2 - 2]].forEach(([a, z]) => {
+      b.rect(a, 45, z - a + 1, 22, c);
+      for (let x = a + 2; x < z; x += 4) b.vline(x, 47, 19, cu.c3 || 'g');
+      b.rect(a, 63, z - a + 1, 2, cu.c2);
+      b.vline(a - 1, 45, 22, 'o'); b.vline(z + 1, 45, 22, 'o');
+    });
+    b.rect(x1 - 6, 20, x2 - x1 + 13, 5, cu.c2); b.hline(x1 - 6, 19, x2 - x1 + 13, 'o');
+    for (let x = x1 - 6; x <= x2 + 6; x += 4) { b.hline(x, 25, 3, cu.c2); b.px(x + 1, 26, cu.c2); b.px(x + 3, 25, 'o'); b.px(x, 26, 'o'); b.px(x + 2, 26, 'o'); b.px(x + 1, 27, 'o'); }
+  } else if (cu.style === 'beads') {
+    rod();
+    const cols = cu.beads;
+    for (let side = 0; side < 2; side++) for (let k = 0; k < 6; k++) {
+      const x = side ? x2 + 11 - k * 3 : x1 - 11 + k * 3, len = 50 - k * 4;
+      b.vline(x, 22, len, 'o');
+      for (let y = 24, n = 0; y < 22 + len; y += 3, n++) b.px(x, y, cols[(n + k) % cols.length]);
+    }
+  } else if (cu.style === 'panels') {
+    rod();
     const left = [[x1 - 10, 22], [x1 + 6, 22], [x1 + 3, 40], [x1 + 7, 60], [x1 + 3, 74], [x1 - 10, 74]];
-    const right = left.map(([x, y]) => [x1 + x2 - x, y]);
-    [left, right].forEach(pts => {
-      b.poly(pts, curtain);
+    [left, mirror(left)].forEach(pts => {
+      b.poly(pts, c);
       const xs = pts.map(p => p[0]), mx = (Math.min(...xs) + Math.max(...xs)) / 2;
       b.vline(Math.round(mx) - 2, 24, 48, 'o'); b.vline(Math.round(mx) + 3, 26, 46, 'o');
-      for (let i = 0; i < pts.length; i++) { const [ax, ay] = pts[i], [bx, by] = pts[(i + 1) % pts.length]; b.line(ax, ay, bx, by, 'o'); }
+      outlinePoly(pts);
     });
+    rings([x1 - 8, x1 - 3, x1 + 2, x2 - 2, x2 + 3, x2 + 8]);
+  } else if (cu.style === 'blind') {
+    b.box(x1 - 2, 22, x2 - x1 + 5, 4, 'w');
+    b.rect(x1 + 1, 26, x2 - x1 - 1, 6, c);
+    b.hline(x1 + 1, 28, x2 - x1 - 1, cu.c2); b.hline(x1 + 1, 30, x2 - x1 - 1, cu.c2);
+    b.box(x1, 32, x2 - x1 + 1, 2, 'w');
+    b.vline(x2 - 6, 34, 9, 'o'); b.box(x2 - 7, 43, 3, 3, 'w');
+  } else {   // bare: the curtains are packed, only the rod and its rings are left
+    rod(); rings([x1 - 9, x1 - 5, x1 - 1, x2 + 1, x2 + 5, x2 + 9]);
   }
 }
 
@@ -261,8 +348,7 @@ function drawDesk(b, d, o) {
   b.box(x2 - 17, top + 6, 15, 10, o.drawer || 'L'); b.box(x2 - 17, top + 18, 15, 10, o.drawer || 'L');
   b.rect(x2 - 11, top + 10, 3, 2, 'Y'); b.rect(x2 - 11, top + 22, 3, 2, 'Y');
   b.box(x1 - 2, top, x2 - x1 + 5, 3, col);
-  b.box(x1 + 8, top + 6, 17, 13, o.chair || 'P'); b.box(x1 + 6, top + 18, 21, 4, o.chair || 'P');
-  b.vline(x1 + 8, top + 22, bot - top - 22, 'o'); b.vline(x1 + 24, top + 22, bot - top - 22, 'o');
+  drawChair(b, x1, top, bot, o.chair || 'P', o.chairStyle);
   if (o.lamp) {
     const lx = x2 - 4;
     b.box(lx - 4, top - 2, 8, 2, o.lamp);
@@ -273,10 +359,67 @@ function drawDesk(b, d, o) {
   if (o.papers) [[x1 + 4, 'w'], [x1 + 14, 'g'], [x1 + 24, 'w']].forEach(([x, c]) => { b.rect(x, top - 1, 8, 1, c); b.hline(x, top - 2, 8, 'o'); });
 }
 
+// the desk chair, a different shape in each room: a plain chair, a round-backed one, a swivel chair or a café chair
+function drawChair(b, x1, top, bot, col, style) {
+  if (style === 'round') {
+    b.ell(x1 + 16, top + 11, 9, 7, col); b.ring(x1 + 16, top + 11, 9, 7, 'o'); b.ring(x1 + 16, top + 11, 6, 4, 'w');
+    b.box(x1 + 6, top + 18, 21, 4, col);
+    b.line(x1 + 9, top + 22, x1 + 7, bot, 'o'); b.line(x1 + 23, top + 22, x1 + 25, bot, 'o');
+  } else if (style === 'swivel') {
+    b.box(x1 + 9, top + 2, 15, 16, col); b.rect(x1 + 10, top + 3, 13, 3, 'L');
+    b.box(x1 + 6, top + 18, 21, 4, col);
+    b.box(x1 + 15, top + 22, 3, bot - top - 26, 'D');
+    b.line(x1 + 16, bot - 4, x1 + 7, bot - 1, 'o'); b.line(x1 + 16, bot - 4, x1 + 25, bot - 1, 'o'); b.vline(x1 + 16, bot - 4, 4, 'o');
+    [[x1 + 6, bot - 1], [x1 + 25, bot - 1], [x1 + 16, bot]].forEach(([x, y]) => b.rect(x, y - 1, 2, 2, 'o'));
+  } else if (style === 'cafe') {
+    b.box(x1 + 7, top + 4, 19, 4, col);
+    [x1 + 9, x1 + 15, x1 + 21].forEach(x => b.box(x, top + 7, 3, 12, col));
+    b.box(x1 + 6, top + 18, 21, 4, col);
+    b.line(x1 + 8, top + 22, x1 + 7, bot, 'o'); b.line(x1 + 24, top + 22, x1 + 25, bot, 'o');
+  } else {
+    b.box(x1 + 8, top + 6, 17, 13, col); b.box(x1 + 6, top + 18, 21, 4, col);
+    b.vline(x1 + 8, top + 22, bot - top - 22, 'o'); b.vline(x1 + 24, top + 22, bot - top - 22, 'o');
+  }
+}
+
 function drawRug(b, cx, cy, rx, ry, c1, c2) {
   b.ell(cx, cy, rx, ry, c1);
   b.ring(cx, cy, rx - 4, ry - 2.5, c2);
   b.ring(cx, cy, rx, ry, 'o');
+}
+
+/* a rug of any shape: inside(x, y) says what's rug; the edge is outlined and a trim runs just inside it */
+function shapeRug(b, inside, box, fill, trim) {
+  const [X0, Y0, X1, Y1] = box;
+  for (let y = Y0; y <= Y1; y++) for (let x = X0; x <= X1; x++) {
+    if (!inside(x, y)) continue;
+    if (!inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1) || !inside(x, y + 1)) b.px(x, y, 'o');
+    else if (trim && !(inside(x - 3, y) && inside(x + 3, y) && inside(x, y - 2) && inside(x, y + 2))) b.px(x, y, trim);
+    else b.px(x, y, fill);
+  }
+}
+const inEll = (x, y, cx, cy, rx, ry) => ((x + 0.5 - cx) / rx) ** 2 + ((y + 0.5 - cy) / ry) ** 2 <= 1;
+function cloudRug(b, cx, cy, fill, trim) {
+  const parts = [[cx, cy + 1, 36, 6], [cx - 20, cy - 3, 14, 5], [cx - 1, cy - 4, 16, 5.5], [cx + 19, cy - 3, 14, 5]];
+  shapeRug(b, (x, y) => parts.some(([a, c, rx, ry]) => inEll(x, y, a, c, rx, ry)), [cx - 40, cy - 10, cx + 40, cy + 8], fill, trim);
+}
+function flowerRug(b, cx, cy, rx, ry, fill, trim) {   // a round rug with twelve round petals on its edge
+  const petals = Array.from({ length: 12 }, (_, k) => { const a = k * Math.PI / 6; return [cx + Math.cos(a) * rx * 0.9, cy + Math.sin(a) * ry * 0.86]; });
+  shapeRug(b, (x, y) => inEll(x, y, cx, cy, rx * 0.9, ry * 0.86) || petals.some(([px, py]) => inEll(x, y, px, py, rx * 0.15, ry * 0.32)),
+    [cx - rx - 4, cy - ry - 3, cx + rx + 4, cy + ry + 3], fill, trim);
+}
+function starRug(b, cx, cy, r, sy, fill, inner) {
+  const star = k => Array.from({ length: 10 }, (_, i) => { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.48 * k : r * k; return [cx + Math.cos(a) * rr, cy + Math.sin(a) * rr * sy]; });
+  const pts = star(1);
+  b.poly(pts, fill);
+  for (let i = 0; i < pts.length; i++) { const [ax, ay] = pts[i], [bx, by] = pts[(i + 1) % pts.length]; b.line(Math.round(ax), Math.round(ay), Math.round(bx), Math.round(by), 'o'); }
+  b.poly(star(0.42), inner);
+}
+function fuzzyRug(b, cx, cy, rx, ry, fill, trim, speck) {
+  const h = x => ((x * 2654435761) >>> 0) % 3;   // a ragged, furry edge
+  shapeRug(b, (x, y) => { const dx = (x + 0.5 - cx) / rx, dy = (y + 0.5 - cy) / ry; return dx * dx + dy * dy <= 1 + 0.07 * (h(x + y * 7) - 1); },
+    [cx - rx - 3, cy - ry - 2, cx + rx + 3, cy + ry + 2], fill, trim);
+  if (speck) for (let y = cy - ry + 2; y < cy + ry - 1; y++) for (let x = cx - rx + 4; x < cx + rx - 4; x++) if (((x * 31 + y * 17) % 11) === 0 && inEll(x, y, cx, cy, rx - 4, ry - 2)) b.px(x, y, speck);
 }
 
 function drawToyBox(b, t) {
@@ -327,73 +470,85 @@ function hangString(b, x, toY) { b.vline(x, RA.WY1, Math.max(1, toY - RA.WY1), '
    reference: soft striped walls, pastel plaid carpets for the younger rooms, wood for the older ones.
    The pastels are soft and slightly greyed (about as saturated as the teen room's teal), pearly rather than candy. */
 
-function bgNursery(b, L) {
-  roomShell(b, { ceil: '#faf8ea', side: '#eae2b8', side2: '#e7deb1', sideShade: '#e0d6a3', wall: '#f3edcd', bands: '#f7f3de', dots: '#9cb6d3', border: ['#d1dbe6', '#ffffff'], wains: ['#d4dde8', '#b2c1d1', '#c6d0dd'], floor: '#f7f2e3', floor2: '#dbd4bd', plaid: ['#f7f2e3', '#d0dbe7', '#f3edcd', '#becbda'], pattern: 'stars' });
+function bgNursery(b, L) {   // lemon + powder blue: beadboard, gingham carpet, a cloud rug, tie-back curtains
+  roomShell(b, { ceil: '#faf8ea', side: '#eae2b8', side2: '#e7deb1', wall: '#f3edcd', bands: '#f7f3de', dots: '#9cb6d3', pattern: 'stars',
+    border: { style: 'dots', c: ['#d1dbe6', '#ffffff'] },
+    lower: { style: 'beadboard', c: ['#d4dde8', '#b2c1d1', '#c6d0dd'] },
+    floor: { style: 'plaid', c: ['#f7f2e3', '#d0dbe7', '#f3edcd', '#becbd9'], shadow: '#dbd4bd' } });
   ceilingStars(b);
-  drawWindow(b, 'night', 'b');
+  drawWindow(b, 'night', { style: 'tieback', c: 'b', c2: 'B' });
   drawDoor(b, 'p', 'baby');
   shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'w');
   drawDresser(b, L.dresser, 'b');
   drawSocket(b, q(L.socket.x), q(L.socket.y) + 2);
-  drawRug(b, 160, 129, 50, 9, 'e', 'w');
+  cloudRug(b, 160, 129, 'w', '#dbe7f3');
   drawCot(b, L.cot);
   hangString(b, q(L.mobile.x), Math.round((L.mobile.y - ITEM_DEFS.mobile.h / 2) / ART));
 }
 
-function bgChildhood(b, L) {
-  roomShell(b, { ceil: '#f6eaee', side: '#dabec8', side2: '#d6b8c3', sideShade: '#cdacb8', wall: '#ead1da', bands: '#ecdfe8', dots: '#fcf7f9', dots2: '#d9a6b7', border: ['#dcd7e5', '#d9a6b7'], wains: ['#dcd6e6', '#bfb6ce', '#cfc8da'], floor: '#f2e9e3', floor2: '#d5c3cc', plaid: ['#f2e9e3', '#c4c6de', '#ebd6d9', '#bec6da'], pattern: 'dots' });
+function bgChildhood(b, L) {   // pearl rose + lavender: candy stripes under a scalloped rail, a checkerboard floor, a flower rug, café curtains
+  roomShell(b, { ceil: '#f6eaee', side: '#dabec8', side2: '#d6b8c3', wall: '#ead1da', dots: '#fcf7f9', dots2: '#d9a6b7', pattern: 'dots',
+    border: { style: 'hearts', c: ['#dcd7e5', '#d9a6b7'] },
+    lower: { style: 'stripes', c: ['#dcd6e6', '#cbc2da', '#cfc8da'] },
+    floor: { style: 'checker', c: ['#f4ece6', '#e0cdd6'], shadow: '#d8c8cf' } });
   lightBeam(b, 2);
-  drawWindow(b, 'day', 'w');
+  drawWindow(b, 'day', { style: 'cafe', c: 'w', c2: '#e9b9c9', c3: '#f1e6ea' });
   drawDoor(b, 'w', 'letters');
   drawHookRail(b, L.hooks);
   drawBookshelf(b, L.shelf, 'y');
-  drawRug(b, 160, 130, 55, 9, 'L', 'w');
+  flowerRug(b, 160, 130, 56, 9, '#ddd3f2', 'w');
   drawBed(b, L.bed, 'flowers');
   drawTeaTable(b, 640, 476, 240, 530);
   drawToyBox(b, L.toybox);
 }
 
-function bgTween(b, L) {
-  roomShell(b, { ceil: '#f2edf7', side: '#c9bcd7', side2: '#c3b6d2', sideShade: '#b9abc9', wall: '#dbd0e7', bands: '#e9dfec', dots: '#e3b5cc', dots2: '#8ecacc', border: ['#ebdbe3', '#8ecacc'], wains: ['#d2e4e2', '#afcac6', '#c5d8d6'], floor: '#f2f1f9', floor2: '#ccc7db', plaid: ['#f2f1f9', '#d7dfea', '#e2dbeb', '#c8cfe0'], pattern: 'butterflies' });
+function bgTween(b, L) {   // silver lilac + soft aqua: pinstripes under a pink ribbon, harlequin floor, a star rug, a bead curtain, a round chair
+  roomShell(b, { ceil: '#f2edf7', side: '#c9bcd7', side2: '#c3b6d2', wall: '#dbd0e7', dots: '#e3b5cc', dots2: '#8ecacc', pattern: 'butterflies',
+    lower: { style: 'pinstripe', h: 22, c: ['#d2e4e2', '#bdd6d3', '#c5d8d6', '#e3b5cc'] },
+    floor: { style: 'harlequin', c: ['#f2f1f9', '#dfd8ee', '#c6dfe0'], shadow: '#d5d0e3' } });
   lightBeam(b, 2);
-  drawWindow(b, 'afternoon', 'y');
+  drawWindow(b, 'afternoon', { style: 'beads', beads: ['#e3b5cc', '#8ecacc', '#f1e3a6', '#c4b3e6'] });
   drawDoor(b, 'l', 'butterfly');
   shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'w');
-  drawRug(b, 160, 130, 45, 8, 'a', 'w');
-  drawDesk(b, L.desk, { lamp: 'P', chair: 'A', drawer: 'L' });
+  starRug(b, 118, 131, 32, 0.26, '#cdeae6', '#f4fbfa');
+  drawDesk(b, L.desk, { lamp: 'P', chair: 'A', chairStyle: 'round', drawer: 'L' });
   drawBed(b, L.bed, 'butterflies');
 }
 
-function bgTeen(b, L) {
-  roomShell(b, { ceil: '#eef6f3', side: '#a3c6be', side2: '#99bdb5', sideShade: '#8fb2aa', wall: '#c0dcd5', dots: '#b0d0c8', dots2: '#f4fbf8', wains: ['#d9ece7', '#a3c6be', '#b9d6cf'], floor: '#c69f7a', floor2: '#ae8762', pattern: 'stripes' });
+function bgTeen(b, L) {   // the teen teal: striped walls, big glossy tiles, a fluffy pink rug, purple panels on rings, a swivel chair
+  roomShell(b, { ceil: '#eef6f3', side: '#a3c6be', side2: '#99bdb5', wall: '#c0dcd5', dots: '#b0d0c8', dots2: '#f4fbf8', pattern: 'stripes',
+    floor: { style: 'tiles', c: ['#dcd6e8', '#d3cce2', '#f5f3f9', '#ebe7f4'], shadow: '#c3bcd3' } });
   lightBeam(b, 2);
-  drawWindow(b, 'dusk', 'v');
+  drawWindow(b, 'dusk', { style: 'panels', c: 'v' });
   drawDoor(b, 'w', 'keepout');
   shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'V');
-  drawRug(b, 175, 130, 38, 8, 'P', 'o');
-  drawDesk(b, L.desk, { lamp: 'V', chair: 'v', drawer: 'A', papers: true });
+  fuzzyRug(b, 176, 130, 38, 8, 'P', 'p');
+  drawDesk(b, L.desk, { lamp: 'V', chair: 'v', chairStyle: 'swivel', drawer: 'A', papers: true });
   drawBed(b, L.bed, 'messy');
   drawBasket(b, L.basket);
 }
 
-function bgYoungAdult(b, L) {
-  roomShell(b, { ceil: '#eef6fb', side: '#bcd5e8', side2: '#b4cee3', sideShade: '#a9c4da', wall: '#d4e6f3', dots: '#e4f0f8', dots2: '#ffffff', wains: ['#f6f9fc', '#cfdeea', '#e6eff6'], floor: '#d2a679', floor2: '#b98b5f', pattern: 'plain' });
+function bgYoungAdult(b, L) {   // pale blue: soft carpet, a white faux-fur rug by the bed, a roller blind, a café chair
+  roomShell(b, { ceil: '#eef6fb', side: '#bcd5e8', side2: '#b4cee3', wall: '#d4e6f3', dots: '#e4f0f8', dots2: '#ffffff', pattern: 'plain',
+    floor: { style: 'carpet', c: ['#ccd0e6', '#bec2dc', '#dcdeee'], shadow: '#b8bcd6' } });
   lightBeam(b, 3);
-  drawWindow(b, 'morning', null);
+  drawWindow(b, 'morning', { style: 'blind', c: '#f6f8fc', c2: '#dfe5ef' });
   drawDoor(b, 'w', 'wreath');
   shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'R');
-  drawRug(b, 160, 130, 52, 9, 'g', 'L');
-  drawDesk(b, L.desk, { col: 'c', chair: 'R', drawer: 'g' });
+  fuzzyRug(b, 104, 132, 36, 7, 'w', '#eef0f7', '#dfe2ee');
+  drawDesk(b, L.desk, { col: 'c', chair: 'R', chairStyle: 'cafe', drawer: 'g' });
   drawBed(b, L.bed, 'linen');
 }
 
-function bgMovingOut(b, L) {
-  roomShell(b, { ceil: '#eef6fb', side: '#bcd5e8', side2: '#b4cee3', sideShade: '#a9c4da', wall: '#d4e6f3', dots: '#e4f0f8', dots2: '#ffffff', wains: ['#f6f9fc', '#cfdeea', '#e6eff6'], floor: '#d2a679', floor2: '#b98b5f', pattern: 'plain' });
+function bgMovingOut(b, L) {   // the same room, packed up: bare pale floorboards, no rug, curtains down, marks where things hung
+  roomShell(b, { ceil: '#eef6fb', side: '#bcd5e8', side2: '#b4cee3', wall: '#d4e6f3', dots: '#e4f0f8', dots2: '#ffffff', pattern: 'plain',
+    ghosts: [[58, 36, 20, 15], [88, 42, 12, 16], [204, 28, 18, 13]], ghostCol: '#e6f0f8',
+    floor: { style: 'planks', c: ['#ece5df', '#d6ccc4', '#f7f2ee'], shadow: '#d6ccc4' } });
   lightBeam(b, 4);
-  drawWindow(b, 'morning', null);
+  drawWindow(b, 'morning', { style: 'bare' });
   drawDoor(b, 'w', null);
   shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'R');
-  drawDesk(b, L.desk, { col: 'c', chair: 'R', drawer: 'g' });
+  drawDesk(b, L.desk, { col: 'c', chair: 'R', chairStyle: 'cafe', drawer: 'g' });
   drawBed(b, L.bed, 'bare');
   drawStackedBoxes(b);
 }

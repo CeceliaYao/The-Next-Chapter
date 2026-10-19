@@ -9,7 +9,7 @@ The visitor tends one bedroom across six chapters of a suburban girl's life, fro
 **▶ Play it online:** https://ceceliayao.github.io/The-Next-Chapter/
 
 > Built with [p5.js](https://p5js.org/), plain HTML/CSS and Web Audio. No install, no internet needed.
-> The look is the early-2000s web game: white windows with colour-block title bars in the logo's colours, glossy gel buttons that change colour on hover, messenger pop-ups (Windows 98 / XP only as a loose reference). The rooms have their own pastel palette; both share one style. Only the room and its things are pixel drawings (320 × 180 pixels, scaled up 4× with no blur); every word uses normal, readable fonts.
+> The look is the early-2000s web: glossy buttons, rounded windows, messenger pop-ups. Only the room and its things are pixel drawings (320 × 180 pixels, scaled up 4× with no blur); every word uses normal, readable fonts.
 > The page is **4:3** (1280 × 960, scaled to fit). On a wide screen it sits in the middle with black either side, so the eye stays on the game.
 
 ---
@@ -36,7 +36,7 @@ npx serve .        # then open the printed localhost address
 | --- | --- |
 | Move things | Click and drag |
 | Move a window | Drag it by its coloured title bar |
-| Replay a memory | Click a placed object that shows a ! badge (or hover it: “click to replay”) |
+| Replay a memory | Click a placed object that twinkles with a pink sparkle (or hover it: “click to replay”). An orange ! means something needs tidying |
 | Menu (restart chapter, chapter select, back to the door) | **Esc** or the Menu button |
 | Sound on/off | **M** or the speaker button (it shows a crossed-out speaker when the sound is off) |
 | Skip the current chapter (for testing) | **Shift + N** |
@@ -103,23 +103,19 @@ Until a file exists, its frame simply stays empty (the caption still shows). The
 
 ## Brand
 
-The look follows Chloee's **TNC Identity Guideline** and moodboard, and keeps **the room and the frame apart**:
+The look follows the team's identity board and our colour decision: **orange (two shades) + off-white as the base**, with black and white, and **pink and blue as the cooler accents**. The rooms are warm and muted (like *Unpacking*) and shift colour from stage to stage; the interface is an early-2000s desktop (glossy Windows XP / Frutiger Aero buttons and title bars, MSN-style messages, iridescent CD chapter discs) where the windows can be dragged around.
 
-- **Inside the room**: colours and style from the moodboard (its swatches, the Cyworld / My Scene rooms) and a pastel pixel-room reference: soft two-tone striped wallpaper, a wallpaper border under the ceiling, panelling below a white rail, and pastel plaid carpets for the younger rooms (lemon + baby blue, pink + lilac, lilac + mint); the teen teal on wood; pale blue with white panelling on honey wood for the older rooms. Outlines are a soft plum instead of black, with smooth light, gloss and sparkles on top. Messes show an orange "!" badge; things that hold a memory twinkle.
-- **Outside the room (the frame) and the titles**: a second colour system, the logo's vivid colours ("vivid point colours for frames", from the moodboard) as small colour blocks on white: each window has its own title bar colour and three little colour chips, the main buttons are orange, the chapter titles and discs use the logo colours. Windows 98 / XP is only a loose reference. Windows can be dragged around (like Teleport), and buttons change colour on hover (like Yrs Truly).
-- **One style for both**: the same plum outline (the frame's line is as thick as one pixel of the room), glossy "gel" fills, nested boxes, a faint grid and four-point sparkles. The box tray and the labels inside the game screen belong to the frame.
-
-| Frame colour | Hex | Used for |
+| Colour | Hex | Used for |
 | --- | --- | --- |
-| Plum | `#3d2c4a` | outlines and text (shared with the room) |
-| White | `#ffffff` / `#f2f2ed` | window faces, the page (with a faint grid) |
-| Blue | `#00b5ff` | the game window, menu, chapter cards, the ending |
-| Yellow | `#ffc700` | Teddy's tips, the memory box, the thank-you note, the LCD year |
-| Pink | `#ff84e4` | the start window, memory viewer, Mum's messages, Memories, sparkles, hover |
-| Green | `#8de328` | little bro's messages, "Room tidy!" |
-| Orange | `#f09000` | main buttons, the "!" on messes |
+| Orange | `#ff5400` | title bars, main buttons, counters (base) |
+| Light orange | `#ff8f3a` | title bar shine, glossy buttons (base) |
+| Off-white | `#fff6ea` | windows, HUD, background (base) |
+| Ink | `#221a13` | outlines, text |
+| Blue | `#00b5ff` | accent: drop guides, second buttons, messages |
+| Pink | `#ff84e4` | accent: hearts, Mum's messages |
+| Yellow / Lime | `#ffc700` / `#8de328` | the logo, chapter titles, UPKEEP meter |
 
-The start page keeps its soft background (light tints of the logo colours, with the frame's grid) and the stars, hearts and bubbles floating up.
+**Inside the room** the colours and style come from the moodboard and the pastel pixel-room reference, with a Y2K finish rather than a heavy pixel look: soft plum outlines instead of black, smooth colours (no dithering), two-tone striped wallpaper, a wallpaper border under the ceiling and panelling below a white rail, pastel plaid carpets for the younger rooms (lemon + baby blue, pink + lilac, lilac + mint), the teen teal on wood, and pale blue with white panelling on honey wood for the older rooms. On top of the pixel drawing go smooth light and gloss: a sheen on the back wall, a soft beam from the window, a shiny floor, twinkling sparkles, and the night-light and fairy-light glows. Messes show a glossy orange ! badge; things that hold a memory twinkle with a pink sparkle.
 
 The logo files in `assets/brand/` are Chloee's original vector artwork (SVG: sharp at any size and small to load; no pixels, no drop shadow): `logo-main.svg` on the title screen, `logo-stacked.svg` on the door, `logo-liner.svg` on the ending. To use a new logo, replace those files and keep the same names.
 
@@ -141,9 +137,9 @@ To try other fonts, change `--font-body` and `--font-ui` at the top of `style.cs
 
 ```
 index.html        page shell: top bar, game screen, Teddy's tips + messages
-style.css         the Y2K frame (4:3 page, colour-block windows, gel buttons, messenger pop-ups)
+style.css         the early-2000s skin (4:3 page, glossy buttons, rounded windows, messenger pop-ups)
 js/data.js        ← edit me: chapters, objects, where things go, captions, file names, Teddy's ages
-js/pixel.js       the pixel engine: palette, crisp shapes, outlines, dithering
+js/pixel.js       the pixel engine: palette, crisp shapes, outlines
 js/sprites.js     every object as pixel art (grids of palette letters, or pixel shapes)
 js/room.js        the bedroom for each chapter as pixel art (walls, window, furniture)
 js/game.js        game logic: drag & drop, placement rules, memory box, feedback
@@ -156,7 +152,7 @@ assets/photos/    ← put photos here
 assets/video/     ← put videos here
 ```
 
-**Editing the pixel art:** in `js/sprites.js` many objects are little grids of letters, one letter per pixel (`.` is see-through). The letters are colours from `PALETTE` in `js/pixel.js`, e.g. `u` teddy brown, `h` hot pink, `w` white, and `1`–`6` the brand colours (blue, orange, pink, yellow, lime, cream). Change a letter, refresh, and the pixel changes. The dark outline is added automatically.
+**Editing the pixel art:** in `js/sprites.js` many objects are little grids of letters, one letter per pixel (`.` is see-through). The letters are colours from `PALETTE` in `js/pixel.js`, e.g. `u` teddy brown, `h` hot pink, `w` white, and `1`–`6` the brand colours (blue, orange, pink, yellow, lime, cream). Change a letter, refresh, and the pixel changes. The soft plum outline is added automatically.
 
 **Changing where things can go:** each object in `ITEM_DEFS` has a `fits` list (e.g. `['shelf', 'desk']`), and each chapter has `surfaces` with a matching `tag`. If every spot an object fits is full, the game lets it go on any shelf, desk, bed or the floor, so a visitor can never get stuck.
 

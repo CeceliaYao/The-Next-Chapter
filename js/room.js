@@ -29,7 +29,7 @@ function stamp(b, x, y, rows, c, clip) {
 
 function roomShell(b, th) {
   const { LX, RX, CY, WX1, WX2, WY1, WY2, FY } = RA;
-  b.rect(0, 0, ART_W, ART_H, '#fbfaf6');   // around the room: the frame's window face, not part of the room
+  b.rect(0, 0, ART_W, ART_H, '#fff6ea'); b.dither(0, 0, ART_W, ART_H, '#ffe3c8', 6);
   b.poly([[LX, CY], [RX + 1, CY], [WX2 + 1, WY1], [WX1, WY1]], th.ceil);
   b.poly([[LX, CY], [WX1, WY1], [WX1, WY2 + 1], [LX, FY + 1]], th.side);
   b.poly([[WX2 + 1, WY1], [RX + 1, CY], [RX + 1, FY + 1], [WX2 + 1, WY2 + 1]], th.side2 || th.side);
@@ -364,7 +364,7 @@ function bgTween(b, L) {
 }
 
 function bgTeen(b, L) {
-  roomShell(b, { ceil: '#eef6f3', side: '#a3c6be', side2: '#99bdb5', sideShade: '#8fb2aa', wall: '#c0dcd5', dots: '#b0d0c8', dots2: '#f4fbf8', floor: '#c69f7a', floor2: '#ae8762', pattern: 'stripes' });
+  roomShell(b, { ceil: '#eef6f3', side: '#a3c6be', side2: '#99bdb5', sideShade: '#8fb2aa', wall: '#c0dcd5', dots: '#b0d0c8', dots2: '#f4fbf8', wains: ['#d9ece7', '#a3c6be', '#b9d6cf'], floor: '#c69f7a', floor2: '#ae8762', pattern: 'stripes' });
   lightBeam(b, 2);
   drawWindow(b, 'dusk', 'v');
   drawDoor(b, 'w', 'keepout');

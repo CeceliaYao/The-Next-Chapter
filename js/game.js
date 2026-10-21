@@ -10,7 +10,9 @@
 
 const W = 1280, H = 720;          // the game canvas (16:9)
 const STAGE_W = 1280, STAGE_H = 960, SCREEN_K = 1200 / 1280;   // the 4:3 page it sits in, and its on-page scale
-const FONT_UI = '"Archivo Narrow", "Arial Narrow", Arial, sans-serif', FONT_BODY = 'Jost, "Trebuchet MS", Verdana, sans-serif';
+// the canvas text reads its fonts from style.css (:root --font-ui / --font-body), so fonts are changed in ONE place
+const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const FONT_UI = cssVar('--font-ui'), FONT_BODY = cssVar('--font-body');
 const TRAY = { x: 16, y: 576, w: 1248, h: 140 };
 const TRAY_FLOOR = 176;          // art row the tray items stand on
 
@@ -43,7 +45,7 @@ function setup() {
   initInput();
   UI.init({ onStart: startRun, onJump: jumpTo, onMenu: openMenu, onMute: toggleMute, onActivity: () => { G.lastInput = performance.now(); } });
   noLoop();
-  const fonts = ['500 16px Jost', '700 16px Jost', '500 16px "Archivo Narrow"', '700 16px "Archivo Narrow"', '16px VT323'].map(f => document.fonts.load(f).catch(() => null));
+  const fonts = ['400 16px ' + FONT_UI, '500 16px ' + FONT_UI, '500 16px Caveat', '16px VT323'].map(f => document.fonts.load(f).catch(() => null));
   Promise.race([Promise.all(fonts), new Promise(r => setTimeout(r, 2500))]).then(() => {
     buildSprites();
     initCursors();
@@ -58,7 +60,8 @@ function draw() {
 }
 
 function fitStage() {
-  const s = Math.min(window.innerWidth / STAGE_W, window.innerHeight / STAGE_H);
+  const FILL = 0.9;   // the stage fills 90% of the window, leaving ~5% breathing room on each side
+  const s = Math.min(window.innerWidth / STAGE_W, window.innerHeight / STAGE_H) * FILL;
   document.documentElement.style.setProperty('--s', s);
   const pd = Math.min(3, Math.max(1, Math.round(s * SCREEN_K * (window.devicePixelRatio || 1) * 4) / 4));
   if (pd !== pixelDensity()) pixelDensity(pd);
@@ -214,7 +217,7 @@ function completeChapter() {
   addTimer(1300, () => {
     if (G.state !== 'complete') return;
     UI.showHUD(false);
-    UI.showComplete(G.ch, (G.ch.noKeep || last) ? 'Next chapter ▶' : 'Pack the memory box ▶', () => {
+    UI.showComplete(G.ch, (G.ch.noKeep || last) ? 'Next chapter\u00a0\u00a0▶' : 'Pack the memory box ▶', () => {
       if (G.ch.noKeep || last) goChapter(G.idx + 1);
       else showKeep();
     });
@@ -482,6 +485,7 @@ function onUp(e) {
 }
 
 function onKey(e) {
+  if (e.target && e.target.closest && e.target.closest('input, textarea')) return;   // typing in the name box
   const k = e.key;
   if (UI.memoryOpen()) {
     if (k === 'Escape' || k === 'Enter' || k === ' ') { e.preventDefault(); UI.closeMemory(); }
@@ -630,7 +634,6 @@ function openMenu() {
     if (a === 'resume') closeMenu();
     if (a === 'restart') { closeMenu(); setupChapter(G.idx); beginChapter(); }
     if (a === 'title') { closeMenu(); goTitle(); }
-    if (a === 'door') { closeMenu(); goTitle(true); }   // all the way back to the closed bedroom door
     if (a === 'sound') { toggleMute(); G.modal = null; openMenu(); }
   });
 }
@@ -779,19 +782,19 @@ function arect(x, y, w, h, c) { art.fillStyle = colOf(c); art.fillRect(Math.roun
 
 function buildBg() {
   const b = new PixBuf(ART_W, ART_H, 0);
-  ROOM_FX = {};
   G.ch.bg(b, G.ch.layout);
   bgCv = b.toCanvas(1);
   bgFor = G.idx;
-  buildFx();
 }
 
 function buildTray() {
   const b = new PixBuf(312, 35, 0);
-  // the shelf the box sits on is part of the frame (white, plum outline, a faint grid), not the room
-  b.rect(0, 0, 312, 35, '#ffffff');
-  b.rect(1, 31, 310, 3, '#ebe8e1');
+  for (let y = 0; y < 35; y++) { b.rect(0, y, 312, 1, '#fff6dc'); b.dither(0, y, 312, 1, '#ffe2b8', Math.round(y / 34 * 12)); }
+  ['2', '#ff8f3a', '2', '#ff8f3a', '1'].forEach((c, i) => b.rect(1 + i * 62, 1, i === 4 ? 61 : 62, 2, c));   // orange base, one cool accent
+  b.hline(3, 4, 306, 'w'); b.dither(3, 5, 306, 2, 'w', 8);
   b.rect(0, 0, 312, 1, 'o'); b.rect(0, 34, 312, 1, 'o'); b.rect(0, 0, 1, 35, 'o'); b.rect(311, 0, 1, 35, 'o');
+  [[0, 0], [311, 0], [0, 34], [311, 34]].forEach(([x, y]) => b.px(x, y, null));
+  b.px(1, 1, 'o'); b.px(310, 1, 'o'); b.px(1, 33, 'o'); b.px(310, 33, 'o');
   b.box(4, 4, 30, 27, 'r'); b.rect(17, 5, 4, 3, 'y'); b.box(7, 8, 24, 21, 'w');   // cardboard box + label sticker
   trayCv = b.toCanvas(1);
 }
@@ -800,21 +803,19 @@ function render() {
   if (!G.ch || !art) return;
   if (!bgCv || bgFor !== G.idx) buildBg();
   if (!trayCv) buildTray();
-  const ctx = drawingContext;
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(bgCv, 0, 0, W, H);   // the room itself
   art.clearRect(0, 0, ART_W, ART_H);
-  drawRoomFx();                      // the window's light, glows and twinkles, on the same pixel grid as the room
+  art.drawImage(bgCv, 0, 0);
   G.labels = [];
+  drawRoomFx();
   const guideItem = G.drag ? G.drag.item : (G.helpFlash && G.time < G.helpFlash.until ? G.helpFlash.item : null);
   const list = drawList();
   list.filter(i => i.state !== 'tray' && i.state !== 'drag').forEach(drawItem);
   drawFront();
   if (guideItem) drawGuides(guideItem);
   drawTray();
+  const ctx = drawingContext;
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(artCv, 0, 0, W, H);
-  drawTrayGloss(ctx);
   drawLabels(ctx);               // the words sit on the room and the box...
   art.clearRect(0, 0, ART_W, ART_H);
   list.filter(i => i.state === 'tray').forEach(drawItem);   // ...and the things in the tray / in your hand go over them
@@ -827,20 +828,21 @@ function render() {
 
 /* ---------- words on the canvas: smooth fonts on top of the pixel art ---------- */
 function canvasText(ctx, str, x, y, o) {
-  ctx.font = (o.weight || 700) + ' ' + o.size + 'px ' + (o.family || FONT_UI);
+  ctx.font = (o.weight || 400) + ' ' + o.size + 'px ' + (o.family || FONT_UI);
   ctx.textAlign = o.align || 'center'; ctx.textBaseline = 'middle';
   ctx.fillStyle = o.color || PALETTE.o;
   ctx.fillText(str, x, y);
 }
 function pill(ctx, str, cx, cy, size, accent) {
-  ctx.font = '700 ' + size + 'px ' + FONT_UI;
+  ctx.font = '400 ' + size + 'px ' + FONT_UI;
   const w = ctx.measureText(str).width + size * 1.1, h = size * 1.6;
   // kept inside the visible part of the screen (the top 44 px of the canvas are cropped by #screen)
   const x = Math.round(Math.max(8, Math.min(W - w - 8, cx - w / 2))), y = Math.round(Math.max(50, Math.min(H - h - 6, cy - h / 2)));
-  // a little frame-style label: white, the frame's plum outline and a hard offset shadow
-  ctx.fillStyle = 'rgba(61,44,74,.25)'; ctx.fillRect(x + 4, y + 4, w, h);
-  ctx.fillStyle = '#ffffff'; ctx.fillRect(x, y, w, h);
-  ctx.lineWidth = 3; ctx.strokeStyle = accent || PALETTE.o; ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h - 3);
+  ctx.save();
+  ctx.shadowColor = 'rgba(34,26,19,.25)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3;
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, h / 2); ctx.fillStyle = '#ffffff'; ctx.fill();
+  ctx.restore();
+  ctx.lineWidth = 2; ctx.strokeStyle = accent || PALETTE.o; ctx.stroke();
   canvasText(ctx, str, x + w / 2, y + h / 2 + 1, { size });
 }
 const HEART = '\u2665\uFE0E';
@@ -890,11 +892,6 @@ function drawItem(it) {
   const lifted = it.state === 'drag';
   if (lifted) { const sw = Math.max(4, Math.round(S.w * 0.8)); art.drawImage(shadowCv(sw), ax + Math.round((S.w - sw) / 2), ay + S.h); ay -= 3; }
   const img = it.alpha < 0.6 ? fr.ghost : (lifted || G.hover === it) ? fr.hover : fr.normal;
-  if (it.state === 'placed' && it.alpha >= 0.6) {   // it rests on something: a contact shadow (on a wall, a drop shadow down and to the right)
-    const st = (surfaceById(it.surface) || {}).type;
-    if (st === 'wall' || st === 'hang') art.drawImage(silhouette(fr.normal), ax, ay);
-    else if (st !== 'spot') { art.fillStyle = 'rgba(61,44,74,.24)'; art.fillRect(ax + 1, ay + S.h, S.w, 1); art.fillStyle = 'rgba(61,44,74,.1)'; art.fillRect(ax + 2, ay + S.h + 1, S.w - 1, 1); }
-  }
   art.drawImage(img, ax - 1, ay - 1);
   if (it.state === 'tray' && it.carried) art.drawImage(heartCv(), ax + S.w - 5, ay - 3);
   if (it.mess && it.state === 'placed' && !it.tw && G.state === 'play') bubble(ax + S.w - 3, ay - 6 + (Math.floor(G.time / 300) % 2), '2', '!');
@@ -903,90 +900,34 @@ function drawItem(it) {
 let _heart = null;
 function heartCv() { return _heart || (_heart = iconBuf('heart').toCanvas(1)); }
 
-/* ---------- markers and light, drawn pixel by pixel on the room's grid (no blur, no smooth gradients) ---------- */
-const pxShape = (rows, x, y, map) => rows.forEach((r, j) => { for (let i = 0; i < r.length; i++) if (map[r[i]]) apx(x + i, y + j, map[r[i]]); });
-
-// a mess: a round orange badge with a "!", lit at the top left, shaded at the bottom right
-const BADGE = ['..ooooo..', '.ollhhho.', 'olllwhhho', 'ohhhwhhho', 'ohhhwhhhd', 'ohhhhhhdo', 'ohhhwhhdo', '.odddddo.', '..ooooo..'];
 function bubble(x, y, c, ch) {
-  const base = PALETTE[c] || c;
-  pxShape(BADGE, x - 4, y - 4, { o: 'o', h: base, l: mixHex(base, '#ffffff', 0.45), d: mixHex(base, '#3d2c4a', 0.25), w: '#ffffff' });
+  arect(x - 3, y - 3, 7, 7, 'o'); arect(x - 2, y - 4, 5, 9, 'o'); arect(x - 4, y - 2, 9, 5, 'o');
+  arect(x - 2, y - 3, 5, 7, c); arect(x - 3, y - 2, 7, 5, c);
+  if (ch === '!') { arect(x, y - 2, 1, 3, 'w'); apx(x, y + 2, 'w'); }
+  else { arect(x - 1, y - 2, 1, 5, 'o'); arect(x, y - 1, 1, 3, 'o'); apx(x + 1, y, 'o'); }
 }
 
-// a memory: a pink four-point sparkle, outlined like a sticker; it pulses while unseen
-const SPARK_BIG = ['....o....', '...oao...', '...oao...', '.ooabaoo.', 'oaabwbaao', '.ooabaoo.', '...oao...', '...oao...', '....o....'];
-const SPARK_SMALL = ['..o..', '.oao.', 'oawao', '.oao.', '..o..'];
-function memSpark(x, y, unseen) {
-  const big = unseen && Math.floor(G.time / 380) % 2 === 0, map = { o: 'o', a: '#ff84e4', b: '#ffc4ef', w: '#ffffff' };
-  if (big) pxShape(SPARK_BIG, x - 4, y - 4, map); else pxShape(SPARK_SMALL, x - 2, y - 2, map);
-  if (unseen) pxShape(['.w.', 'w#w', '.w.'], x - 7, y + 3 - (big ? 1 : 0), { w: big ? '#ffc4ef' : null, '#': '#ffffff' });
-}
-
-const inPoly = (x, y, pts) => { let c = false; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) { const [xi, yi] = pts[i], [xj, yj] = pts[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c; } return c; };
-// the light in the room, worked out once per room in flat pixel steps:
-// the window's panes land on the floor as a patch of light (sunlight, warm afternoon light, dusk or moonlight),
-// and a desk lamp throws a small pool on the desk and the wall behind it
-let fxCv = null;
-const SKY_LIGHT = { day: ['255,252,228', 0.2], morning: ['255,247,230', 0.22], afternoon: ['255,214,168', 0.22], dusk: ['255,176,196', 0.15], night: ['176,192,255', 0.14] };
-function buildFx() {
-  fxCv = document.createElement('canvas'); fxCv.width = ART_W; fxCv.height = ART_H;
-  const c = fxCv.getContext('2d'), put = (x, y, rgb, a) => { c.fillStyle = 'rgba(' + rgb + ',' + a + ')'; c.fillRect(x, y, 1, 1); };
-  const L = SKY_LIGHT[ROOM_FX.sky];
-  if (L) {
-    const [rgb, a0] = L, a = a0 + (ROOM_FX.beam || 0) * 0.015;
-    const patch = [[150, 109], [191, 109], [217, 135], [168, 135]];
-    for (let y = 109; y <= 135; y++) for (let x = 146; x <= 220; x++) {
-      const px = x + 0.5, py = y + 0.5;
-      if (!inPoly(px, py, patch)) continue;
-      const t = (py - 109) / 26, mx = 170.5 + 23 * t;                       // the mullions' shadows
-      if (Math.abs(px - mx) < 1.2 || Math.abs(py - 121.5) < 1) continue;
-      const edge = !inPoly(px - 1.5, py, patch) || !inPoly(px + 1.5, py, patch) || !inPoly(px, py - 1.5, patch) || !inPoly(px, py + 1.5, patch);
-      put(x, y, rgb, edge ? a * 0.55 : a);
-    }
-    for (let y = 73; y <= 79; y++) for (let x = 134; x <= 186; x++) put(x, y, rgb, a * (y < 76 ? 0.5 : 0.25));   // a little light on the wall under the sill
-  }
-  if (ROOM_FX.lamp) {
-    const [lx, top] = ROOM_FX.lamp, warm = '255,236,170';
-    for (let y = -9; y <= 0; y++) for (let x = -12; x <= 12; x++) { const d = Math.hypot(x / 1.3, y); if (d < 9) put(lx - 2 + x, top - 2 + y, warm, d < 5 ? 0.2 : 0.1); }
-    for (let x = -9; x <= 7; x++) put(lx - 3 + x, top - 2, warm, 0.3);
-  }
-}
-// a glow in rings, each ring one flat step lighter than the one outside it
-function ringGlow(cx, cy, rings, col, sy) {
-  cx = Math.round(cx); cy = Math.round(cy);
-  const R = rings[0][0];
-  for (let y = -R; y <= R; y++) for (let x = -R; x <= R; x++) {
-    const d = Math.hypot(x, y / (sy || 1));
-    let a = 0; rings.forEach(([r, k]) => { if (d <= r) a = k; });
-    if (a) { art.fillStyle = 'rgba(' + col + ',' + a + ')'; art.fillRect(cx + x, cy + y, 1, 1); }
-  }
-}
 function drawRoomFx() {
-  if (fxCv) art.drawImage(fxCv, 0, 0);
   const nl = G.items.find(i => i.id === 'nightlight' && i.state === 'placed' && i.surface === 'socket');
-  if (nl) { const p = Math.floor(G.time / 700) % 2; ringGlow(nl.x / ART, nl.y / ART, [[17 + p, 0.1], [12, 0.18], [7, 0.3]], '255,243,168'); }
+  if (nl) {
+    const cx = Math.round(nl.x / ART), cy = Math.round(nl.y / ART), pulse = Math.floor(G.time / 700) % 2;
+    for (let y = -26; y <= 26; y++) for (let x = -26; x <= 26; x++) {
+      const d = Math.sqrt(x * x + y * y), lvl = d < 9 ? 7 : d < 16 ? 4 : d < 24 + pulse * 2 ? 2 : 0;
+      if (lvl && BAYER4[((cy + y) & 3) * 4 + ((cx + x) & 3)] < lvl) apx(cx + x, cy + y, '#fff3a8');
+    }
+  }
   const fl = G.items.find(i => i.id === 'fairylights' && i.state === 'placed');
-  if (fl) ringGlow(fl.x / ART, fl.y / ART + 9, [[40, 0.07], [26, 0.12]], '255,190,230', 0.32);
-  // twinkles on the walls: a dot that opens into a little plus, then closes again
-  for (let i = 0; i < 7; i++) {
-    const ph = (G.time / 1700 + i * 0.37) % 1;
-    if (ph > 0.45) continue;
-    const x = 50 + ((i * 97) % 220), y = 22 + ((i * 53) % 70), r = ph < 0.12 || ph > 0.33 ? 1 : 2;
-    apx(x, y, 'w');
-    for (let k = 1; k <= r; k++) { const c = k === r && r > 1 ? '#fff4fb' : 'w'; apx(x - k, y, c); apx(x + k, y, c); apx(x, y - k, c); apx(x, y + k, c); }
+  if (fl) {
+    const cx = Math.round(fl.x / ART), cy = Math.round(fl.y / ART);
+    for (let y = -4; y < 22; y++) for (let x = -50; x <= 50; x++) if (BAYER4[((cy + y) & 3) * 4 + ((cx + x) & 3)] < (y < 10 ? 2 : 1) && Math.abs(x) < 50 - y) apx(cx + x, cy + y, '#ffd6ee');
   }
-}
-
-// a sprite's shape in see-through ink, for drop shadows (cached per image)
-const _sil = new Map();
-function silhouette(img) {
-  let c = _sil.get(img);
-  if (!c) {
-    c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
-    const x = c.getContext('2d'); x.drawImage(img, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = 'rgba(61,44,74,.22)'; x.fillRect(0, 0, c.width, c.height);
-    _sil.set(img, c);
+  // twinkles on the walls
+  for (let i = 0; i < 6; i++) {
+    const ph = (G.time / 1500 + i * 0.37) % 1;
+    if (ph > 0.4) continue;
+    const x = 50 + ((i * 97) % 220), y = 22 + ((i * 53) % 70), r = ph < 0.13 || ph > 0.27 ? 1 : 2;
+    apx(x, y, 'w'); for (let k = 1; k <= r; k++) { apx(x - k, y, 'w'); apx(x + k, y, 'w'); apx(x, y - k, 'w'); apx(x, y + k, 'w'); }
   }
-  return c;
 }
 
 function dashRect(x1, y1, x2, y2, hot) {
@@ -1062,18 +1003,6 @@ function drawTray() {
   }
 }
 
-// the tray's shine: a soft white sheen across its top half (smooth, over the pixel panel)
-function drawTrayGloss(ctx) {
-  if (G.ch.moving) return;
-  const x = 5 * ART, y = 145 * ART, w = 310 * ART, h = 16 * ART;
-  ctx.fillStyle = 'rgba(61,44,74,.07)';   // a faint grid, like the reference's panels
-  for (let gx = x + 18; gx < x + w; gx += 22) ctx.fillRect(gx, y, 1, 31 * ART);
-  for (let gy = y + 14; gy < y + 31 * ART; gy += 22) ctx.fillRect(x, gy, w, 1);
-  const g = ctx.createLinearGradient(0, y, 0, y + h);
-  g.addColorStop(0, 'rgba(255,255,255,.5)'); g.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
-}
-
 function artPoly(pts, c) {
   const b = new PixBuf(ART_W, ART_H, 0);
   b.poly(pts, c);
@@ -1114,8 +1043,8 @@ function drawPackingBox() {
   if (G.state === 'play') {
     const t = (text, x, y, color) => G.labels.push({ text, x, y, size: 27, align: 'left', family: FONT_BODY, color });
     t('Drag what you’ll take', 56, 622); t('into the box', 56, 656);
-    t('Teddy goes in last ' + HEART, 916, 622, PALETTE.m);
-    t(G.packed.length + ' packed', 916, 676, '#c94300');
+    t('Teddy goes in last ' + HEART, 856, 622, PALETTE.m);
+    t(G.packed.length + ' packed', 856, 676, '#c94300');
   }
 }
 
@@ -1128,7 +1057,7 @@ function drawMarkers() {
     const unseen = !G.seen.has(mem.id);
     if (!unseen && G.hover !== it) return;
     const [ax, ay] = artPos(it), S = SPR[it.id];
-    memSpark(ax + S.w - 2, ay - 3, unseen);   // a memory twinkles (the "!" is kept for messes)
+    bubble(ax + S.w - 2, ay - 5 + (unseen ? Math.floor(G.time / 300) % 2 : 0), unseen ? '3' : 'w', unseen ? '!' : '>');
   });
 }
 

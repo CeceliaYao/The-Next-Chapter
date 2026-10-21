@@ -1,7 +1,7 @@
 /* =========================================================
    ui.js: the early-2000s "desktop" around the room:
    title screen, chapter cards, top bar, Teddy's tips,
-   Mum's messenger pop-ups, the Memory Player (photos /
+   Mum's messenger pop-ups, the Video Player / Image Viewer (photos /
    videos), the memory box and the ending.
    Plain DOM + CSS, so it's easy to restyle.
    ========================================================= */
@@ -21,8 +21,8 @@ const UI = (() => {
     bubble: '<circle cx="12" cy="12" r="10" fill="rgba(255,255,255,.3)" stroke="#fff" stroke-width="1.4"/><ellipse cx="8.4" cy="7.8" rx="3.2" ry="2" fill="#fff" opacity=".9"/>',
     smiley: '<circle cx="12" cy="12" r="10" fill="#ffd23a" stroke="#fff" stroke-width="1.6"/><circle cx="8.6" cy="10" r="1.4" fill="#221a13"/><circle cx="15.4" cy="10" r="1.4" fill="#221a13"/><path d="M7.5 14c2.4 3 6.6 3 9 0" stroke="#221a13" stroke-width="1.6" fill="none" stroke-linecap="round"/>',
     floppy: '<path d="M3 3h15l3 3v15H3z" fill="#2f6fd6" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/><rect x="7" y="3.7" width="9" height="5.5" fill="#e8f1ff"/><rect x="13" y="4.6" width="2" height="3.6" fill="#2f6fd6"/><rect x="6" y="12.5" width="12" height="7.5" rx="1" fill="#fff"/>',
-    soundOn: '<path d="M3.5 9h4l5-4v14l-5-4h-4z" fill="currentColor"/><path d="M15.8 8.6a4.8 4.8 0 010 6.8M18.4 6a8.5 8.5 0 010 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
-    soundOff: '<path d="M3.5 9h4l5-4v14l-5-4h-4z" fill="currentColor"/><path d="M15.8 8.6a4.8 4.8 0 010 6.8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" opacity=".35"/><path d="M3 21L21 3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>',
+    soundOn: '<path d="M3.5 9h4l5-4v14l-5-4h-4z" fill="#fff"/><path d="M15.8 8.6a4.8 4.8 0 010 6.8M18.4 6a8.5 8.5 0 010 12" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>',
+    soundOff: '<path d="M3.5 9h4l5-4v14l-5-4h-4z" fill="#fff"/><path d="M15.8 8.6a4.8 4.8 0 010 6.8" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" opacity=".45"/><path d="M3 21L21 3" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>',
     camera: '<path d="M3 7h4l2-3h6l2 3h4v13H3z" fill="none" stroke="#221a13" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" fill="none" stroke="#221a13" stroke-width="1.6"/>',
     film: '<rect x="3" y="4" width="18" height="16" rx="1.5" fill="none" stroke="#fff" stroke-width="1.6"/><path d="M7 4v16M17 4v16M3 8h4M3 12h4M3 16h4M17 8h4M17 12h4M17 16h4" stroke="#fff" stroke-width="1.4"/>'
   };
@@ -108,37 +108,50 @@ const UI = (() => {
   // withDoor: the visitor first sees the bedroom door (logo + our names on it) and opens it to reach this screen.
   function showTitle(chapters, withDoor) {
     const discs = chapters.map((c, i) =>
-      '<button class="disc" data-i="' + i + '" style="--accent:' + c.accent + '" aria-label="Chapter ' + (i + 1) + ', ' + c.year + '"><b>' + (i + 1) + '</b><small>' + c.year + '</small></button>').join('');
+      '<button class="disc" data-i="' + i + '" style="--accent:' + c.accent + '" aria-label="Chapter ' + (i + 1) + ', ' + c.year + '"><span class="disc-sq"><i class="disc-cd"><b>' + (i + 1) + '</b></i></span><small>' + c.year + '</small></button>').join('');
     const kinds = ['star', 'bubble', 'heart', 'sparkle', 'bubble', 'star', 'heart', 'sparkle', 'bubble', 'star', 'heart', 'bubble'];
     const floaters = kinds.map((n, i) =>
       '<span class="floater" style="left:' + (3 + i * 8.3) + '%;animation-delay:' + (-i * 2.1) + 's;animation-duration:' + (19 + (i % 4) * 3) + 's">' + svg(n, 22 + (i % 3) * 12) + '</span>').join('');
-    const names = CREDITS.map(c => c[0].replace(/\s*\(.*\)/, '')).join(' · ');   // full names, in CREDITS order
     const short = CREDITS.map(c => c[2]);
     const byLine = short.slice(0, -1).join(', ') + ' &amp; ' + short[short.length - 1];
     const el = setScreen(
-      '<div class="holo"></div><div class="floaters">' + floaters + '</div>' +
-      '<div class="logo pop-in"><img class="brand-logo" src="assets/brand/logo-main.svg" alt="The Next Chapter" style="width:520px;height:361px"></div>' +
+      '<canvas class="px desk-bg" width="' + ART_W + '" height="240"></canvas><div class="floaters">' + floaters + '</div>' +
+      '<div class="win logo-win pop-in">' +
+      '  <div class="titlebar"><span>Welcome</span></div>' +
+      '  <div class="logo-body"><img class="brand-logo" src="assets/brand/logo-sign.svg" alt="The Next Chapter" style="width:324px; height:auto;"></div>' +
+      '</div>' +
       '<div class="win title-win pop-in">' +
       '  <div class="titlebar"><span>The Next Chapter</span></div>' +
       '  <div class="win-body">' +
-      '    <p class="tagline">one room, from nursery to moving out:<br>what we keep up, carry on, and leave behind</p>' +
-      '    <button class="aqua big" id="startBtn">Start ▶︎</button>' +
-      '    <div class="discs">' + discs + '</div>' +
-      '    <p class="small">or pick a disc to jump to a chapter · best with sound on ♪</p>' +
+      '    <p class="tagline">One room, from nursery to moving out:<br>what we keep up, carry on, and leave behind.</p>' +
+      '    <button class="aqua big" id="startBtn">Start&nbsp;&nbsp;▶︎</button>' +
       '  </div>' +
       '</div>' +
-      '<div class="title-foot">KKB385 · A3 · an interactive room by ' + byLine + '</div>' +
+      '<div class="note-win pop-in">' +
+      '  <div class="note-bar">' + svg('star', 18) + '<b>Tip:</b></div>' +
+      '  <div class="note-text">Pick a disc to jump to a chapter · Best with sound on ♪</div>' +
+      '</div>' +
+      '<div class="desk-icons">' + discs + '</div>' +
+      '<div class="title-foot">© 2026 Chloee Park, Isabella Kiosses, Lyebin Cho, Qinxi "Cecelia" Yao. All rights reserved. </div>' +
       (withDoor
-        ? '<div class="door-splash" role="button" aria-label="Open the door">' +
+        ? '<div class="door-splash login saver" role="button" aria-label="Click to start">' +
           '  <canvas class="px door-wall" width="' + ART_W + '" height="' + DOOR_ART.h + '"></canvas>' +
           '  <div class="door-leaf"><canvas class="px" width="' + DOOR_ART.w + '" height="' + DOOR_ART.h + '"></canvas>' +
-          '    <img class="door-logo" src="assets/brand/logo-stacked.svg" alt="The Next Chapter">' +
-          '    <div class="door-names">' + esc(names) + '</div>' +
-          '    <div class="door-hint">click the door to come in ▶︎</div>' +
+          '    <img class="door-logo main" src="assets/brand/logo-sign.svg" alt="The Next Chapter">' +
+          '    <div class="door-hint">Click to Start</div>' +
           '  </div>' +
+          '  <div class="login-win">' +
+          '    <div class="avatar"><svg class="avatar-fallback" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="38" r="17" fill="rgba(255,255,255,.75)"/><path d="M16 92c2-24 16-34 34-34s32 10 34 34z" fill="rgba(255,255,255,.75)"/></svg>' +
+          '      <img class="avatar-img" src="assets/brand/profile.webp" alt=""></div>' +
+          '    <input class="login-name" id="loginName" type="text" maxlength="20" placeholder="User name" autocomplete="off" spellcheck="false" aria-label="User name">' +
+          '    <button class="aqua login-go" id="loginGo" type="button" aria-disabled="true">Sign In</button>' +
+          '  </div>' +
+          '  <div class="title-foot">© 2026 Chloee Park, Isabella Kiosses, Lyebin Cho, Qinxi "Cecelia" Yao. All rights reserved. </div>' +
           '</div>'
         : ''), 'title-screen' + (withDoor ? ' door-closed' : ''));
+    el.querySelector('.desk-bg').getContext('2d').drawImage(drawDeskBg(), 0, 0);
     draggable(el.querySelector('.title-win'));
+    draggable(el.querySelector('.logo-win'));
     el.querySelector('#startBtn').addEventListener('click', () => H.onStart());
     el.querySelectorAll('.disc').forEach(b => b.addEventListener('click', () => H.onJump(+b.dataset.i)));
     if (withDoor) {
@@ -146,21 +159,51 @@ const UI = (() => {
       const paint = (sel, cv) => { const c = splash.querySelector(sel).getContext('2d'); c.imageSmoothingEnabled = false; c.drawImage(cv, 0, 0); };
       paint('.door-wall', drawDoorWall());
       paint('.door-leaf canvas', drawDoorLeaf());
+      const nameEl = splash.querySelector('#loginName'), goBtn = splash.querySelector('#loginGo');
+      const avatar = splash.querySelector('.avatar-img');
+      avatar.addEventListener('error', () => avatar.remove());   // no profile.webp yet: keep the silhouette
+      // the button turns orange as soon as there is a name in the box
+      const sync = () => { const ready = nameEl.value.trim() !== ''; goBtn.classList.toggle('ready', ready); goBtn.setAttribute('aria-disabled', ready ? 'false' : 'true'); };
+      nameEl.addEventListener('input', sync);
       let opened = false;
       const open = () => {
-        if (opened || !splash.isConnected) return; opened = true;
-        window.removeEventListener('keydown', onKeyOpen, true);
+        const name = nameEl.value.trim();
+        if (opened || !splash.isConnected) return;
+        if (!name) {   // nothing typed yet: nudge the box instead of opening
+          nameEl.classList.remove('shake'); void nameEl.offsetWidth; nameEl.classList.add('shake'); nameEl.focus();
+          return;
+        }
+        opened = true;
+        // "<name> has just signed in." pops up above the Tip, once (this screen is rebuilt without it next time)
+        const tip = el.querySelector('.note-win');
+        el.insertAdjacentHTML('beforeend',
+          '<div class="note-win msg-win pop-in">' +
+          '  <div class="note-bar">' + svg('star', 18) + '<b>New Chapter Messenger</b></div>' +
+          '  <div class="note-text">\'' + esc(name) + '\' has just signed in.</div>' +
+          '</div>');
+        tip.classList.add('below-msg');
+        nameEl.blur();
         Sound.init(); Sound.door();
         splash.classList.add('opening');
         setTimeout(() => el.classList.remove('door-closed'), 750);   // the title screen comes in as you walk through
         setTimeout(() => splash.remove(), 1400);
       };
-      const onKeyOpen = e => {
-        if (!splash.isConnected) { window.removeEventListener('keydown', onKeyOpen, true); return; }
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); open(); }
+      goBtn.addEventListener('click', open);
+      nameEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); open(); } });
+      // screensaver -> login window
+      const wake = () => {
+        if (!splash.classList.contains('saver')) return;
+        splash.classList.remove('saver');
+        splash.removeAttribute('role');
+        window.removeEventListener('keydown', onKeyWake, true);
+        nameEl.focus({ preventScroll: true });
       };
-      splash.addEventListener('click', open);
-      window.addEventListener('keydown', onKeyOpen, true);   // capture: runs before the game's own key handler
+      const onKeyWake = e => {
+        if (!splash.isConnected) { window.removeEventListener('keydown', onKeyWake, true); return; }
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); wake(); }
+      };
+      splash.addEventListener('click', wake);
+      window.addEventListener('keydown', onKeyWake, true);   // capture: runs before the game's own key handler
     }
     showHUD(false);
   }
@@ -171,11 +214,11 @@ const UI = (() => {
       '<div class="card pop-in" style="--accent:' + ch.accent + '">' +
       '  <div class="cd"><span>' + (idx + 1) + '</span></div>' +
       '  <div class="card-kicker">' + esc(ch.kicker) + '</div>' +
-      '  <h1 class="big-title">' + esc(ch.title) + '</h1>' +
+      '  <h1 class="big-title" data-text="' + esc(ch.title) + '">' + esc(ch.title) + '</h1>' +
       '  <div class="lcd">' + ch.year + '</div>' +
       '  <p class="card-text">' + esc(ch.intro) + '</p>' +
       (teddy ? '  <div class="card-teddy"><img class="px" src="' + teddy.thumb + '" alt="Teddy"><span>Teddy: <b>' + esc(teddy.label) + '</b></span></div>' : '') +
-      '  <button class="aqua" id="beginBtn">' + (ch.moving ? 'Start packing ▶︎' : 'Open the box ▶︎') + '</button>' +
+      '  <button class="aqua" id="beginBtn">' + (ch.moving ? 'Start packing&nbsp;&nbsp;▶︎' : 'Open the Box&nbsp;&nbsp;▶︎') + '</button>' +
       '</div>', 'intro-screen');
     const go = () => { Sound.click(); onBegin(); };
     el.querySelector('#beginBtn').addEventListener('click', go);
@@ -258,7 +301,7 @@ const UI = (() => {
       frame = '<div class="paper ' + (mem.type === 'letter' ? 'letter' : '') + '"><p id="memText"></p></div>';
     }
     // the title bar just says what kind of window it is: the file name would only distract from the caption
-    const kind = mem.type === 'video' ? 'Memory Player' : mem.type === 'photo' ? 'Photo Viewer' : mem.type === 'letter' ? 'Mail' : 'Notepad';
+    const kind = mem.type === 'video' ? 'Video Player' : mem.type === 'photo' ? 'Image Viewer' : mem.type === 'letter' ? 'Mail' : 'Notepad';
     modal.innerHTML =
       '<div class="backdrop fade-in">' +
       '  <div class="win mem-win pop-in" style="--accent:' + ch.accent + '">' +
@@ -266,7 +309,7 @@ const UI = (() => {
       '    <div class="mem-body">' + frame +
       (isMedia ? '<div class="mem-caption">' + esc(mem.caption || '') + '</div>' : '') +
       '    </div>' +
-      '    <div class="mem-foot">click anywhere to continue</div>' +
+      '    <div class="mem-foot">Click anywhere to continue.</div>' +
       '  </div>' +
       '</div>';
     const back = modal.querySelector('.backdrop');
@@ -428,7 +471,7 @@ const UI = (() => {
   function showComplete(ch, label, onNext) {
     const el = setScreen(
       '<div class="tidy-banner pop-in" style="--accent:' + ch.accent + '">' +
-      '  <div class="big-title">' + (ch.id === 'youngadult' ? 'Home sweet home' : 'Room tidy!') + '</div>' +
+      '  <div class="big-title" data-text="' + (ch.id === 'youngadult' ? 'Home sweet home' : 'Room tidy!') + '">' + (ch.id === 'youngadult' ? 'Home sweet home' : 'Room tidy!') + '</div>' +
       '  <div class="tidy-sub">' + esc(ch.title) + ' · ' + ch.year + ' · complete</div>' +
       '  <button class="aqua" id="nextBtn">' + esc(label) + '</button>' +
       '</div>', 'complete-screen');
@@ -459,7 +502,7 @@ const UI = (() => {
         '  <div class="keep-label">From this chapter: click to keep</div>' +
         '  <div class="keep-row">' + (fresh.length ? fresh.map(id => tile(id, 'out')).join('') : '<span class="keep-none">nothing left to choose</span>') + '</div>' +
         (goingAway.length ? '<div class="keep-label">Letting go: click to rescue</div><div class="keep-row">' + goingAway.map(id => tile(id, 'out gone', 'let go')).join('') + '</div>' : '') +
-        '  <div class="keep-foot"><span>Things you don’t keep stay in this room’s past.</span><button class="aqua" id="keepDone">Save &amp; continue ▶︎</button></div>' +
+        '  <div class="keep-foot"><span>Things you don’t keep stay in this room’s past.</span><button class="aqua" id="keepDone">Save &amp; Continue&nbsp;&nbsp;▶︎</button></div>' +
         '</div>';
       win.querySelectorAll('.tile.in').forEach(b => b.addEventListener('click', () => { Sound.back(); selected.splice(selected.indexOf(b.dataset.id), 1); render(); }));
       win.querySelectorAll('.tile.out').forEach(b => b.addEventListener('click', () => {
@@ -480,13 +523,13 @@ const UI = (() => {
     const el = setScreen(
       '<div class="holo"></div>' +
       '<div class="win thanks-win pop-in">' +
-      '  <div class="titlebar"><span>Notepad · thank you</span></div>' +
+      '  <div class="titlebar"><span></span></div>' +
       '  <div class="thanks-body">' +
       '    <h2 class="tl" style="--d:0s">' + esc(note.title) + '</h2>' + lines +
       '    <div class="thanks-foot tl" style="--d:' + (0.15 + note.lines.length * 0.15).toFixed(2) + 's">' +
       '      <img class="px" src="' + teddyThumb + '" alt="">' +
-      '      <p class="thanks-sign">' + esc(note.sign) + ' <span>♥︎</span></p>' +
-      '      <button class="aqua" id="thanksNext">What she packed ▶︎</button>' +
+      '      <p class="thanks-sign">' + esc(note.sign).replace(/\n/g, '<br>') + ' <span>♥︎</span></p>' +
+      '      <button class="aqua" id="thanksNext">What You Packed&nbsp;&nbsp;▶︎</button>' +
       '    </div>' +
       '  </div>' +
       '</div>', 'thanks-screen');
@@ -502,10 +545,9 @@ const UI = (() => {
     const el = setScreen(
       '<div class="holo"></div>' +
       '<div class="win end-win pop-in">' +
-      '  <div class="titlebar"><span>The Next Chapter · complete</span></div>' +
+      '  <div class="titlebar"><span></span></div>' +
       '  <div class="end-body">' +
-      '    <div class="logo"><img class="brand-logo" src="assets/brand/logo-liner.svg" alt="The Next Chapter" style="width:400px;height:72px"></div>' +
-      '    <p class="end-lead">She packed Teddy last. She always does.</p>' +
+      '    <p class="end-lead">She packed the teddy last. She always does.</p>' +
       '    <div class="end-cols">' +
       '      <div><div class="keep-label">Packed for uni</div><div class="keep-row">' + tiles(s.packed) + '</div></div>' +
       (s.letGo.length ? '<div><div class="keep-label">Let go along the way</div><div class="keep-row">' + tiles(s.letGo, 'gone') + '</div></div>' : '') +
@@ -528,11 +570,10 @@ const UI = (() => {
       '  <div class="win menu-win pop-in">' +
       '    <div class="titlebar"><span>Menu</span><button class="tb-close" data-a="resume" aria-label="Close">✕</button></div>' +
       '    <div class="menu-body">' +
-      '      <button class="aqua" data-a="resume">▶︎ Keep playing</button>' +
-      '      <button class="aqua alt" data-a="restart">Restart chapter</button>' +
-      '      <button class="aqua alt" data-a="title">Chapter select</button>' +
-      '      <button class="aqua alt" data-a="door">Back to the door</button>' +
-      '      <button class="aqua alt" data-a="sound">' + (Sound.isMuted() ? 'Sound: off' : 'Sound: on') + '</button>' +
+      '      <button class="aqua" data-a="resume">▶︎&nbsp;&nbsp;Keep Playing</button>' +
+      '      <button class="aqua alt" data-a="restart">Restart Chapter</button>' +
+      '      <button class="aqua alt" data-a="title">Select Chapter</button>' +
+      '      <button class="aqua alt" data-a="sound">' + (Sound.isMuted() ? 'Sound: Off' : 'Sound: On') + '</button>' +
       '      <p class="small">keys: Esc menu · M sound</p>' +
       '    </div>' +
       '  </div>' +

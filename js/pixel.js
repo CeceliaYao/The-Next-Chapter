@@ -13,7 +13,7 @@ const ART_W = 320, ART_H = 180;
 
 /* One shared Y2K pastel palette. Single letters are used in the pixel grids. */
 const PALETTE = {
-  o: '#3d2c4a', // outline / ink: a soft plum, like the pastel pixel-room reference (softer than black)
+  o: '#2a1f1a', // outline / ink (warm, matches the logo's #221a13)
   w: '#ffffff', c: '#fff4e6', g: '#e4def4', G: '#b4abd4', D: '#7d73a8',
   p: '#ffd0ea', P: '#ff9fd6', h: '#ff5fb4', m: '#c93a88',
   l: '#e6d8ff', L: '#c3a6ff', v: '#9a72f0', V: '#6a48c4',
@@ -114,22 +114,6 @@ class PixBuf {
       if ((x > 0 && solid(i - 1)) || (x < W - 1 && solid(i + 1)) || (y > 0 && solid(i - W)) || (y < H - 1 && solid(i + W))) out.push(i);
     }
     out.forEach(i => { this.d[i] = ol; });
-    return this;
-  }
-  /* light from the upper left, the same for every object: the top edge of each flat area catches the light,
-     its bottom and right edges turn into shade. Only flat runs are touched, so hand-drawn details stay as drawn. */
-  shadeEdges() {
-    const W = this.W, H = this.H, src = this.d.slice();
-    const at = (x, y) => (x < 0 || y < 0 || x >= W || y >= H ? null : src[y * W + x]);
-    const mix = (c, to, k) => { const h = c[0] === '#' ? c : PALETTE[c]; if (!h) return c; return '#' + [1, 3, 5].map(i => Math.round(parseInt(h.slice(i, i + 2), 16) * (1 - k) + parseInt(to.slice(i, i + 2), 16) * k).toString(16).padStart(2, '0')).join(''); };
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-      const c = src[y * W + x];
-      if (!c || c === 'o') continue;
-      const up = at(x, y - 1), dn = at(x, y + 1), lf = at(x - 1, y), rt = at(x + 1, y);
-      if (!dn && up === c && lf === c) this.d[y * W + x] = mix(c, '#3d2c4a', 0.2);
-      else if (!rt && lf === c && up === c) this.d[y * W + x] = mix(c, '#3d2c4a', 0.12);
-      else if (!up && dn === c && rt === c && dn !== 'w') this.d[y * W + x] = mix(c, '#ffffff', 0.35);
-    }
     return this;
   }
   /* a ring of colour c around everything (used for the hover glow) */

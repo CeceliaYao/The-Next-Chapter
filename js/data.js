@@ -18,15 +18,15 @@ const ENDING_NOTE = {
     'That’s upkeep: the quiet, everyday care of the things we live with. A bed made. A trophy dusted. A worn-out bear carried into one more room. Objects can’t remember for us, but they hold on to who we were.',
     'Now the room is empty. She’s off to study a Bachelor of Creative Industries, to make new things, and new memories, of her own.'
   ],
-  sign: 'Here’s to her next chapter. And to yours.'
+  sign: 'Here’s to her next chapter.\nAnd to yours.'
 };
 
 // [full name, role, short name]: this order is used on the door, the title screen and the ending
 const CREDITS = [
+  ['Chloee Park', 'Design', 'Chloee'],
   ['Isabella Kiosses', 'Film & Didactic', 'Isabella'],
   ['Lyebin Cho', 'Film & Photo', 'Lyebin'],
-  ['Chloee Park', 'Design', 'Chloee'],
-  ['Qinxi (Cecelia) Yao', 'Main Coder', 'Cecelia']
+  ['Qinxi "Cecelia" Yao', 'Main Coder', 'Cecelia']
 ];
 
 /* Teddy gets a little older every chapter (the sprite changes too, see sprites.js). */
@@ -160,7 +160,7 @@ const CHAPTERS = [
     mess: [],
     memories: [
       { id: 'n-teddy', items: ['teddy'], type: 'photo', src: 'assets/photos/01-nursery-teddy.webp', caption: 'Teddy, “resting” in bed.' },
-      { id: 'n-globe', items: ['snowglobe'], type: 'video', src: 'assets/video/01-nursery-snowglobe.mp4', still: 'assets/photos/01-nursery-snowglobe.jpg', focus: [0.2, 0.76], caption: '♪ ♫ ♪   watching the glitter fall' },
+      { id: 'n-globe', items: ['snowglobe'], type: 'video', src: 'assets/video/01-nursery-snowglobe.mp4', still: 'assets/photos/01-nursery-snowglobe.jpg', focus: [0.2, 0.76], caption: '♪ ♫ ♪  Watching the glitter fall.  ♪ ♫ ♪' },
       { id: 'n-rabbit', items: ['rabbit'], type: 'photo', src: 'assets/photos/01-nursery-peter-rabbit.jpg', caption: 'Peter Rabbit, chilling on a shelf.' }
     ],
     onStart: [{ do: 'wait', ms: 1600 }, { do: 'toast', from: 'Mum', text: 'Sweet dreams, little one ♥' }],
@@ -195,7 +195,7 @@ const CHAPTERS = [
       { id: 'truck', x: 880, y: 528, rot: -0.15 }
     ],
     memories: [
-      { id: 'c-tea', items: ['teaset'], type: 'video', src: 'assets/video/02-childhood-tea-party.mp4', caption: 'Tea party with the dolls and Teddy.' },
+      { id: 'c-tea', items: ['teaset'], type: 'video', src: 'assets/video/02-childhood-tea-party.mp4', caption: 'Tea party with the dolls and the teddy.' },
       { id: 'c-draw', items: ['drawing'], type: 'text', title: 'my_family.txt', caption: 'MY FAMILY, by me (age 5)\n\nMum. Dad. Me. My little brother.\nAnd Teddy.\n\nTeddy is the biggest.' }
     ],
     onStart: [{ do: 'wait', ms: 1800 }, { do: 'toast', from: 'Mum', text: 'Tidy up before dinner, sweetheart ♥' }],

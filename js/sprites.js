@@ -3,9 +3,7 @@
    Each sprite is either a hand-placed pixel grid (`rows`)
    or drawn with pixel shapes (`draw`). Letters are colours
    from PALETTE in pixel.js; '.' is transparent. The dark
-   outline is added automatically around each silhouette, and
-   the edges of flat areas are lit and shaded the same way for
-   every object (light from the upper left).
+   outline is added automatically around each silhouette.
    Sizes are in art pixels (1 art pixel = 4 screen pixels).
    ========================================================= */
 'use strict';
@@ -694,7 +692,6 @@ function buildSprites() {
         const b = new PixBuf(w, h, 2);
         if (def.rows) b.grid(0, 0, def.rows); else def.draw(b, f, v);
         if (def.pal) b.d = b.d.map(c => (c && def.pal[c]) || c);
-        b.shadeEdges();
         b.outline('o');
         frames.push({
           normal: b.toCanvas(1),

@@ -9,7 +9,7 @@ The visitor tends one bedroom across six chapters of a suburban girl's life, fro
 **▶ Play it online:** https://ceceliayao.github.io/The-Next-Chapter/
 
 > Built with [p5.js](https://p5js.org/), plain HTML/CSS and Web Audio. No install, no internet needed.
-> The look is the early-2000s web game: white windows with colour-block title bars in the logo's colours, glossy gel buttons that change colour on hover, messenger pop-ups (Windows 98 / XP only as a loose reference). The rooms have their own pastel palette; both share one style. Only the room and its things are pixel drawings (320 × 180 pixels, scaled up 4× with no blur); every word uses normal, readable fonts.
+> The look is the early-2000s web: glossy buttons, rounded windows, messenger pop-ups. Only the room and its things are pixel drawings (320 × 180 pixels, scaled up 4× with no blur); every word uses normal, readable fonts.
 > The page is **4:3** (1280 × 960, scaled to fit). On a wide screen it sits in the middle with black either side, so the eye stays on the game.
 
 ---
@@ -37,11 +37,11 @@ npx serve .        # then open the printed localhost address
 | Move things | Click and drag |
 | Move a window | Drag it by its coloured title bar |
 | Replay a memory | Click a placed object that shows a ! badge (or hover it: “click to replay”) |
-| Menu (restart chapter, chapter select, back to the door) | **Esc** or the Menu button |
+| Menu (restart chapter, chapter select) | **Esc** or the Menu button |
 | Sound on/off | **M** or the speaker button (it shows a crossed-out speaker when the sound is off) |
 | Skip the current chapter (for testing) | **Shift + N** |
 
-**Exhibition mode is built in.** After 2.5 minutes with no input, the game returns to the title screen for the next visitor (`IDLE_RESET_MS` in `js/data.js`). The game opens on a closed bedroom door with the logo and our names on it (after Chloee's laptop mock-up). Click the door (or press Enter) and it swings open onto the title screen; the door comes back after an idle reset, so every new visitor gets to open it. On the title screen, **START** begins the game and the six discs jump straight to any chapter (handy for the demo).
+**Exhibition mode is built in.** After 2.5 minutes with no input, the game returns to the title screen for the next visitor (`IDLE_RESET_MS` in `js/data.js`). The game opens on a closed bedroom door with the logo and "Click to Start" (after Chloee's laptop mock-up). Click it (or press Enter) and a sign-in window appears: type a name and press **Sign In** (or Enter), the door swings open onto the chapter select, and a messenger note says the name has just signed in. The door comes back after an idle reset, so every new visitor gets to open it. On the chapter select (a pixel hill wallpaper with a Welcome window, the Start window and a Tip), **Start** begins the game and the six discs along the bottom jump straight to any chapter (handy for the demo). The game fills 90% of the window, with even margins all round.
 
 **Layout while playing:** the top bar shows the chapter, year, UPKEEP meter and memories found. The room sits in the middle. Underneath, Teddy gives the chapter's tip (and short hints as you play), and Mum's and little bro's messages pop up beside it, so nothing covers the room. Memories open as windows: just the photo or video and its caption (no file names), with all text shown at once, no typing effect.
 
@@ -51,7 +51,7 @@ npx serve .        # then open the printed localhost address
 
 1. **Unpack.** Things arrive in the box at the bottom. Drag each one into the room. While you drag, the places it can go light up with blue dotted lines, and a faint ghost shows exactly where it will land.
 2. **Upkeep.** Some chapters start messy (crayons, clothes, homework). The **UPKEEP** meter fills as the room gets tidy. In the teen room, Mum throws another shirt on the pile after you've cleaned up.
-3. **Memories.** Putting certain objects away plays a photo or a video (the team's footage) in a Y2K "Memory Player" with a camcorder date stamp. The team's photos and videos are shown exactly as shot: no filter, no cropping (portrait photos get a tall frame).
+3. **Memories.** Putting certain objects away plays a photo or a video (the team's footage) in a Y2K "Video Player" / "Image Viewer" with a camcorder date stamp. The team's photos and videos are shown exactly as shot: no filter, no cropping (portrait photos get a tall frame).
 4. **Siblings.** Your little brother's things turn up in your room. Drop them on the **door** to give them back.
 5. **Memory box.** Between chapters you choose what to carry forward. Teddy always comes, plus 3 more things. Anything you drop is "let go" and listed on the ending screen.
    **Teddy gets older.** Each chapter Teddy looks a little more worn: brand new with his organza bow (2000), well hugged, an ear sewn back on, a gingham patch and a limp bow, the bow lost and a button for an eye, then faded and floppy but still here (2018). The chapter card, the memory box and the ending ("Teddy through the years") all show it. The wording lives in `TEDDY_AGES` in `js/data.js`; the drawing is `teddy` in `js/sprites.js`.
@@ -103,54 +103,29 @@ Until a file exists, its frame simply stays empty (the caption still shows). The
 
 ## Brand
 
-The look follows Chloee's **TNC Identity Guideline** and moodboard, and keeps **the room and the frame apart**:
+The look follows the team's identity board and our colour decision: **orange (two shades) + off-white as the base**, with black and white, and **pink and blue as the cooler accents**. The rooms are warm and muted (like *Unpacking*) and shift colour from stage to stage; the interface is an early-2000s desktop (glossy Windows XP / Frutiger Aero buttons and title bars, MSN-style messages, iridescent CD chapter discs) where the windows can be dragged around.
 
-- **Inside the room**: colours and style from the moodboard (its swatches, the Cyworld / My Scene rooms) and a pastel pixel-room reference, pearly and slightly greyed rather than candy-bright. Each room has two main colours that its walls and floor share (so it looks calm, not flat and not clashing), its own walls, floor, rug, curtains and furniture, and furniture of its year, from 2000 to 2018. The flat colour blocks and patterns (checks, hearts, stars, stripes) follow Y2K pixel games such as *NEEDY STREAMER OVERLOAD*:
-
-  | Room | Two main colours | Walls | Floor | Rug | Curtains | Furniture (of its time) |
-  | --- | --- | --- | --- | --- | --- | --- |
-  | Nursery (2000) | lemon + powder blue | lemon stripes with stars, a dotted border, a bunting garland, powder-blue beadboard | gingham | cloud | tie-backs under a scalloped valance | a white cot; drawers in pink, blue and lemon |
-  | Childhood (2005) | pearl rose + lavender | rose with hearts and dots, a heart border, lavender candy stripes under a scalloped rail | checkerboard | flower | café curtains with a ruffled valance | a toy box, shelves backed in pink, lilac and mint, a checked throw |
-  | Tween (2010) | lilac + mint | lilac with butterflies, mint pinstripes under a pink ribbon | honey wood | a big pastel harlequin rug and a lilac heart | a bead curtain | a beanbag, a round-backed chair, a checked throw |
-  | Teen (2014) | teal + purple | teal stripes with stars | honey wood | teal chevron | purple panels on rings | a swivel chair, a laundry basket |
-  | Young adult (2017) | blush + sage, on honey wood | a two-tone painted wall | honey wood | cream, with a diamond trellis | a roller blind | a hairpin-leg desk, a white moulded chair, a monstera, a checked throw |
-  | Moving out (2018) | the same room | paler patches where things hung | honey wood | rolled up for the move | taken down, just the rod | a bare mattress, boxes |
-
-  **One way of drawing for all six rooms** (after the pixel detail of *NEEDY STREAMER OVERLOAD*, the finely drawn objects of early web dress-up games, and the pastel pixel-room reference):
-  - one pixel scale (320 × 180, every pixel drawn on purpose, no blur or filters) and one outline: a dark plum around furniture and objects, a softer line for the room's own edges, so the things in the room stand out from its walls;
-  - thickness: the walls show their cut edges like a dollhouse, the side walls have moulded panels, and furniture is chunky (thick posts, mattresses, desktops, shelves and window frames; full, gathered curtains with ruffled valances);
-  - from 2010 on the room keeps the same honey wood floor, so it reads as one room growing up, with each year's rug on top;
-  - one light, from the upper left (through the window): furniture has a lit top, a base-coloured front and a darker side, with seams, recessed drawers and one clear highlight; objects get a lit top edge and a shaded lower edge automatically;
-  - materials told apart by their details: fabric has folds and stitched hems, plastic one clean shine, wood its thickness and a little grain;
-  - shadows in the corners and along the floor's edges, under each piece of furniture (cast to the lower right) and under every object that is put down;
-  - large, warm, light surfaces, with stronger blue, pink, purple or orange only on a few pieces in each room;
-  - light is drawn in flat pixel steps: the window's panes land on the floor as a patch of light in that room's time of day (moonlight, sun, afternoon, dusk), desk lamps throw a small pool, and there are glows and twinkles; messes show an orange ! badge and things that hold a memory a pink sparkle, both as pixel art.
-- **Outside the room (the frame) and the titles**: a second colour system, the logo's vivid colours ("vivid point colours for frames", from the moodboard) as small colour blocks on white: each window has its own title bar colour and three little colour chips, the main buttons are orange, the chapter titles and discs use the logo colours. Windows 98 / XP is only a loose reference. Windows can be dragged around (like Teleport), and buttons change colour on hover (like Yrs Truly).
-- **One style for both**: the same plum outline (the frame's line is as thick as one pixel of the room), glossy "gel" fills, nested boxes, a faint grid and four-point sparkles. The box tray and the labels inside the game screen belong to the frame.
-
-| Frame colour | Hex | Used for |
+| Colour | Hex | Used for |
 | --- | --- | --- |
-| Plum | `#3d2c4a` | outlines and text (shared with the room) |
-| White | `#ffffff` / `#f2f2ed` | window faces, the page (with a faint grid) |
-| Blue | `#00b5ff` | title bars: the game window, start window, menu, chapter cards, photo / video viewer, Mum's messages, the ending |
-| Yellow | `#ffc700` | title bars: Teddy's tips, little bro's messages, "Room tidy!", the memory box, the thank-you note; Memories; the LCD year |
-| Orange | `#f09000` | main buttons, the "!" on messes |
+| Orange | `#ff5400` | title bars, main buttons, counters (base) |
+| Light orange | `#ff8f3a` | title bar shine, glossy buttons (base) |
+| Off-white | `#fff6ea` | windows, HUD, background (base) |
+| Ink | `#221a13` | outlines, text |
+| Blue | `#00b5ff` | accent: drop guides, second buttons, messages |
+| Pink | `#ff84e4` | accent: hearts, Mum's messages |
+| Yellow / Lime | `#ffc700` / `#8de328` | the logo, chapter titles, UPKEEP meter |
 
-The game window has just two lines round the room: the window's own outline and the room's outline. Mum's and little bro's messages are square chat windows with a sunken message box, like early-2000s messengers.
+The logo files in `assets/brand/` are Chloee's original vector artwork (SVG: sharp at any size and small to load; no pixels, no drop shadow): `logo-sign.svg` on the door and in the Welcome window. A picture for the sign-in window can be added as `assets/brand/profile.webp`; until then it shows a silhouette. To use a new logo, replace those files and keep the same names.
 
-The start page keeps its soft background (light tints of the logo colours, with the frame's grid) and the stars, hearts and bubbles floating up.
+**Fonts** (all free for any use, including portfolios: SIL Open Font License):
 
-The logo files in `assets/brand/` are Chloee's original vector artwork (SVG: sharp at any size and small to load; no pixels, no drop shadow): `logo-main.svg` on the title screen, `logo-stacked.svg` on the door, `logo-liner.svg` on the ending. To use a new logo, replace those files and keep the same names.
+| Font | Used for |
+| --- | --- |
+| [Special Gothic](https://fonts.google.com/specimen/Special+Gothic) (narrow width) | all text: title bars, buttons, labels, body text, captions |
+| [Caveat](https://fonts.google.com/specimen/Caveat) | handwriting in the Notepad memories |
+| [VT323](https://fonts.google.com/specimen/VT323) | only the camcorder date stamp and the year display |
 
-**Fonts** (all free for any use, including portfolios: SIL Open Font License, licence files in `fonts/`):
-
-| Font | Like | Used for |
-| --- | --- | --- |
-| [Jost](https://fonts.google.com/specimen/Jost) | Futura | body text, captions, Teddy's tips, the letter |
-| [Archivo Narrow](https://fonts.google.com/specimen/Archivo+Narrow) | Arial Narrow | title bars, buttons, the top bar, labels |
-| [VT323](https://fonts.google.com/specimen/VT323) | camcorder / LCD | only the camcorder date stamp and the year display |
-
-To try other fonts, change `--font-body` and `--font-ui` at the top of `style.css` (and `FONT_BODY` / `FONT_UI` in `js/game.js` for the words drawn on the game screen).
+Special Gothic and Caveat load from Google Fonts (see `index.html`), so they need an internet connection; offline, the game falls back to Jost and Archivo Narrow (bundled in `fonts/` with VT323). Fonts and weights are set in one place, at the top of `style.css` (`--font-ui`, `--font-body`, `--font-note`, `--w-text`, `--w-strong`); the words drawn on the game screen read them from there.
 
 **Rule for the team's own images:** logos, photos and videos are always shown as the originals (cut out where needed), never pixelated. Only the game's drawn objects and rooms are pixel art.
 
@@ -160,7 +135,7 @@ To try other fonts, change `--font-body` and `--font-ui` at the top of `style.cs
 
 ```
 index.html        page shell: top bar, game screen, Teddy's tips + messages
-style.css         the Y2K frame (4:3 page, colour-block windows, gel buttons, messenger pop-ups)
+style.css         the early-2000s skin (4:3 page, glossy buttons, rounded windows, messenger pop-ups)
 js/data.js        ← edit me: chapters, objects, where things go, captions, file names, Teddy's ages
 js/pixel.js       the pixel engine: palette, crisp shapes, outlines, dithering
 js/sprites.js     every object as pixel art (grids of palette letters, or pixel shapes)
@@ -185,11 +160,11 @@ assets/video/     ← put videos here
 
 **The Next Chapter** by
 
+- **Chloee Park**: Design
 - **Isabella Kiosses**: Film & Didactic
 - **Lyebin Cho**: Film & Photo
-- **Chloee Park**: Design
-- **Qinxi (Cecelia) Yao**: Main Coder
+- **Qinxi "Cecelia" Yao**: Main Coder
 
 Film inspiration: *Teddy Bear* (Sophie Holloway, 2019), *Belongings* (Alex Coppola).
 
-Third-party: [p5.js](https://github.com/processing/p5.js) (LGPL-2.1, see `lib/p5-LICENSE.txt`); fonts [Jost](https://fonts.google.com/specimen/Jost), [Archivo Narrow](https://fonts.google.com/specimen/Archivo+Narrow) and [VT323](https://fonts.google.com/specimen/VT323) (SIL OFL 1.1, see `fonts/`).
+Third-party: [p5.js](https://github.com/processing/p5.js) (LGPL-2.1, see `lib/p5-LICENSE.txt`); fonts [Special Gothic](https://fonts.google.com/specimen/Special+Gothic), [Caveat](https://fonts.google.com/specimen/Caveat), [Jost](https://fonts.google.com/specimen/Jost), [Archivo Narrow](https://fonts.google.com/specimen/Archivo+Narrow) and [VT323](https://fonts.google.com/specimen/VT323) (SIL OFL 1.1).

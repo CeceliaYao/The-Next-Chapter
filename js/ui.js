@@ -295,7 +295,7 @@ const UI = (() => {
         '<div class="mem-frame ' + mem.type + '">' +
         '  <div class="mem-media"></div>' +
         (mem.type === 'video'
-          ? '<div class="cam"><span class="rec">REC</span><span class="cam-mode">SP ▶︎</span><span class="stamp">' + stampFor(ch.year, seed) + '</span></div>'
+          ? '<div class="cam"><span class="rec">REC</span><span class="cam-mode">SP&nbsp;&nbsp;▶︎</span><span class="stamp">' + stampFor(ch.year, seed) + '</span></div>'
           : '<span class="photo-stamp">' + stampFor(ch.year, seed) + '</span>') +
         '  <div class="missing hidden">waiting for <b>' + esc(mem.src) + '</b></div>' +
         '</div>' +

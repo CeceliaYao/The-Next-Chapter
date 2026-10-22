@@ -81,7 +81,7 @@ const ITEM_DEFS = {
   // 2 · childhood
   picturebooks: { name: 'Storybooks', fits: ['shelf', 'desk'], hint: 'Storybooks go on the bookshelf.' },
   teaset:       { name: 'Tea Party Set', fits: ['table'], hint: 'Tea parties happen at the little table.' },
-  doll:         { name: 'Doll', fits: ['table', 'bed', 'shelf'], hint: 'Dolls sit at the tea table, on the bed or on a shelf.' },
+  doll:         { name: 'Dolls', fits: ['table', 'bed', 'shelf'], hint: 'Dolls sit at the tea table, on the bed or on a shelf.' },
   tutu:         { name: 'Tutu', fits: ['hook'], hint: 'Dress-ups hang on the hooks above the bed.' },
   wings:        { name: 'Fairy Wings', fits: ['hook'], hint: 'Dress-ups hang on the hooks above the bed.' },
   tiara:        { name: 'Tiara', fits: ['hook', 'shelf', 'bed'], hint: 'Dress-ups hang on the hooks above the bed.' },
@@ -207,7 +207,7 @@ const CHAPTERS = [
       { id: 'shelfLow', tag: 'shelf', type: 'line', x1: 802, x2: 978, y: 462, maxH: 82 },
       { id: 'table', tag: 'table', type: 'line', x1: 528, x2: 752, y: 476 },
       SILL,
-      { id: 'toybox', tag: 'toybox', type: 'bin', x1: 46, y1: 430, x2: 176, y2: 556, label: 'toy box' },
+      { id: 'toybox', tag: 'toybox', type: 'bin', x1: 46, y1: 430, x2: 176, y2: 556, label: 'Toy Box' },
       DOOR_BIN,
       { id: 'floorA', tag: 'floor', type: 'area', x1: 186, x2: 460, y1: 492, y2: 558 },
       { id: 'floorB', tag: 'floor', type: 'area', x1: 820, x2: 1222, y1: 492, y2: 558 },

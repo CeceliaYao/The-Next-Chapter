@@ -13,6 +13,7 @@ const STAGE_W = 1280, STAGE_H = 960, SCREEN_K = 1200 / 1280;   // the 4:3 page i
 // the canvas text reads its fonts from style.css (:root --font-ui / --font-body), so fonts are changed in ONE place
 const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const FONT_UI = cssVar('--font-ui'), FONT_BODY = cssVar('--font-body');
+const W_TEXT = cssVar('--w-text') || 500, W_STRONG = cssVar('--w-strong') || 600;   // the same weights as the page text
 const TRAY = { x: 16, y: 576, w: 1248, h: 140 };
 const TRAY_FLOOR = 176;          // art row the tray items stand on
 
@@ -45,7 +46,7 @@ function setup() {
   initInput();
   UI.init({ onStart: startRun, onJump: jumpTo, onMenu: openMenu, onMute: toggleMute, onActivity: () => { G.lastInput = performance.now(); } });
   noLoop();
-  const fonts = ['400 16px ' + FONT_UI, '500 16px ' + FONT_UI, '500 16px Caveat', '16px VT323'].map(f => document.fonts.load(f).catch(() => null));
+  const fonts = [W_TEXT + ' 16px ' + FONT_UI, W_STRONG + ' 16px ' + FONT_UI, W_TEXT + ' 16px ' + FONT_BODY, '500 16px Caveat', '16px VT323'].map(f => document.fonts.load(f).catch(() => null));
   Promise.race([Promise.all(fonts), new Promise(r => setTimeout(r, 2500))]).then(() => {
     buildSprites();
     initCursors();
@@ -119,7 +120,7 @@ function beginChapter() {
   Sound.startAmbience(G.ch.ambience);
   G.lastProgress = performance.now();
   const start = G.ch.onStart.slice();
-  if (G.gift) start.push({ do: 'wait', ms: 2600 }, { do: 'toast', from: 'Mum', text: 'Left a copy of the family photo on your bed for you. For your new place ♥' });
+  if (G.gift) start.push({ do: 'wait', ms: 2600 }, { do: 'toast', from: 'Mum', text: 'Left a copy of the family photo on your bed for you. For your new place. ♥' });
   enqueue(start);
 }
 
@@ -217,7 +218,7 @@ function completeChapter() {
   addTimer(1300, () => {
     if (G.state !== 'complete') return;
     UI.showHUD(false);
-    UI.showComplete(G.ch, (G.ch.noKeep || last) ? 'Next Chapter ▶' : 'Pack the Memory Box ▶', () => {
+    UI.showComplete(G.ch, (G.ch.noKeep || last) ? 'Next Chapter\u00a0\u00a0▶' : 'Pack the Memory Box\u00a0\u00a0▶', () => {
       if (G.ch.noKeep || last) goChapter(G.idx + 1);
       else showKeep();
     });
@@ -236,7 +237,7 @@ function showKeep() {
   UI.showKeep({
     chapter: G.ch, candidates, box, capacity: MEMORY_BOX_SIZE,
     thumb: id => getThumb(id), names: id => ITEM_DEFS[id].name, teddyLabel: TEDDY_AGES[G.idx],
-    sinceLabel: id => 'since ' + CHAPTERS[G.since[id] || 0].year,
+    sinceLabel: id => 'Since ' + CHAPTERS[G.since[id] || 0].year,
     onDone: sel => {
       box.filter(id => !sel.includes(id)).forEach(id => G.letGo.push({ id, year: G.ch.year }));
       sel.forEach(id => { if (G.since[id] == null) G.since[id] = G.idx; });
@@ -260,11 +261,11 @@ function showSummary() {
     const c = CHAPTERS.find(ch => ch.tray.includes(id) || ch.mess.some(m => m.id === id) || (ch.extras || []).some(e => e.id === id));
     return c ? c.year : 2018;
   };
-  const packed = G.packed.map(id => ({ id, label: (id === 'familyphoto' && G.gift) ? 'from Mum' : 'since ' + yearOf(id) }));
+  const packed = G.packed.map(id => ({ id, label: (id === 'familyphoto' && G.gift) ? 'From Mum' : 'Since ' + yearOf(id) }));
   const memTotal = CHAPTERS.reduce((n, c) => n + c.memories.filter(m => !m.secret).length, 0);
   const secretIds = new Set(CHAPTERS.flatMap(c => c.memories.filter(m => m.secret).map(m => m.id)));
   UI.showEnding({
-    packed, letGo: G.letGo.map(l => ({ id: l.id, label: 'let go ' + l.year })),
+    packed, letGo: G.letGo.map(l => ({ id: l.id, label: 'Let Go ' + l.year })),
     memSeen: [...G.seen].filter(id => !secretIds.has(id)).length, memTotal, credits: CREDITS, thumb: id => getThumb(id), names: id => ITEM_DEFS[id].name,
     teddy: CHAPTERS.map((c, k) => ({ thumb: getThumb('teddy', k), year: c.year, label: TEDDY_AGES[k] }))
   }, goTitle);
@@ -730,7 +731,7 @@ function showHelp() {
   if (!it) return;
   it.hop = 1;
   G.helpFlash = { item: it, until: G.time + 3200 };
-  UI.hint(G.ch.moving ? 'Drag things into the box at the bottom. Teddy goes in last.' : (it.def.name + ': ' + it.def.hint), { pulse: true, ms: 6000 });
+  UI.hint(G.ch.moving ? 'Drag things into the box at the bottom. Teddy goes in last.' : it.def.hint, { pulse: true, ms: 6000 });
 }
 
 function layoutTray(snap) {
@@ -829,13 +830,13 @@ function render() {
 
 /* ---------- words on the canvas: smooth fonts on top of the pixel art ---------- */
 function canvasText(ctx, str, x, y, o) {
-  ctx.font = (o.weight || 400) + ' ' + o.size + 'px ' + (o.family || FONT_UI);
+  ctx.font = (o.weight || (o.family === FONT_BODY ? W_TEXT : W_STRONG)) + ' ' + o.size + 'px ' + (o.family || FONT_UI);
   ctx.textAlign = o.align || 'center'; ctx.textBaseline = 'middle';
   ctx.fillStyle = o.color || PALETTE.o;
   ctx.fillText(str, x, y);
 }
 function pill(ctx, str, cx, cy, size, accent) {
-  ctx.font = '400 ' + size + 'px ' + FONT_UI;
+  ctx.font = W_STRONG + ' ' + size + 'px ' + FONT_UI;
   const w = ctx.measureText(str).width + size * 1.1, h = size * 1.6;
   // kept inside the visible part of the screen (the top 44 px of the canvas are cropped by #screen)
   const x = Math.round(Math.max(8, Math.min(W - w - 8, cx - w / 2))), y = Math.round(Math.max(50, Math.min(H - h - 6, cy - h / 2)));
@@ -995,12 +996,13 @@ function drawTray() {
   art.drawImage(trayCv, 4, 144);
   const left = G.items.filter(i => i.state === 'tray').length, cx = 23 * ART;   // centred on the box's label sticker
   if (left) {
-    G.labels.push({ text: 'BOX', x: cx, y: 621, size: 18 });
-    G.labels.push({ text: String(left), x: cx, y: 650, size: 34, color: PALETTE['2'] });
-    G.labels.push({ text: 'LEFT', x: cx, y: 678, size: 18 });
+    // smaller words with room above and below, inside the sticker (its white runs from about y 612 to 688)
+    G.labels.push({ text: 'BOX', x: cx, y: 629, size: 14 });
+    G.labels.push({ text: String(left), x: cx, y: 651, size: 27, color: PALETTE['2'] });
+    G.labels.push({ text: 'LEFT', x: cx, y: 673, size: 14 });
   } else {
-    G.labels.push({ text: 'ALL', x: cx, y: 630, size: 20 });
-    G.labels.push({ text: 'DONE ' + HEART, x: cx, y: 668, size: 20, color: PALETTE['3'] });
+    G.labels.push({ text: 'ALL', x: cx, y: 637, size: 16 });
+    G.labels.push({ text: 'DONE ' + HEART, x: cx, y: 664, size: 16, color: PALETTE['3'] });
   }
 }
 
@@ -1039,13 +1041,13 @@ function drawPackingBox() {
     art.drawImage(cv, 0, 0, cv.width, rows + 1, Math.round(x) - 1, top + 5 - rows, cv.width, rows + 1);
   });
   art.drawImage(_boxCache.front, 0, 0);
-  G.labels.push({ text: 'NEXT CHAPTER ▸', x: 160 * ART, y: (top + 11) * ART, size: 28 });   // printed on the box
+  G.labels.push({ text: 'NEXT CHAPTER\u00a0\u00a0▸', x: 160 * ART, y: (top + 11) * ART, size: 28 });   // printed on the box
   G.labels.push({ text: 'FRAGILE ' + HEART, x: 160 * ART, y: (top + 19) * ART, size: 24, color: PALETTE.m });
   if (G.state === 'play') {
     const t = (text, x, y, color) => G.labels.push({ text, x, y, size: 27, align: 'left', family: FONT_BODY, color });
-    t('Drag what you’ll take', 56, 622); t('into the box', 56, 656);
-    t('Teddy goes in last ' + HEART, 856, 622, PALETTE.m);
-    t(G.packed.length + ' packed', 856, 676, '#c94300');
+    t('Drag what you’ll take', 56, 622); t('into the box.', 56, 656);
+    t('Teddy goes in last. ' + HEART, 856, 622, PALETTE.m);
+    t(G.packed.length + ' Packed', 856, 676, '#c94300');
   }
 }
 
@@ -1076,7 +1078,7 @@ function drawTooltip(ctx) {
   const it = G.hover;
   if (!it || G.drag) return;
   const mem = it.state === 'placed' && !it.mess ? memoryFor(it.id) : null;
-  let label = it.def.name + (it.carried && it.state === 'tray' ? ' ' + HEART : '') + (mem ? (mem.secret ? '  ·  Click to Open' : '  ·  Click to Replay') : '');
+  let label = it.def.name + (mem ? (mem.secret ? '  ·  Click to Open' : '  ·  Click to Replay') : '');
   if (it.mess) label = it.def.name + '  ·  Tidy Me!';
   const S = SPR[it.id], [ax, ay] = artPos(it);
   pill(ctx, label, (ax + S.w / 2) * ART, Math.max(66, (ay - 3) * ART - 22), 22);

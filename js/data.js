@@ -53,7 +53,7 @@ const SOCIALS = [
 
 /* Teddy gets a little older every chapter (the sprite changes too, see sprites.js). */
 const TEDDY_AGES = [
-  'Brand new, Bow and All',
+  'Brand New, Bow and All',
   'Well Hugged',
   'One Ear Sewn Back On',
   'Patched Up, Bow Gone Floppy',
@@ -107,9 +107,9 @@ const ITEM_DEFS = {
   sneakers:     { name: 'Old Sneakers', fits: ['underbed'], hint: 'Kick them under the bed. Out of sight, out of mind.', keep: false },
   posterband:   { name: 'Band Poster', fits: ['wall'], hint: 'Posters go on the wall above the bed.' },
   postermovie:  { name: 'Movie Poster', fits: ['wall'], hint: 'Posters go on the wall above the bed.' },
-  trophy:       { name: 'Skating trophy (1st)', fits: ['shelf', 'desk'], hint: 'Trophies go on the shelf above the desk.' },
+  trophy:       { name: 'Skating Trophy (1st)', fits: ['shelf', 'desk'], hint: 'Trophies go on the shelf above the desk.' },
   medal:        { name: 'Star Trophy (2nd)', fits: ['shelf', 'desk'], hint: 'Trophies go on the shelf above the desk.' },
-  award:        { name: 'Gold trophy', fits: ['shelf', 'desk'], hint: 'Trophies go on the shelf above the desk.' },
+  award:        { name: 'Gold Trophy', fits: ['shelf', 'desk'], hint: 'Trophies go on the shelf above the desk.' },
   guitar:       { name: 'Guitar', fits: ['floor', 'bed'], hint: 'Lean the guitar on the floor or the bed.' },
   // 5 · young adult
   laptop:       { name: 'Laptop', fits: ['desk'], hint: 'The laptop goes on the desk.' },
@@ -169,7 +169,7 @@ const CHAPTERS = [
   {
     id: 'nursery', kicker: 'Chapter 1', title: 'The Nursery', year: 2000, accent: '#ffc700',
     intro: 'A room painted the colour of butter. Someone very small is about to move in.',
-    tip: 'Drag each thing from the box into the room. Blue dotted lines show where it can go.',
+    tip: 'Drag each thing from the box into the room.\nBlue dotted lines show where it can go.',
     bg: bgNursery, layout: L_NURSERY,
     surfaces: [
       { id: 'cot', tag: 'bed', type: 'line', x1: 210, x2: 462, y: 370 },
@@ -183,8 +183,8 @@ const CHAPTERS = [
     tray: ['teddy', 'blanket', 'mobile', 'rabbit', 'rabbitbooks', 'snowglobe', 'nightlight', 'rattle', 'bottle'],
     mess: [],
     memories: [
-      { id: 'n-teddy', items: ['teddy'], type: 'photo', src: 'assets/photos/01-nursery-teddy.webp', caption: 'Teddy, “resting” in bed.' },
-      { id: 'n-globe', items: ['snowglobe'], type: 'video', src: 'assets/video/01-nursery-snowglobe.mp4', still: 'assets/photos/01-nursery-snowglobe.jpg', focus: [0.2, 0.76], caption: '♪ ♫ ♪  Watching the glitter fall.  ♪ ♫ ♪' },
+      { id: 'n-teddy', items: ['teddy'], type: 'photo', src: 'assets/photos/01-nursery-teddy.webp', caption: 'Teddy resting in bed.' },
+      { id: 'n-globe', items: ['snowglobe'], type: 'video', src: 'assets/video/01-nursery-snowglobe.mp4', still: 'assets/photos/01-nursery-snowglobe.jpg', focus: [0.2, 0.76], caption: '♪ ♫ ♪\u00a0\u00a0Watching the glitter fall.\u00a0\u00a0♪ ♫ ♪' },
       { id: 'n-rabbit', items: ['rabbit'], type: 'photo', src: 'assets/photos/01-nursery-peter-rabbit.webp', caption: 'Peter Rabbit, chilling on a shelf.' }
     ],
     onStart: [{ do: 'wait', ms: 1600 }, { do: 'toast', from: 'Mum', text: 'Sweet dreams, little one. ♥' }],
@@ -250,9 +250,9 @@ const CHAPTERS = [
       { id: 'sketch', x: 640, y: 518, rot: -0.35 }
     ],
     memories: [
-      { id: 't-bag', items: ['backpack'], type: 'video', src: 'assets/video/03-tween-backpack.mp4', still: 'assets/photos/03-tween-backpack.webp', focus: [0.55, 0.5], caption: '“too many textbooks to carry”' },
-      { id: 't-skates', items: ['skates'], type: 'photo', src: 'assets/photos/03-tween-rollerskates.webp', caption: '“I got these for my birthday! Now to learn how to brake”' },
-      { id: 't-art', items: ['artsupplies'], type: 'photo', src: 'assets/photos/03-tween-art-supplies.webp', caption: '“Drawing is hard, but fun!”' },
+      { id: 't-bag', items: ['backpack'], type: 'video', src: 'assets/video/03-tween-backpack.mp4', still: 'assets/photos/03-tween-backpack.webp', focus: [0.55, 0.5], caption: 'Too many textbooks to carry.' },
+      { id: 't-skates', items: ['skates'], type: 'photo', src: 'assets/photos/03-tween-rollerskates.webp', caption: 'I got these for my birthday! Now to learn how to brake.' },
+      { id: 't-art', items: ['artsupplies'], type: 'photo', src: 'assets/photos/03-tween-art-supplies.webp', caption: 'Drawing is hard, but fun!' },
       { id: 't-sketch', items: ['sketch'], type: 'photo', src: 'assets/photos/03-tween-drawing.webp', caption: '[Content here]' },
       { id: 't-cd', items: ['discman'], type: 'photo', src: 'assets/photos/03-tween-cd-player.webp', caption: '[Content here]' },
       { id: 't-family', items: ['familyphoto'], type: 'text', title: 'family_photo.txt', caption: 'Family photo day.\n\n“Everybody say cheese!”\n\nMum framed a copy for my room.' }
@@ -291,10 +291,10 @@ const CHAPTERS = [
       { id: 'sneakers', x: 1080, y: 540, rot: 0.12 }
     ],
     memories: [
-      { id: 'te-homework', items: ['homework1'], type: 'photo', src: 'assets/photos/04-teen-homework.webp', caption: '“this is my life now.”' },
+      { id: 'te-homework', items: ['homework1'], type: 'photo', src: 'assets/photos/04-teen-homework.webp', caption: 'This is my life now.' },
       { id: 'te-mock', items: ['homework2'], type: 'photo', src: 'assets/photos/04-teen-mock-exam.webp', caption: '[Content here]' },
       { id: 'te-clothes', items: [], type: 'video', src: 'assets/video/04-teen-clothes-pile.mp4', still: 'assets/photos/04-teen-clothes.webp', focus: [0.5, 0.5], caption: 'One more on the pile… “CLEAN. YOUR. ROOM.”' },
-      { id: 'te-heels', items: ['heels'], type: 'photo', src: 'assets/photos/04-teen-high-heels.webp', caption: '“stole these from mum”' },
+      { id: 'te-heels', items: ['heels'], type: 'photo', src: 'assets/photos/04-teen-high-heels.webp', caption: 'Stole these from Mum.' },
       { id: 'te-posters', items: ['posterband', 'postermovie'], type: 'photo', src: 'assets/photos/04-teen-posters.webp', caption: 'Walls = personality.' },
       { id: 'te-trophy', items: ['trophy', 'medal', 'award'], type: 'photo', src: 'assets/photos/04-teen-trophies.webp', caption: 'Solo dance: 2nd, 2nd… then 1st! (Still learning to brake.)' }
     ],

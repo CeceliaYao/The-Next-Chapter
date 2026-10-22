@@ -133,7 +133,16 @@ The logo files in `assets/brand/` are Chloee's original vector artwork (SVG: sha
 | [Caveat](https://fonts.google.com/specimen/Caveat) | handwriting in the Notepad memories |
 | [VT323](https://fonts.google.com/specimen/VT323) | only the camcorder date stamp and the year display |
 
-Special Gothic and Caveat load from Google Fonts (see `index.html`), so they need an internet connection; offline, the game falls back to Jost and Archivo Narrow (bundled in `fonts/` with VT323). Fonts and weights are set in one place, at the top of `style.css` (`--font-ui`, `--font-body`, `--font-note`, `--w-text`, `--w-strong`); the words drawn on the game screen read them from there.
+Special Gothic and Caveat load from Google Fonts (see `index.html`), so they need an internet connection; offline, the game falls back to Jost and Archivo Narrow (bundled in `fonts/` with VT323). Fonts and weights are set in one place, at the top of `style.css` (`--font-ui`, `--font-body`, `--font-note`, `--w-text`, `--w-strong`); the words drawn on the game screen read them from there. Letter spacing is set there too, one value per text style (`--ls-title`, `--ls-ui`, `--ls-body`, `--ls-note`, `--ls-lcd`): never wider than the font's own spacing (0), only ever tighter.
+
+**Writing rules** (from the team's ideation doc):
+
+- Sentences: sentence case, always ending with `.` `!` or `?` (e.g. *Teddy resting in bed.*).
+- Labels, short phrases and names of things: Title Case, no full stop; short words (a, an, the, and, or, to, of, in, on, for) stay lower case unless they come first (e.g. *Click to Start*, *Teddy: Brand New, Bow and All*).
+- ALL CAPS only for chapter names (*CHAPTER 1*, *THE NURSERY*) and decorations with no reading meaning (*BOX 7 LEFT*).
+- Mum's and little bro's messages can stay casual, but still start with a capital and end with punctuation.
+- An icon next to words gets two non-breaking spaces between them (`Start&nbsp;&nbsp;▶︎`, `↺&nbsp;&nbsp;Play Again`).
+
 
 **Rule for the team's own images:** logos, photos and videos are always shown as the originals (cut out where needed), never pixelated. Only the game's drawn objects and rooms are pixel art.
 

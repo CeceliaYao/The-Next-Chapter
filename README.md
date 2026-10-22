@@ -76,21 +76,29 @@ Until a file exists, its frame simply stays empty (the caption still shows). The
 | File | Plays when… | Caption on screen |
 | --- | --- | --- |
 | ✅ `assets/photos/01-nursery-teddy.webp` (cut-out) | Teddy is put in the cot | Teddy, "resting" in bed. |
-| `assets/video/01-nursery-snowglobe.mp4` (✅ still: `assets/photos/01-nursery-snowglobe.jpg`) | Snow globe is put away | ♪ ♫ ♪ watching the glitter fall |
-| ✅ `assets/photos/01-nursery-peter-rabbit.jpg` | Peter Rabbit is put down | Peter Rabbit, chilling on a shelf. |
-| `assets/video/02-childhood-tea-party.mp4` | Tea set goes on the tea table | Tea party with the dolls and Teddy. |
+| `assets/video/01-nursery-snowglobe.mp4` (still: `assets/photos/01-nursery-snowglobe.jpg`) | Snow globe is put away | ♪ ♫ ♪ watching the glitter fall |
+| ✅ `assets/photos/01-nursery-peter-rabbit.webp` | Peter Rabbit is put down | Peter Rabbit, chilling on a shelf. |
+| `assets/video/02-childhood-tea-party.mp4` (✅ still: `assets/photos/02-childhood-tea-party.webp`) | Tea set goes on the tea table | Tea party with the dolls and Teddy. |
+| ✅ `assets/photos/02-childhood-dolls.webp` | Doll is put down | [Content here] |
 | no picture, just a note: `my_family.txt` | Drawing goes on the wall | MY FAMILY, by me (age 5) … Teddy is the biggest. |
-| ✅ `assets/video/03-tween-backpack.mp4` (from IMG_2448) | Backpack is put down | "too many textbooks to carry" |
-| ✅ `assets/photos/03-tween-rollerskates.jpg` | Skates are put down | "I got these for my birthday! Now to learn how to brake" |
-| ✅ `assets/photos/03-tween-drawing.jpg` | Art supplies go on the desk | "Drawing is hard, but fun!" |
+| `assets/video/03-tween-backpack.mp4` (✅ still: `assets/photos/03-tween-backpack.webp`) | Backpack is put down | "too many textbooks to carry" |
+| ✅ `assets/photos/03-tween-rollerskates.webp` | Skates are put down | "I got these for my birthday! Now to learn how to brake" |
+| ✅ `assets/photos/03-tween-art-supplies.webp` | Art supplies go on the desk | "Drawing is hard, but fun!" |
+| ✅ `assets/photos/03-tween-drawing.webp` | Anime sketch is put up (or on the desk) | [Content here] |
+| ✅ `assets/photos/03-tween-cd-player.webp` | CD player is put down | [Content here] |
 | no picture, just a note: `family_photo.txt` | Family photo is placed | Family photo day. "Everybody say cheese!" |
-| `assets/photos/04-teen-homework.jpg` | Homework goes on the desk | "this is my life now." |
-| `assets/video/04-teen-clothes-pile.mp4` | Both clothes go in the basket (then Mum scolds) | One more on the pile… "CLEAN. YOUR. ROOM." |
-| `assets/photos/04-teen-high-heels.jpg` | Heels are put down | "stole these from mum" |
-| `assets/photos/04-teen-posters.jpg` | First poster goes up | Walls = personality. |
-| ✅ `assets/photos/04-teen-trophies.jpg` | First trophy is shelved | Solo dance: 2nd, 2nd… then 1st! (Still learning to brake.) |
+| ✅ `assets/photos/04-teen-homework.webp` | Maths homework goes on the desk | "this is my life now." |
+| ✅ `assets/photos/04-teen-mock-exam.webp` | Mock exam goes on the desk | [Content here] |
+| `assets/video/04-teen-clothes-pile.mp4` (✅ still: `assets/photos/04-teen-clothes.webp`) | Both clothes go in the basket (then Mum scolds) | One more on the pile… "CLEAN. YOUR. ROOM." |
+| ✅ `assets/photos/04-teen-high-heels.webp` | Heels are put down | "stole these from mum" |
+| `assets/photos/04-teen-posters.webp` | First poster goes up | Walls = personality. |
+| ✅ `assets/photos/04-teen-trophies.webp` | First trophy is shelved | Solo dance: 2nd, 2nd… then 1st! (Still learning to brake.) |
 | ✅ `assets/photos/05-youngadult-teddy.webp` (cut-out) | Teddy is put down in the young adult room | Still here. A bit faded, a lot loved. |
-| `assets/video/06-moving-out-boxes.mp4` (✅ still: `assets/photos/06-moving-out-boxes.jpg`) | Teddy is packed (the finale) | Teddy, the family photo, and some clothes. |
+| ✅ `assets/photos/05-youngadult-novel.webp` | Novel is put down | [Content here] |
+| ✅ `assets/photos/05-youngadult-cosmetics.webp` | Cosmetics are put down | [Content here] |
+| ✅ `assets/photos/05-youngadult-digicam.webp` | Digicam is put down | [Content here] |
+| 🥚 `assets/video/05-youngadult-laptop-ad.mp4` (still: `assets/photos/05-youngadult-laptop-ad.webp`, the poster) | **Easter egg:** the laptop goes on the desk (or is clicked). The laptop opens full screen and plays our exhibition ad, with an "Ad" tag and "Skip ad" after 5 s. No ! badge, not counted in Memories. Shape **1.414 : 1** like the poster (e.g. 1920 × 1358); keep the bottom-right corner and bottom edge free of key text. | (none: it's an ad) |
+| `assets/video/06-moving-out-boxes.mp4` (still: `assets/photos/06-moving-out-boxes.jpg`) | Teddy is packed (the finale) | Teddy, the family photo, and some clothes. |
 
 **Formats**
 

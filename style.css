@@ -358,6 +358,26 @@ button.tile:hover { transform: translateY(-4px); box-shadow: 0 8px 14px rgba(34,
 .credits { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 22px; font: var(--w-text) 17px/1.3 var(--font-body); margin: 4px 0 10px; }
 .credits b { font: var(--w-strong) 17px/1.3 var(--font-ui); letter-spacing: .5px; }
 #replayBtn { font-size: 24px; padding: 13px 38px 14px; }
+/* Credits + Follow Us folders: desktop icons at the bottom right of the ending (same hover box as the chapter discs, in orange) */
+.end-icons { position: absolute; right: 40px; bottom: 36px; display: flex; gap: 16px; }
+.folder-icon { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 94px; padding: 0; border: 0; background: none; }
+.folder-sq { position: relative; z-index: 0; width: 94px; height: 94px; display: flex; align-items: center; justify-content: center; border: 2px solid transparent; transition: background-color .12s, border-color .12s; }
+.folder-icon small { font: var(--w-strong) 19px/1 var(--font-ui); letter-spacing: .5px; color: #fff; text-shadow: 0 0 3px var(--ink), 0 1px 2px var(--ink), 0 0 1px var(--ink); }
+.folder-icon:hover .folder-sq, .folder-icon:focus-visible .folder-sq { background: color-mix(in srgb, var(--orange) 30%, transparent); border-color: var(--orange); }
+.folder { position: relative; display: block; width: 76px; height: 56px; margin-top: 8px; border-radius: 4px 8px 8px 8px;
+  background: linear-gradient(180deg, #ffd3ae 0%, #ffa866 48%, #ff8f3a 52%, #ffb27a 100%);
+  box-shadow: 0 0 0 2px rgba(34, 26, 19, .8), inset 0 1px 0 rgba(255, 255, 255, .8), 0 6px 12px rgba(34, 26, 19, .22); }
+.folder::before { content: ''; position: absolute; left: 0; top: -10px; width: 32px; height: 12px; border-radius: 5px 7px 0 0; background: #ffb27a; box-shadow: 0 0 0 2px rgba(34, 26, 19, .8); z-index: -1; }
+.folder::after { content: ''; position: absolute; left: 7px; right: 7px; top: -5px; height: 18px; border-radius: 2px; background: #fffdf6; box-shadow: 0 0 0 1px #e4d4bf; z-index: -1; }
+/* credits notepad: role on the left, names on the right, one per ruled line */
+.credits-paper { min-height: 0; }
+.cr-row { display: flex; justify-content: space-between; gap: 24px; }
+.cr-row span { font: 500 32px/32px var(--font-note); }
+.cr-row b { font: var(--w-strong) 20px/32px var(--font-ui); letter-spacing: 1px; text-transform: uppercase; text-align: right; }
+.folder.blue { background: linear-gradient(180deg, #e2f6ff 0%, #a8e2ff 48%, #8dd8ff 52%, #c4ecff 100%); }
+.folder.blue::before { background: #a8e2ff; }
+.cr-lead { font: 500 34px/32px var(--font-note); color: var(--hot-text); margin-bottom: 32px; }
+.cr-row b.handle { text-transform: none; letter-spacing: .5px; font-size: 22px; }
 
 /* thank-you note before the summary */
 .thanks-win { position: relative; width: 880px; }
@@ -468,3 +488,49 @@ img { -webkit-user-drag: none; user-select: none; -webkit-user-select: none;}
 .door-splash.login:not(.saver) .door-logo, .door-splash.login:not(.saver) .door-hint { opacity: 0; animation: none; pointer-events: none; }
 .login-win { transition: opacity .35s ease .15s; }
 .door-splash.saver .login-win { opacity: 0; visibility: hidden; pointer-events: none; }
+/* ---------- easter egg: the laptop ad (chapter 5) ----------
+   Deliberately NOT a window: no title bar / seek bar / caption.
+   The laptop rises out of the room, the lid opens, static, then the ad. */
+.ad-back { background: rgba(14, 10, 24, .72); perspective: 1600px; }
+.lap { position: relative; display: flex; flex-direction: column; align-items: center; margin-top: 30px;
+  animation: lapRise .55s var(--ease) both; transform-style: preserve-3d; }
+.lap-lid { position: relative; padding: 26px 26px 40px; border-radius: 22px 22px 8px 8px; transform-origin: 50% 100%;
+  background: linear-gradient(180deg, #fbfbf8 0%, #e9e7e1 55%, #d9d6cf 100%);
+  box-shadow: inset 0 1px 0 #fff, inset 0 -2px 4px rgba(0, 0, 0, .12), 0 0 0 1.5px var(--ink), 0 24px 50px rgba(0, 0, 0, .45);
+  animation: lidOpen .8s cubic-bezier(.3, 1.25, .5, 1) .25s both; }
+.lap-cam { position: absolute; left: 50%; top: 10px; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%; background: #2c2a33; box-shadow: 0 0 0 2px #cfccc4; }
+.lap-screen { position: relative; width: var(--sw); height: var(--sh); border-radius: 6px; overflow: hidden; background: #0d0b16; box-shadow: 0 0 0 2px #1c1924, inset 0 0 0 1px #000; }
+.lap-media { position: absolute; inset: 0; }
+.lap-media video, .lap-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ad-still { animation: adZoom 12s ease-in-out both; transform-origin: 50% 45%; }
+@keyframes adZoom { to { transform: scale(1.07); } }
+.lap-static { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; opacity: .9; transition: opacity .45s ease; z-index: 1; }
+.lap-static.off { opacity: 0; }
+.lap-ch { position: absolute; right: 18px; top: 12px; z-index: 2; font: 34px/1 var(--font-lcd); color: #8de328; text-shadow: 2px 2px 0 rgba(0, 0, 0, .7); animation: chFade 1.6s steps(1) .9s both; }
+@keyframes chFade { 0% { opacity: 1; } 100% { opacity: 0; } }
+/* the yellow "Ad" tag + "Skip ad" box, like the video ads of the time */
+.ad-tag { position: absolute; left: 10px; bottom: 12px; z-index: 2; padding: 4px 9px 5px; border-radius: 3px; background: var(--yellow); color: var(--ink);
+  font: var(--w-strong) 15px/1 var(--font-ui); letter-spacing: .5px; box-shadow: 0 1px 4px rgba(0, 0, 0, .4); animation: fadeIn .3s ease 1.1s both; }
+.ad-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 5px; z-index: 2; background: rgba(255, 255, 255, .25); animation: fadeIn .3s ease 1.1s both; }
+.ad-bar i { display: block; height: 100%; width: 0; background: var(--yellow); }
+.ad-tag em { font-style: normal; font-weight: var(--w-text); }
+.ad-skip { position: absolute; right: 0; bottom: 64px; z-index: 2; padding: 11px 16px 12px 18px; border: 1px solid rgba(255, 255, 255, .35); border-right: 0;
+  background: rgba(0, 0, 0, .72); color: #fff; font: var(--w-strong) 18px/1 var(--font-ui); letter-spacing: .3px; cursor: var(--cursor-hand); animation: fadeIn .3s ease 1.1s both; }
+.ad-skip[disabled] { cursor: var(--cursor); color: rgba(255, 255, 255, .75); font-weight: var(--w-text); }
+.ad-skip:not([disabled]):hover { background: rgba(0, 0, 0, .88); border-color: #fff; }
+.skip-ico { font-size: 13px; letter-spacing: -3px; margin-left: 6px; }
+.lap-glare { position: absolute; inset: 0; z-index: 3; pointer-events: none; background: linear-gradient(115deg, rgba(255, 255, 255, .13) 0%, rgba(255, 255, 255, 0) 38%); }
+.lap-badge { position: absolute; left: 50%; bottom: 8px; width: 40px; translate: -50% 0; opacity: .9; }
+.lap-base { position: relative; width: calc(var(--sw) + 150px); height: 26px; margin-top: -2px; border-radius: 4px 4px 22px 22px;
+  background: linear-gradient(180deg, #f4f2ec 0%, #d3d0c8 60%, #b9b5ac 100%); box-shadow: 0 0 0 1.5px var(--ink), 0 18px 30px rgba(0, 0, 0, .4); }
+.lap-notch { position: absolute; left: 50%; top: 0; width: 120px; height: 9px; margin-left: -60px; border-radius: 0 0 10px 10px; background: #c6c2b9; box-shadow: inset 0 1px 2px rgba(0, 0, 0, .25); }
+.lap-led { position: absolute; right: 60px; top: 10px; width: 7px; height: 4px; border-radius: 2px; background: var(--lime); box-shadow: 0 0 6px var(--lime); }
+.ad-missing { left: 20px; bottom: 20px; }
+@keyframes lapRise { from { transform: translateY(260px) scale(.35); opacity: 0; } }
+@keyframes lidOpen { from { transform: rotateX(-86deg); } }
+.ad-back.closing { animation: fadeOutAd .35s ease .3s forwards; }
+.ad-back.closing .lap-lid { animation: lidShut .32s ease-in forwards; }
+.ad-back.closing .lap { animation: lapSink .4s ease-in .22s forwards; }
+@keyframes lidShut { from { transform: rotateX(0); } to { transform: rotateX(-88deg); } }
+@keyframes lapSink { to { transform: translateY(260px) scale(.35); opacity: 0; } }
+@keyframes fadeOutAd { to { opacity: 0; } }

@@ -217,7 +217,7 @@ function completeChapter() {
   addTimer(1300, () => {
     if (G.state !== 'complete') return;
     UI.showHUD(false);
-    UI.showComplete(G.ch, (G.ch.noKeep || last) ? 'Next chapter\u00a0\u00a0▶' : 'Pack the memory box ▶', () => {
+    UI.showComplete(G.ch, (G.ch.noKeep || last) ? 'Next Chapter ▶' : 'Pack the Memory Box ▶', () => {
       if (G.ch.noKeep || last) goChapter(G.idx + 1);
       else showKeep();
     });
@@ -261,10 +261,11 @@ function showSummary() {
     return c ? c.year : 2018;
   };
   const packed = G.packed.map(id => ({ id, label: (id === 'familyphoto' && G.gift) ? 'from Mum' : 'since ' + yearOf(id) }));
-  const memTotal = CHAPTERS.reduce((n, c) => n + c.memories.length, 0);
+  const memTotal = CHAPTERS.reduce((n, c) => n + c.memories.filter(m => !m.secret).length, 0);
+  const secretIds = new Set(CHAPTERS.flatMap(c => c.memories.filter(m => m.secret).map(m => m.id)));
   UI.showEnding({
     packed, letGo: G.letGo.map(l => ({ id: l.id, label: 'let go ' + l.year })),
-    memSeen: G.seen.size, memTotal, credits: CREDITS, thumb: id => getThumb(id), names: id => ITEM_DEFS[id].name,
+    memSeen: [...G.seen].filter(id => !secretIds.has(id)).length, memTotal, credits: CREDITS, thumb: id => getThumb(id), names: id => ITEM_DEFS[id].name,
     teddy: CHAPTERS.map((c, k) => ({ thumb: getThumb('teddy', k), year: c.year, label: TEDDY_AGES[k] }))
   }, goTitle);
 }
@@ -652,7 +653,7 @@ function updateHUD() {
   UI.setHUD({
     kicker: ch.kicker, title: ch.title, year: ch.year, moving: !!ch.moving,
     tidy: tidyCount(), total: G.items.length, packed: G.packed.length,
-    memSeen: ch.memories.filter(m => G.seen.has(m.id)).length, memTotal: ch.memories.length
+    memSeen: ch.memories.filter(m => !m.secret && G.seen.has(m.id)).length, memTotal: ch.memories.filter(m => !m.secret).length
   });
 }
 
@@ -1053,7 +1054,7 @@ function drawMarkers() {
   G.items.forEach(it => {
     if (it.state !== 'placed' || it.mess || it.tw) return;
     const mem = memoryFor(it.id);
-    if (!mem) return;
+    if (!mem || mem.secret) return;   // easter eggs never show a ! badge
     const unseen = !G.seen.has(mem.id);
     if (!unseen && G.hover !== it) return;
     const [ax, ay] = artPos(it), S = SPR[it.id];
@@ -1075,8 +1076,8 @@ function drawTooltip(ctx) {
   const it = G.hover;
   if (!it || G.drag) return;
   const mem = it.state === 'placed' && !it.mess ? memoryFor(it.id) : null;
-  let label = it.def.name + (it.carried && it.state === 'tray' ? ' ' + HEART : '') + (mem ? '  ·  click to replay' : '');
-  if (it.mess) label = it.def.name + '  ·  tidy me!';
+  let label = it.def.name + (it.carried && it.state === 'tray' ? ' ' + HEART : '') + (mem ? (mem.secret ? '  ·  Click to Open' : '  ·  Click to Replay') : '');
+  if (it.mess) label = it.def.name + '  ·  Tidy Me!';
   const S = SPR[it.id], [ax, ay] = artPos(it);
   pill(ctx, label, (ax + S.w / 2) * ART, Math.max(66, (ay - 3) * ART - 22), 22);
 }

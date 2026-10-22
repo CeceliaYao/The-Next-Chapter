@@ -32,6 +32,9 @@ const UI = (() => {
   let overlay, modal, hud, dock, hintEl, hintText, toasts;
   let memState = null;
   let hintTimer = null, baseHint = '';
+  // the name typed at the Sign In window; {name} in a note / letter caption is swapped for it (see data.js)
+  let playerName = '';
+  const withName = s => String(s).replace(/\{name\}/g, playerName || 'student');
 
   function init(handlers) {
     H = handlers;
@@ -124,7 +127,7 @@ const UI = (() => {
       '  <div class="titlebar"><span>The Next Chapter</span></div>' +
       '  <div class="win-body">' +
       '    <p class="tagline">One room, from nursery to moving out:<br>what we keep up, carry on, and leave behind.</p>' +
-      '    <button class="aqua big" id="startBtn">Start&nbsp;&nbsp;▶︎</button>' +
+      '    <button class="aqua big" id="startBtn">Start&nbsp&nbsp▶︎</button>' +
       '  </div>' +
       '</div>' +
       '<div class="note-win pop-in">' +
@@ -155,6 +158,7 @@ const UI = (() => {
     el.querySelector('#startBtn').addEventListener('click', () => H.onStart());
     el.querySelectorAll('.disc').forEach(b => b.addEventListener('click', () => H.onJump(+b.dataset.i)));
     if (withDoor) {
+      playerName = '';   // a new visitor at the door: forget the last one's name
       const splash = el.querySelector('.door-splash');
       const paint = (sel, cv) => { const c = splash.querySelector(sel).getContext('2d'); c.imageSmoothingEnabled = false; c.drawImage(cv, 0, 0); };
       paint('.door-wall', drawDoorWall());
@@ -174,6 +178,7 @@ const UI = (() => {
           return;
         }
         opened = true;
+        playerName = name;
         // "<name> has just signed in." pops up above the Tip, once (this screen is rebuilt without it next time)
         const tip = el.querySelector('.note-win');
         el.insertAdjacentHTML('beforeend',
@@ -218,7 +223,7 @@ const UI = (() => {
       '  <div class="lcd">' + ch.year + '</div>' +
       '  <p class="card-text">' + esc(ch.intro) + '</p>' +
       (teddy ? '  <div class="card-teddy"><img class="px" src="' + teddy.thumb + '" alt="Teddy"><span>Teddy: <b>' + esc(teddy.label) + '</b></span></div>' : '') +
-      '  <button class="aqua" id="beginBtn">' + (ch.moving ? 'Start packing&nbsp;&nbsp;▶︎' : 'Open the Box&nbsp;&nbsp;▶︎') + '</button>' +
+      '  <button class="aqua" id="beginBtn">' + (ch.moving ? 'Start Packing ▶︎' : 'Open the Box&nbsp&nbsp▶︎') + '</button>' +
       '</div>', 'intro-screen');
     const go = () => { Sound.click(); onBegin(); };
     el.querySelector('#beginBtn').addEventListener('click', go);
@@ -284,6 +289,7 @@ const UI = (() => {
 
   function openMemory(mem, ch, opts) {
     closeMemory(true);
+    if (mem.type === 'ad') return openAd(mem, ch, opts);
     const seed = [...mem.id].reduce((n, c) => n + c.charCodeAt(0), 0);
     const isMedia = mem.type === 'photo' || mem.type === 'video';
     let frame = '';
@@ -325,7 +331,7 @@ const UI = (() => {
     if (mem.type === 'video') {
       modal.querySelector('.mem-frame').addEventListener('click', e => { e.stopPropagation(); togglePlay(); });
     }
-    if (!isMedia) { modal.querySelector('#memText').textContent = mem.caption || ''; Sound.page(); return; }
+    if (!isMedia) { modal.querySelector('#memText').textContent = withName(mem.caption || ''); Sound.page(); return; }
 
     const host = modal.querySelector('.mem-media');
     const frameEl = modal.querySelector('.mem-frame');
@@ -412,6 +418,106 @@ const UI = (() => {
     if (playB) playB.addEventListener('click', e => { e.stopPropagation(); togglePlay(); });
   }
 
+  /* ---------------- easter egg: the laptop opens and plays an ad ----------------
+     Not a window: no title bar, seek bar or caption. The laptop itself rises out of
+     the room, the lid swings open, a second of TV static, then the ad fills the screen
+     with a yellow "Ad" tag and a "Skip ad" button (2017-era video ads). */
+  function openAd(mem, ch, opts) {
+    const ratio = mem.ratio || 1.414, SW = 780, SH = Math.round(SW / ratio);
+    modal.innerHTML =
+      '<div class="backdrop ad-back fade-in">' +
+      '  <div class="lap" style="--sw:' + SW + 'px;--sh:' + SH + 'px">' +
+      '    <div class="lap-lid">' +
+      '      <i class="lap-cam"></i>' +
+      '      <div class="lap-screen">' +
+      '        <div class="lap-media"></div>' +
+      '        <canvas class="lap-static" width="156" height="' + Math.round(156 / ratio) + '"></canvas>' +
+      '        <span class="lap-ch">' + esc(mem.channel || 'CH 29') + '</span>' +
+      '        <span class="ad-tag">Ad<em id="adTime"></em></span>' +
+      '        <button class="ad-skip" id="adSkip" disabled>Skip ad in <b id="adCount">' + (mem.skipAfter || 5) + '</b></button>' +
+      '        <div class="ad-bar"><i id="adBar"></i></div>' +
+      '        <i class="lap-glare"></i>' +
+      '      </div>' +
+      '      <img class="lap-badge" src="assets/brand/logo-sign.svg" alt="">' +
+      '    </div>' +
+      '    <div class="lap-base"><i class="lap-notch"></i><i class="lap-led"></i></div>' +
+      '  </div>' +
+      '  <div class="missing hidden ad-missing">waiting for <b>' + esc(mem.src) + '</b></div>' +
+      '</div>';
+    memState = { mem, opts, opened: performance.now(), timers: [], video: null, fakeT: null, canSkip: false };
+    const st = memState, live = () => memState === st;
+    const back = modal.querySelector('.backdrop'), host = modal.querySelector('.lap-media');
+    const skipB = modal.querySelector('#adSkip'), timeEl = modal.querySelector('#adTime'), countEl = modal.querySelector('#adCount'), barEl = modal.querySelector('#adBar');
+    const skipAfter = (mem.skipAfter || 5) * 1000;
+
+    // 1 · TV static while the lid opens (~1 s), then it fades off the picture
+    const cv = modal.querySelector('.lap-static'), cx = cv.getContext('2d'), img = cx.createImageData(cv.width, cv.height);
+    const noise = () => {
+      if (!live() || !cv.isConnected) return;
+      for (let i = 0; i < img.data.length; i += 4) { const v = Math.random() * 255 | 0; img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255; }
+      cx.putImageData(img, 0, 0);
+      if (!cv.classList.contains('off')) requestAnimationFrame(noise);
+    };
+    noise();
+    let started = false, getT = () => 0, getDur = () => 0;
+    const tick = () => {
+      if (!live()) return;
+      const t = getT(), d = getDur(), left = Math.max(0, Math.ceil(d - t));
+      if (d) { timeEl.textContent = ' · ' + Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0'); barEl.style.width = Math.min(100, t / d * 100) + '%'; }
+      const wait = Math.max(0, Math.ceil((skipAfter - t * 1000) / 1000));
+      if (!st.canSkip) {
+        if (wait <= 0) { st.canSkip = true; skipB.disabled = false; skipB.innerHTML = 'Skip ad <span class="skip-ico">▶︎▌</span>'; }
+        else countEl.textContent = wait;
+      }
+      H.onActivity && H.onActivity();        // a visitor watching the ad isn't "idle"
+      requestAnimationFrame(tick);
+    };
+    const reveal = () => {                   // static off, picture on
+      if (started || !live()) return; started = true;
+      st.timers.push(setTimeout(() => { if (live()) cv.classList.add('off'); }, 250));
+      tick();
+    };
+    const finish = () => { if (!live()) return; st.canSkip = true; st.timers.push(setTimeout(() => closeMemory(), 1400)); };
+
+    // 2 · the ad: the real video if it's there, otherwise the poster with a slow zoom
+    const showStill = () => {
+      if (!live()) return;
+      if (DEV) modal.querySelector('.ad-missing').classList.remove('hidden');
+      if (!mem.still) { host.innerHTML = ''; reveal(); return; }
+      const im = new Image();
+      im.onload = () => {
+        if (!live()) return;
+        host.innerHTML = ''; im.className = 'ad-still'; host.appendChild(im);
+        const dur = (mem.stillSecs || 12), t0 = performance.now();
+        getT = () => Math.min(dur, (performance.now() - t0) / 1000); getDur = () => dur;
+        im.style.animationDuration = dur + 's';
+        st.timers.push(setTimeout(finish, dur * 1000));
+        reveal();
+      };
+      im.onerror = () => { host.innerHTML = ''; reveal(); };
+      im.src = mem.still;
+    };
+    const v = document.createElement('video');
+    v.playsInline = true; v.preload = 'auto';
+    v.addEventListener('error', showStill, { once: true });
+    v.addEventListener('loadeddata', () => {
+      if (!live()) return;
+      host.innerHTML = ''; host.appendChild(v);
+      getT = () => v.currentTime; getDur = () => v.duration || 0;
+      // wait for the lid to open before the picture starts
+      st.timers.push(setTimeout(() => { if (!live()) return; const p = v.play(); if (p && p.catch) p.catch(() => {}); reveal(); }, 900));
+    });
+    v.addEventListener('ended', finish);
+    v.src = mem.src;
+    st.video = v;
+
+    skipB.addEventListener('click', e => { e.stopPropagation(); if (st.canSkip) { Sound.click(); closeMemory(); } });
+    back.addEventListener('click', e => {
+      if (e.target.closest('.lap')) return;                       // clicks on the laptop do nothing (it's an ad!)
+      if (st.canSkip && performance.now() - st.opened > 450) closeMemory();
+    });
+  }
+
   function setSeek(p) { const s = document.getElementById('memSeek'); if (s) s.style.width = Math.round(p * 100) + '%'; }
   function setPlayIcon(playing) { const b = document.getElementById('memPlay'); if (b) b.textContent = playing ? '❚❚' : '▶︎'; }
 
@@ -462,7 +568,9 @@ const UI = (() => {
     st.timers.forEach(clearTimeout);
     if (st.video) { st.video.pause(); st.video.removeAttribute('src'); st.video.load(); }
     const win = modal.querySelector('.backdrop');
-    if (win) { win.classList.add('fade-out'); setTimeout(() => { if (win.isConnected && !win.querySelector('.menu-win')) win.remove(); }, 220); }
+    if (win && win.classList.contains('ad-back')) {       // the laptop lid shuts first, then it sinks back to the desk
+      win.classList.add('closing'); setTimeout(() => { if (win.isConnected) win.remove(); }, 620);
+    } else if (win) { win.classList.add('fade-out'); setTimeout(() => { if (win.isConnected && !win.querySelector('.menu-win')) win.remove(); }, 220); }
     if (!silent && st.opts.onClose) st.opts.onClose();
   }
   const memoryOpen = () => !!memState;
@@ -495,14 +603,14 @@ const UI = (() => {
       const fresh = o.candidates.filter(id => !selected.includes(id));
       const goingAway = o.box.filter(id => !selected.includes(id));
       win.innerHTML =
-        '<div class="titlebar"><span>' + svg('floppy', 20) + ' Save to memory box (A:)</span></div>' +
+        '<div class="titlebar"><span>' + svg('floppy', 20) + ' Save to Memory Box (A:)</span></div>' +
         '<div class="keep-body">' +
         '  <p class="keep-lead">Pack a memory box for the next chapter. <b>Teddy always comes.</b> There’s room for ' + o.capacity + ' more things.</p>' +
-        '  <div class="keep-row box-row"><div class="tile locked"><img src="' + o.thumb('teddy') + '" alt=""><span>Teddy' + (o.teddyLabel ? '<small>' + esc(o.teddyLabel) + '</small>' : '') + '</span><em>always</em></div>' + slots.join('') + '</div>' +
+        '  <div class="keep-row box-row"><div class="tile locked"><img src="' + o.thumb('teddy') + '" alt=""><span>Teddy' + (o.teddyLabel ? '<small>' + esc(o.teddyLabel) + '</small>' : '') + '</span><em>Always</em></div>' + slots.join('') + '</div>' +
         '  <div class="keep-label">From this chapter: click to keep</div>' +
         '  <div class="keep-row">' + (fresh.length ? fresh.map(id => tile(id, 'out')).join('') : '<span class="keep-none">nothing left to choose</span>') + '</div>' +
         (goingAway.length ? '<div class="keep-label">Letting go: click to rescue</div><div class="keep-row">' + goingAway.map(id => tile(id, 'out gone', 'let go')).join('') + '</div>' : '') +
-        '  <div class="keep-foot"><span>Things you don’t keep stay in this room’s past.</span><button class="aqua" id="keepDone">Save &amp; Continue&nbsp;&nbsp;▶︎</button></div>' +
+        '  <div class="keep-foot"><span>Things you don’t keep stay in the past.</span><button class="aqua" id="keepDone">Save &amp; Continue&nbsp&nbsp▶︎</button></div>' +
         '</div>';
       win.querySelectorAll('.tile.in').forEach(b => b.addEventListener('click', () => { Sound.back(); selected.splice(selected.indexOf(b.dataset.id), 1); render(); }));
       win.querySelectorAll('.tile.out').forEach(b => b.addEventListener('click', () => {
@@ -529,7 +637,7 @@ const UI = (() => {
       '    <div class="thanks-foot tl" style="--d:' + (0.15 + note.lines.length * 0.15).toFixed(2) + 's">' +
       '      <img class="px" src="' + teddyThumb + '" alt="">' +
       '      <p class="thanks-sign">' + esc(note.sign).replace(/\n/g, '<br>') + ' <span>♥︎</span></p>' +
-      '      <button class="aqua" id="thanksNext">What You Packed&nbsp;&nbsp;▶︎</button>' +
+      '      <button class="aqua" id="thanksNext">What You Packed&nbsp&nbsp▶︎</button>' +
       '    </div>' +
       '  </div>' +
       '</div>', 'thanks-screen');
@@ -543,24 +651,53 @@ const UI = (() => {
   function showEnding(s, onReplay) {
     const tiles = (list, cls) => list.map(x => '<div class="tile mini ' + (cls || '') + '"><img src="' + s.thumb(x.id) + '" alt=""><span>' + esc(s.names(x.id)) + '</span>' + (x.label ? '<em>' + esc(x.label) + '</em>' : '') + '</div>').join('');
     const el = setScreen(
-      '<div class="holo"></div>' +
+      '<canvas class="px desk-bg" width="' + ART_W + '" height="240"></canvas>' +
       '<div class="win end-win pop-in">' +
       '  <div class="titlebar"><span></span></div>' +
       '  <div class="end-body">' +
       '    <p class="end-lead">She packed the teddy last. She always does.</p>' +
       '    <div class="end-cols">' +
-      '      <div><div class="keep-label">Packed for uni</div><div class="keep-row">' + tiles(s.packed) + '</div></div>' +
+      '      <div><div class="keep-label">Packed for Uni</div><div class="keep-row">' + tiles(s.packed) + '</div></div>' +
       (s.letGo.length ? '<div><div class="keep-label">Let go along the way</div><div class="keep-row">' + tiles(s.letGo, 'gone') + '</div></div>' : '') +
       '    </div>' +
       (s.teddy ? '    <div class="teddy-row"><div class="keep-label">Teddy through<br>the years</div><div class="teddy-years">' + s.teddy.map(t => '<div class="ty"><img class="px" src="' + t.thumb + '" alt="" title="' + esc(t.label) + '"><span>' + t.year + '</span></div>').join('<i>›</i>') + '</div></div>' : '') +
       '    <p class="end-stat">memories found: ' + s.memSeen + ' / ' + s.memTotal + '</p>' +
-      '    <div class="credits">' + s.credits.map(c => '<span><b>' + esc(c[0]) + '</b> · ' + esc(c[1]) + '</span>').join('') + '</div>' +
-      '    <button class="aqua big" id="replayBtn">↺ Play again</button>' +
+      '    <button class="aqua big" id="replayBtn">↺ Play Again</button>' +
       '  </div>' +
+      '</div>' +
+      '<div class="end-icons">' +
+      '  <button class="folder-icon" id="creditsBtn" aria-label="Open credits"><span class="folder-sq"><i class="folder"></i></span><small>Credits</small></button>' +
+      '  <button class="folder-icon" id="followBtn" aria-label="Follow us"><span class="folder-sq"><i class="folder blue"></i></span><small>Follow Us</small></button>' +
       '</div>', 'end-screen');
+    el.querySelector('.desk-bg').getContext('2d').drawImage(drawDeskBg(), 0, 0);
     draggable(el.querySelector('.end-win'));
+    el.querySelector('#creditsBtn').addEventListener('click', () => { Sound.click(); showCredits(); });
+    el.querySelector('#followBtn').addEventListener('click', () => { Sound.click(); showFollow(); });
     el.querySelector('#replayBtn').addEventListener('click', () => { Sound.click(); onReplay(); });
     showHUD(false); clearToasts();
+  }
+
+  /* ---------------- notepads from the folders on the ending: Credits + Follow Us ---------------- */
+  function showNotepad(inner) {
+    modal.innerHTML =
+      '<div class="backdrop fade-in">' +
+      '  <div class="win mem-win credits-win pop-in">' +
+      '    <div class="titlebar"><span>Notepad</span><button class="tb-close" aria-label="Close">✕</button></div>' +
+      '    <div class="mem-body"><div class="paper credits-paper">' + inner + '</div></div>' +
+      '    <div class="mem-foot">Click anywhere to close.</div>' +
+      '  </div>' +
+      '</div>';
+    draggable(modal.querySelector('.credits-win'));
+    const back = modal.querySelector('.backdrop');
+    back.addEventListener('click', () => { back.classList.add('fade-out'); setTimeout(() => { if (back.isConnected) back.remove(); }, 220); });
+    Sound.page();
+  }
+  function showCredits() {
+    showNotepad(CREDITS_ROLL.map(c => '<div class="cr-row"><span>' + esc(c[0]) + '</span><b>' + esc(c[1]) + '</b></div>').join(''));
+  }
+  function showFollow() {
+    showNotepad('<div class="cr-lead">' + esc(SOCIALS_LEAD) + '</div>' +
+      SOCIALS.map(c => '<div class="cr-row"><span>' + esc(c[0]) + '</span><b class="handle">@' + esc(c[1]) + '</b></div>').join(''));
   }
 
   /* ---------------- pause menu ---------------- */
@@ -570,7 +707,7 @@ const UI = (() => {
       '  <div class="win menu-win pop-in">' +
       '    <div class="titlebar"><span>Menu</span><button class="tb-close" data-a="resume" aria-label="Close">✕</button></div>' +
       '    <div class="menu-body">' +
-      '      <button class="aqua" data-a="resume">▶︎&nbsp;&nbsp;Keep Playing</button>' +
+      '      <button class="aqua" data-a="resume">▶︎&nbsp&nbspKeep Playing</button>' +
       '      <button class="aqua alt" data-a="restart">Restart Chapter</button>' +
       '      <button class="aqua alt" data-a="title">Select Chapter</button>' +
       '      <button class="aqua alt" data-a="sound">' + (Sound.isMuted() ? 'Sound: Off' : 'Sound: On') + '</button>' +

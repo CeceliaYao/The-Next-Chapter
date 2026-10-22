@@ -658,6 +658,23 @@ const PIXEL_SPRITES = {
       });
     }
   },
+  cosmetics: {                       // an open blush compact (mirror up) and a lipstick
+    w: 15, h: 11,
+    draw(b) {
+      b.ell(9.5, 4, 5, 4, 'P'); b.ell(9.5, 4, 3.6, 2.8, 'g'); b.px(8, 2, 'w'); b.px(9, 2, 'w'); b.px(8, 3, 'w');
+      b.rect(4, 7, 11, 4, 'P'); b.hline(4, 7, 11, 'p'); b.rect(6, 8, 7, 2, 'h'); b.hline(7, 8, 5, 'x');
+      b.rect(0, 5, 3, 6, 'G'); b.hline(0, 5, 3, 'Y'); b.rect(0, 2, 3, 3, 'x'); b.px(1, 1, 'x'); b.px(2, 1, 'x'); b.px(2, 0, 'x'); b.px(0, 2, 'X');
+    }
+  },
+  digicam: {                         // a pink compact digital camera
+    w: 14, h: 10,
+    draw(b) {
+      b.rect(9, 0, 3, 1, 'G');
+      b.rect(0, 1, 14, 9, 'h'); b.hline(0, 1, 14, 'P'); b.hline(0, 9, 14, 'm');
+      b.ell(5.5, 5.5, 3.5, 3.5, 'G'); b.ell(5.5, 5.5, 2.4, 2.4, 'D'); b.ell(5.5, 5.5, 1.2, 1.2, 'z'); b.px(4, 4, 'w');
+      b.rect(10, 3, 3, 2, 'w'); b.px(11, 7, 'm'); b.px(12, 7, 'm');
+    }
+  },
 
   /* ---------------- 6 · MOVING OUT ---------------- */
   uniletter: {

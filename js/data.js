@@ -69,7 +69,7 @@ const CARRY_FITS = ['shelf', 'desk', 'bed', 'sill', 'floor'];
 /* Each object's size comes from its pixel sprite in sprites.js. */
 const ITEM_DEFS = {
   // 1 · nursery
-  teddy:        { name: 'Teddy', fits: ['bed', 'shelf', 'desk', 'table', 'sill', 'floor'], hint: 'Teddy belongs somewhere cosy. Try the bed.' },
+  teddy:        { name: 'Teddy', fits: ['bed', 'shelf', 'desk', 'table', 'sill', 'floor'], hint: 'Teddy belongs somewhere cozy. Try the bed.' },
   blanket:      { name: 'Baby Blanket', fits: ['bed'], hint: 'Blankets go in the cot.' },
   mobile:       { name: 'Star Mobile', fits: ['mobile'], hint: 'The mobile hangs from the hook above the cot.' },
   snowglobe:    { name: 'Snow Globe Music Box', fits: ['shelf', 'desk', 'sill'], hint: 'Somewhere up high: the shelf or the change table.' },
@@ -85,7 +85,7 @@ const ITEM_DEFS = {
   tutu:         { name: 'Tutu', fits: ['hook'], hint: 'Dress-ups hang on the hooks above the bed.' },
   wings:        { name: 'Fairy Wings', fits: ['hook'], hint: 'Dress-ups hang on the hooks above the bed.' },
   tiara:        { name: 'Tiara', fits: ['hook', 'shelf', 'bed'], hint: 'Dress-ups hang on the hooks above the bed.' },
-  drawing:      { name: 'Crayon Drawing', fits: ['wall'], hint: 'Stick drawings on the wall. Any bare wall works!' },
+  drawing:      { name: 'Crayon Drawings', fits: ['wall'], hint: 'Stick drawings on the wall. Any bare wall works!' },
   crayons:      { name: 'Crayons', fits: ['toybox'], hint: 'Crayons go back in the toy box.', keep: false },
   truck:        { name: "Brother's Truck", fits: ['door'], hint: "That's your brother's! Take it to the door.", keep: false, owner: 'brother' },
   // 3 · tween
@@ -257,7 +257,7 @@ const CHAPTERS = [
       { id: 't-cd', items: ['discman'], type: 'photo', src: 'assets/photos/03-tween-cd-player.webp', caption: '[Content here]' },
       { id: 't-family', items: ['familyphoto'], type: 'text', title: 'family_photo.txt', caption: 'Family photo day.\n\n“Everybody say cheese!”\n\nMum framed a copy for my room.' }
     ],
-    onStart: [{ do: 'wait', ms: 1800 }, { do: 'toast', from: 'Little bro', text: 'Have u seen my controller??' }],
+    onStart: [{ do: 'wait', ms: 1800 }, { do: 'toast', from: 'Little bro', text: 'Have you seen my controller??' }],
     onPlace: {
       controller: [{ do: 'toast', from: 'Little bro', text: 'FINALLY. Thx.' }]
     },
@@ -294,7 +294,7 @@ const CHAPTERS = [
       { id: 'te-homework', items: ['homework1'], type: 'photo', src: 'assets/photos/04-teen-homework.webp', caption: 'This is my life now.' },
       { id: 'te-mock', items: ['homework2'], type: 'photo', src: 'assets/photos/04-teen-mock-exam.webp', caption: '[Content here]' },
       { id: 'te-clothes', items: [], type: 'video', src: 'assets/video/04-teen-clothes-pile.mp4', still: 'assets/photos/04-teen-clothes.webp', focus: [0.5, 0.5], caption: 'One more on the pile… “CLEAN. YOUR. ROOM.”' },
-      { id: 'te-heels', items: ['heels'], type: 'photo', src: 'assets/photos/04-teen-high-heels.webp', caption: 'Stole these from Mum.' },
+      { id: 'te-heels', items: ['heels'], type: 'photo', src: 'assets/photos/04-teen-high-heels.webp', caption: 'Stole these from mum.' },
       { id: 'te-posters', items: ['posterband', 'postermovie'], type: 'photo', src: 'assets/photos/04-teen-posters.webp', caption: 'Walls = personality.' },
       { id: 'te-trophy', items: ['trophy', 'medal', 'award'], type: 'photo', src: 'assets/photos/04-teen-trophies.webp', caption: 'Solo dance: 2nd, 2nd… then 1st! (Still learning to brake.)' }
     ],

@@ -613,7 +613,7 @@ const UI = (() => {
         '<div class="keep-body">' +
         '  <p class="keep-lead">Pack a memory box for the next chapter. <b>Teddy always comes.</b> There’s room for ' + o.capacity + ' more things.</p>' +
         '  <div class="keep-row box-row"><div class="tile locked"><img src="' + o.thumb('teddy') + '" alt=""><span>Teddy' + (o.teddyLabel ? '<small>' + esc(o.teddyLabel) + '</small>' : '') + '</span><em>Always</em></div>' + slots.join('') + '</div>' +
-        '  <div class="keep-label">From This Chapter: Click to Keep</div>' +
+        '  <div class="keep-label">From this Chapter: Click to Keep</div>' +
         '  <div class="keep-row">' + (fresh.length ? fresh.map(id => tile(id, 'out')).join('') : '<span class="keep-none">Nothing Left to Choose</span>') + '</div>' +
         (goingAway.length ? '<div class="keep-label">Letting Go: Click to Rescue</div><div class="keep-row">' + goingAway.map(id => tile(id, 'out gone', 'Let Go')).join('') + '</div>' : '') +
         '  <div class="keep-foot"><span>Things you don’t keep stay in the past.</span><button class="aqua" id="keepDone">Save &amp; Continue&nbsp;&nbsp;▶︎</button></div>' +

@@ -12,7 +12,7 @@ const UI = (() => {
   // escapes text for HTML; hearts get the text-style selector so phones don't turn them into emoji
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])).replace(/\u2665(?!\uFE0E)/g, '\u2665\uFE0E');
   const DEV = /[?&]dev\b/.test(location.search);   // add ?dev to the URL to see which media files are missing
-  const fresh = p => p + '?v=' + VERSION;   // photos and videos load with the current version (see data.js)
+  const versioned = p => p + '?v=' + VERSION;   // photos and videos load with the current version (see data.js)
 
   /* small vector icons (smooth at any size) */
   const ICONS = {
@@ -141,14 +141,11 @@ const UI = (() => {
           '    <img class="door-logo main" src="assets/brand/logo-sign.svg" alt="The Next Chapter">' +
           '    <div class="door-hint">Click to Start</div>' +
           '  </div>' +
-          '  <div class="win login-win">' +
-          '    <div class="titlebar"><span>' + svg('star', 20) + 'New Chapter Messenger</span></div>' +
-          '    <div class="login-body">' +
-          '      <div class="avatar"><svg class="avatar-fallback" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="38" r="17" fill="#fff"/><path d="M16 92c2-24 16-34 34-34s32 10 34 34z" fill="#fff"/></svg>' +
-          '        <img class="avatar-img" src="assets/brand/profile.webp" alt=""></div>' +
-          '      <input class="login-name" id="loginName" type="text" maxlength="20" placeholder="User Name" autocomplete="off" spellcheck="false" aria-label="User Name">' +
-          '      <button class="aqua login-go" id="loginGo" type="button" aria-disabled="true">Sign In</button>' +
-          '    </div>' +
+          '  <div class="login-win">' +
+          '    <div class="avatar"><svg class="avatar-fallback" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="38" r="17" fill="rgba(255,255,255,.75)"/><path d="M16 92c2-24 16-34 34-34s32 10 34 34z" fill="rgba(255,255,255,.75)"/></svg>' +
+          '      <img class="avatar-img" src="assets/brand/profile.webp" alt=""></div>' +
+          '    <input class="login-name" id="loginName" type="text" maxlength="20" placeholder="User Name" autocomplete="off" spellcheck="false" aria-label="User Name">' +
+          '    <button class="aqua login-go" id="loginGo" type="button" aria-disabled="true">Sign In</button>' +
           '  </div>' +
           '  <div class="title-foot">© 2026 Chloee Park, Isabella Kiosses, Lyebin Cho, Qinxi "Cecelia" Yao. All rights reserved. </div>' +
           '</div>'
@@ -343,9 +340,9 @@ const UI = (() => {
       if (DEV) modal.querySelector('.missing').classList.remove('hidden');
       const c = modal.querySelector('.mem-controls'); if (c) c.style.visibility = 'hidden';
     };
-    // photos and stills keep their own shape (portrait photos and videos get a taller frame, nothing is cropped)
+    // photos and stills keep their own shape (portrait photos get a tall frame, nothing is cropped)
     const fitFrame = (ratio, inset) => {
-      const a = Math.min(1.9, Math.max(0.5, ratio)), MW = 600, MH = a < 1 ? 520 : 440;
+      const a = Math.min(1.9, Math.max(0.6, ratio)), MW = 600, MH = 440;
       const w = a >= MW / MH ? MW : Math.round(MH * a), h = a >= MW / MH ? Math.round(MW / a) : MH;
       frameEl.style.width = (w + inset) + 'px'; frameEl.style.height = (h + inset) + 'px';
     };
@@ -382,7 +379,7 @@ const UI = (() => {
         };
         loop();
       };
-      img.src = fresh(mem.still);
+      img.src = versioned(mem.still);
     };
     if (mem.type === 'photo') {
       const img = new Image();
@@ -394,7 +391,7 @@ const UI = (() => {
         host.appendChild(img);
       };
       img.onerror = showEmpty;
-      img.src = fresh(mem.src);
+      img.src = versioned(mem.src);
     } else {
       const v = document.createElement('video');
       v.playsInline = true; v.preload = 'auto';
@@ -402,8 +399,7 @@ const UI = (() => {
       v.addEventListener('loadeddata', () => {
         if (!live()) return;
         host.innerHTML = '';
-        if (v.videoWidth) fitFrame(mem.ratio || v.videoWidth / v.videoHeight, 0);   // portrait phone videos get a tall frame
-        if (mem.ratio) v.style.objectFit = 'cover';   // the black bars baked into the clip fall outside the frame
+        if (v.videoWidth) fitFrame(v.videoWidth / v.videoHeight, 0);   // portrait phone videos get a tall frame
         host.appendChild(v);
         const p = v.play(); if (p && p.catch) p.catch(() => setPlayIcon(false));
       });
@@ -411,7 +407,7 @@ const UI = (() => {
       v.addEventListener('play', () => setPlayIcon(true));
       v.addEventListener('pause', () => setPlayIcon(false));
       v.addEventListener('ended', () => { setSeek(1); memState.timers.push(setTimeout(() => closeMemory(), 2600)); });
-      v.src = fresh(mem.src);
+      v.src = versioned(mem.src);
       memState.video = v;
     }
     const replay = modal.querySelector('#memReplay');
@@ -436,7 +432,7 @@ const UI = (() => {
       '        <canvas class="lap-static" width="156" height="' + Math.round(156 / ratio) + '"></canvas>' +
       '        <span class="lap-ch">' + esc(mem.channel || 'CH 29') + '</span>' +
       '        <span class="ad-tag">Ad<em id="adTime"></em></span>' +
-      '        <button class="aqua ad-skip" id="adSkip" disabled>Skip Ad in <b id="adCount">' + (mem.skipAfter || 5) + '</b></button>' +
+      '        <button class="ad-skip" id="adSkip" disabled>Skip Ad in <b id="adCount">' + (mem.skipAfter || 5) + '</b></button>' +
       '        <div class="ad-bar"><i id="adBar"></i></div>' +
       '        <i class="lap-glare"></i>' +
       '      </div>' +
@@ -506,7 +502,7 @@ const UI = (() => {
         reveal();
       };
       im.onerror = blank;
-      im.src = fresh(mem.still);
+      im.src = versioned(mem.still);
     };
     const v = document.createElement('video');
     v.playsInline = true; v.preload = 'auto';
@@ -519,7 +515,7 @@ const UI = (() => {
       st.timers.push(setTimeout(() => { if (!live()) return; const p = v.play(); if (p && p.catch) p.catch(() => {}); reveal(); }, 900));
     });
     v.addEventListener('ended', finish);
-    v.src = fresh(mem.src);
+    v.src = versioned(mem.src);
     st.video = v;
 
     skipB.addEventListener('click', e => { e.stopPropagation(); if (st.canSkip) { Sound.click(); closeMemory(); } });
@@ -640,7 +636,7 @@ const UI = (() => {
   function showThanks(note, teddyThumb, onNext) {
     const lines = note.lines.map((t, i) => '<p class="tl" style="--d:' + (0.15 + i * 0.15).toFixed(2) + 's">' + esc(t) + '</p>').join('');
     const el = setScreen(
-      '<canvas class="px desk-bg" width="' + ART_W + '" height="240"></canvas>' +
+      '<div class="holo"></div>' +
       '<div class="win thanks-win pop-in">' +
       '  <div class="titlebar"><span></span></div>' +
       '  <div class="thanks-body">' +
@@ -652,7 +648,6 @@ const UI = (() => {
       '    </div>' +
       '  </div>' +
       '</div>', 'thanks-screen');
-    el.querySelector('.desk-bg').getContext('2d').drawImage(drawDeskBg(), 0, 0);   // same pixel hill as the chapter select and the ending
     draggable(el.querySelector('.thanks-win'));
     el.querySelector('#thanksNext').addEventListener('click', e => { e.stopPropagation(); Sound.click(); onNext(); });
     Sound.page();

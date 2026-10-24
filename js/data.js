@@ -9,7 +9,7 @@
 
 // Change this (and the ?v= on the files in index.html) with every update, so browsers fetch the new
 // photos, videos and code together instead of mixing new files with old ones from their cache.
-const VERSION = '20261024e';
+const VERSION = '20261024f';
 
 const MEMORY_BOX_SIZE = 3;          // how many things (besides Teddy) carry over between chapters
 const IDLE_RESET_MS = 150000;       // exhibition: return to title after 2.5 min of no input
@@ -298,7 +298,6 @@ const CHAPTERS = [
       { id: 'te-mock', items: ['homework2'], type: 'photo', src: 'assets/photos/04-teen-mock-exam.webp', caption: 'Please let me PASS...' },
       { id: 'te-clothes', items: [], type: 'video', src: 'assets/video/04-teen-clothes-pile.mp4', still: 'assets/photos/04-teen-clothes.webp', focus: [0.5, 0.5], caption: 'One more on the pile… “CLEAN. YOUR. ROOM.”' },
       { id: 'te-heels', items: ['heels'], type: 'photo', src: 'assets/photos/04-teen-high-heels.webp', caption: 'Stole these from mum.' },
-      { id: 'te-posters', items: ['posterband', 'postermovie'], type: 'photo', src: 'assets/photos/04-teen-posters.webp', caption: 'Walls = personality.' },
       { id: 'te-trophy', items: ['trophy', 'medal', 'award'], type: 'photo', src: 'assets/photos/04-teen-trophies.webp', caption: 'Solo dance: 2nd, 2nd… then 1st! (Still learning to brake.)' }
     ],
     onStart: [{ do: 'wait', ms: 1500 }, { do: 'toast', from: 'Mum', text: 'This room is a DISASTER. Clean it before dinner!!', nudge: true }],

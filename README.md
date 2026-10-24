@@ -63,7 +63,7 @@ npx serve .        # then open the printed localhost address
 | 1 | The Nursery | 2000 | Cot, mobile, night-light, snow globe, Peter Rabbit | Teddy resting in bed (video), snow globe (video), Peter Rabbit on the books (photo) |
 | 2 | Childhood | 2005 | Tea party, dress-ups (tutu, wings, tiara), tiny messes, brother's truck | Tea party (video), dolls (photo), drawings (note) |
 | 3 | Tween | 2010 | Backpack, skates, art, brother's controller | Backpack plonk (video), roller skates, art supplies, anime sketch, CD player (photos), family photo (note) |
-| 4 | Teen | 2014 | Mess everywhere, posters, skating trophies, Mum nagging, old sneakers kicked under the bed | Homework, mock exam, heels, posters, trophies (photos), clothes pile + Mum (video) |
+| 4 | Teen | 2014 | Mess everywhere, posters, skating trophies, Mum nagging, old sneakers kicked under the bed | Homework, mock exam, heels, trophies (photos), clothes pile + Mum (video) |
 | 5 | Young Adult | 2017 | More grown-up room; flower painting, laptop | Faded Teddy (photo), painting (video), novel, cosmetics, digicam (photos), polaroids (note), laptop ad (easter egg) |
 | 6 | Moving Out | 2018 | Pack the box, uni acceptance letter | Letter (text), boxes with Teddy / family photo / clothes (video) |
 
@@ -91,7 +91,6 @@ Until a file exists, its frame simply stays empty (the caption still shows). A v
 | ✅ `assets/photos/04-teen-mock-exam.webp` | Mock exam goes on the desk | Please let me PASS... |
 | ✅ `assets/video/04-teen-clothes-pile.mp4` (still: `assets/photos/04-teen-clothes.webp`) | Both clothes go in the basket (then Mum scolds) | One more on the pile… "CLEAN. YOUR. ROOM." |
 | ✅ `assets/photos/04-teen-high-heels.webp` | Heels are put down | Stole these from mum. |
-| `assets/photos/04-teen-posters.webp` | First poster goes up | Walls = personality. |
 | ✅ `assets/photos/04-teen-trophies.webp` | First trophy is shelved | Solo dance: 2nd, 2nd… then 1st! (Still learning to brake.) |
 | ✅ `assets/photos/05-youngadult-teddy.webp` (cut-out) | Teddy is put down in the young adult room | Still here. A bit faded, a lot loved. |
 | ✅ `assets/photos/05-youngadult-novel.webp` | Novel is put down | Getting ready for uni, one chapter at a time. |

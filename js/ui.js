@@ -395,6 +395,7 @@ const UI = (() => {
     } else {
       const v = document.createElement('video');
       v.playsInline = true; v.preload = 'auto';
+      v.muted = v.defaultMuted = v.autoplay = true; v.setAttribute('muted', ''); v.setAttribute('playsinline', '');   // our clips have no sound; muted videos start by themselves in every browser (iPad too)
       v.addEventListener('error', () => (mem.still ? showStill() : showEmpty()), { once: true });
       v.addEventListener('loadeddata', () => {
         if (!live()) return;
@@ -506,6 +507,7 @@ const UI = (() => {
     };
     const v = document.createElement('video');
     v.playsInline = true; v.preload = 'auto';
+    v.muted = v.defaultMuted = true; v.setAttribute('muted', ''); v.setAttribute('playsinline', '');   // the ad has no sound either; muted, it can start by itself once the lid is open
     v.addEventListener('error', showStill, { once: true });
     v.addEventListener('loadeddata', () => {
       if (!live()) return;

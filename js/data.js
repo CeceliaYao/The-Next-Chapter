@@ -105,11 +105,11 @@ const ITEM_DEFS = {
   tee:          { name: 'T-shirt', fits: ['basket'], hint: 'Clothes go in the laundry basket.', keep: false },
   heels:        { name: "Mum's Heels", fits: ['floor'], hint: 'Shoes go on the floor.' },
   sneakers:     { name: 'Old Sneakers', fits: ['underbed'], hint: 'Kick them under the bed. Out of sight, out of mind.', keep: false },
-  posterband:   { name: 'Band Poster', fits: ['wall'], hint: 'Posters go on the wall above the bed.' },
-  postermovie:  { name: 'Movie Poster', fits: ['wall'], hint: 'Posters go on the wall above the bed.' },
-  trophy:       { name: 'Skating Trophy (1st)', fits: ['shelf', 'desk'], hint: 'Trophies go on the shelf above the desk.' },
-  medal:        { name: 'Star Trophy (2nd)', fits: ['shelf', 'desk'], hint: 'Trophies go on the shelf above the desk.' },
-  award:        { name: 'Gold Trophy', fits: ['shelf', 'desk'], hint: 'Trophies go on the shelf above the desk.' },
+  posterband:   { name: 'Posters', fits: ['wall'], hint: 'Posters go on the wall above the bed.' },
+  postermovie:  { name: 'Posters', fits: ['wall'], hint: 'Posters go on the wall above the bed.' },
+  trophy:       { name: 'Trophies', fits: ['shelf', 'desk'], hint: 'Trophies go on the shelf above the desk.' },
+  medal:        { name: 'Trophies', fits: ['shelf', 'desk'], hint: 'Trophies go on the shelf above the desk.' },
+  award:        { name: 'Trophies', fits: ['shelf', 'desk'], hint: 'Trophies go on the shelf above the desk.' },
   guitar:       { name: 'Guitar', fits: ['floor', 'bed'], hint: 'Lean the guitar on the floor or the bed.' },
   // 5 · young adult
   laptop:       { name: 'Laptop', fits: ['desk'], hint: 'The laptop goes on the desk.' },
@@ -167,7 +167,7 @@ const YA_SURFACES = [
 const CHAPTERS = [
   {
     id: 'nursery', kicker: 'Chapter 1', title: 'The Nursery', year: 2000, accent: '#ffc700',
-    intro: 'A room painted the colour of butter. Someone very small is about to move in.',
+    intro: 'My story begins in a butter-colored room. Someone very small is about to arrive.',
     tip: 'Drag each thing from the box into the room.\nBlue dotted lines show where it can go.',
     bg: bgNursery, layout: L_NURSERY,
     surfaces: [
@@ -232,7 +232,7 @@ const CHAPTERS = [
   },
   {
     id: 'tween', kicker: 'Chapter 3', title: 'Tween', year: 2010, accent: '#00b5ff',
-    intro: 'A heavier backpack. Brand-new skates. A brother who keeps “borrowing” things.',
+    intro: 'Not a little kid, but not quite a teenager. Dealing with a heavier backpack, brand-\u2060new skates, and the same old sibling drama.',
     tip: 'Unpack your stuff. Something on your bed isn’t yours…',
     bg: bgTween, layout: L_TWEEN,
     surfaces: [
@@ -265,7 +265,7 @@ const CHAPTERS = [
   },
   {
     id: 'teen', kicker: 'Chapter 4', title: 'Teen', year: 2014, accent: '#8de328',
-    intro: 'Mock exams, trophies, and a floor you can’t really see anymore. Mum has opinions.',
+    intro: 'School’s getting serious with big exams, bigger mess, same old Mum.',
     tip: 'Mum says CLEAN YOUR ROOM. Clothes go in the basket, homework on the desk.',
     bg: bgTeen, layout: L_TEEN,
     surfaces: [
@@ -294,7 +294,6 @@ const CHAPTERS = [
       { id: 'te-mock', items: ['homework2'], type: 'photo', src: 'assets/photos/04-teen-mock-exam.webp', caption: 'Please let me PASS...' },
       { id: 'te-clothes', items: [], type: 'video', src: 'assets/video/04-teen-clothes-pile.mp4', still: 'assets/photos/04-teen-clothes.webp', focus: [0.5, 0.5], caption: 'One more on the pile… “CLEAN. YOUR. ROOM.”' },
       { id: 'te-heels', items: ['heels'], type: 'photo', src: 'assets/photos/04-teen-high-heels.webp', caption: 'Stole these from mum.' },
-      { id: 'te-posters', items: ['posterband', 'postermovie'], type: 'photo', src: 'assets/photos/04-teen-posters.webp', caption: 'Walls = personality.' },
       { id: 'te-trophy', items: ['trophy', 'medal', 'award'], type: 'photo', src: 'assets/photos/04-teen-trophies.webp', caption: 'Solo dance: 2nd, 2nd… then 1st! (Still learning to brake.)' }
     ],
     onStart: [{ do: 'wait', ms: 1500 }, { do: 'toast', from: 'Mum', text: 'This room is a DISASTER. Clean it before dinner!!', nudge: true }],
@@ -316,7 +315,7 @@ const CHAPTERS = [
   },
   {
     id: 'youngadult', kicker: 'Chapter 5', title: 'Young Adult', year: 2017, accent: '#ff5400',
-    intro: 'A more grown-up room. Most of the childhood things are gone now. Not all of them.',
+    intro: 'The room has grown up. Most of the childhood things are gone. Not all of them.',
     tip: 'Make the room yours. Hang your painting on the wall above the bed.',
     bg: bgYoungAdult, layout: L_YA,
     surfaces: YA_SURFACES.concat([{ id: 'floor', tag: 'floor', type: 'area', x1: 60, x2: 1220, y1: 492, y2: 558 }]),
@@ -324,9 +323,9 @@ const CHAPTERS = [
     mess: [],
     memories: [
       { id: 'y-teddy', items: ['teddy'], type: 'photo', src: 'assets/photos/05-youngadult-teddy.webp', caption: 'Still here. A bit faded, a lot loved.' },
-      { id: 'y-novel', items: ['novel'], type: 'photo', src: 'assets/photos/05-youngadult-novel.webp', caption: '[Content here]' },
-      { id: 'y-cosmetics', items: ['cosmetics'], type: 'photo', src: 'assets/photos/05-youngadult-cosmetics.webp', caption: '[Content here]' },
-      { id: 'y-digicam', items: ['digicam'], type: 'photo', src: 'assets/photos/05-youngadult-digicam.webp', caption: '[Content here]' },
+      { id: 'y-novel', items: ['novel'], type: 'photo', src: 'assets/photos/05-youngadult-novel.webp', caption: 'Getting ready for uni, one chapter at a time.' },
+      { id: 'y-cosmetics', items: ['cosmetics'], type: 'photo', src: 'assets/photos/05-youngadult-cosmetics.webp', caption: 'Too many blushes? No such thing.' },
+      { id: 'y-digicam', items: ['digicam'], type: 'photo', src: 'assets/photos/05-youngadult-digicam.webp', caption: 'If it’s not on the digicam, it didn’t happen.' },
       { id: 'y-polaroids', items: ['polaroids'], type: 'text', title: 'polaroids.txt', caption: 'Friends I hadn’t met yet when I was twelve.' },
       { id: 'y-painting', items: ['painting'], type: 'video', src: 'assets/video/05-youngadult-painting.mp4', still: 'assets/photos/05-youngadult-painting.webp', focus: [0.4, 0.4], caption: 'Painting just for me again.' },
       /* EASTER EGG: put the laptop on the desk and it opens up full screen and plays our exhibition ad.
@@ -343,7 +342,7 @@ const CHAPTERS = [
   },
   {
     id: 'movingout', kicker: 'Chapter 6', title: 'Moving Out', year: 2018, accent: '#ff84e4',
-    intro: 'A letter came in the mail. The car is in the driveway. Time to pack.',
+    intro: 'Pack your things. Carry your memories.',
     tip: 'Pack what you’ll take into the box. Teddy goes in last.',
     bg: bgMovingOut, layout: L_YA, moving: true,
     surfaces: YA_SURFACES.concat([

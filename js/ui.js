@@ -123,7 +123,7 @@ const UI = (() => {
       '<div class="win title-win pop-in">' +
       '  <div class="titlebar"><span>The Next Chapter</span></div>' +
       '  <div class="win-body">' +
-      '    <p class="tagline">One room, from nursery to moving out:<br>what we keep up, carry on, and leave behind.</p>' +
+      '    <p class="tagline">Every life starts somewhere.<br>Ready to start yours?</p>' +
       '    <button class="aqua big" id="startBtn">Start&nbsp;&nbsp;▶︎</button>' +
       '  </div>' +
       '</div>' +
@@ -140,11 +140,14 @@ const UI = (() => {
           '    <img class="door-logo main" src="assets/brand/logo-sign.svg" alt="The Next Chapter">' +
           '    <div class="door-hint">Click to Start</div>' +
           '  </div>' +
-          '  <div class="login-win">' +
-          '    <div class="avatar"><svg class="avatar-fallback" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="38" r="17" fill="rgba(255,255,255,.75)"/><path d="M16 92c2-24 16-34 34-34s32 10 34 34z" fill="rgba(255,255,255,.75)"/></svg>' +
-          '      <img class="avatar-img" src="assets/brand/profile.webp" alt=""></div>' +
-          '    <input class="login-name" id="loginName" type="text" maxlength="20" placeholder="User Name" autocomplete="off" spellcheck="false" aria-label="User Name">' +
-          '    <button class="aqua login-go" id="loginGo" type="button" aria-disabled="true">Sign In</button>' +
+          '  <div class="win login-win">' +
+          '    <div class="titlebar"><span>' + svg('star', 20) + 'New Chapter Messenger</span></div>' +
+          '    <div class="login-body">' +
+          '      <div class="avatar"><svg class="avatar-fallback" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="38" r="17" fill="#fff"/><path d="M16 92c2-24 16-34 34-34s32 10 34 34z" fill="#fff"/></svg>' +
+          '        <img class="avatar-img" src="assets/brand/profile.webp" alt=""></div>' +
+          '      <input class="login-name" id="loginName" type="text" maxlength="20" placeholder="User Name" autocomplete="off" spellcheck="false" aria-label="User Name">' +
+          '      <button class="aqua login-go" id="loginGo" type="button" aria-disabled="true">Sign In</button>' +
+          '    </div>' +
           '  </div>' +
           '  <div class="title-foot">© 2026 Chloee Park, Isabella Kiosses, Lyebin Cho, Qinxi "Cecelia" Yao. All rights reserved. </div>' +
           '</div>'
@@ -431,7 +434,7 @@ const UI = (() => {
       '        <canvas class="lap-static" width="156" height="' + Math.round(156 / ratio) + '"></canvas>' +
       '        <span class="lap-ch">' + esc(mem.channel || 'CH 29') + '</span>' +
       '        <span class="ad-tag">Ad<em id="adTime"></em></span>' +
-      '        <button class="ad-skip" id="adSkip" disabled>Skip Ad in <b id="adCount">' + (mem.skipAfter || 5) + '</b></button>' +
+      '        <button class="aqua ad-skip" id="adSkip" disabled>Skip Ad in <b id="adCount">' + (mem.skipAfter || 5) + '</b></button>' +
       '        <div class="ad-bar"><i id="adBar"></i></div>' +
       '        <i class="lap-glare"></i>' +
       '      </div>' +
@@ -635,7 +638,7 @@ const UI = (() => {
   function showThanks(note, teddyThumb, onNext) {
     const lines = note.lines.map((t, i) => '<p class="tl" style="--d:' + (0.15 + i * 0.15).toFixed(2) + 's">' + esc(t) + '</p>').join('');
     const el = setScreen(
-      '<div class="holo"></div>' +
+      '<canvas class="px desk-bg" width="' + ART_W + '" height="240"></canvas>' +
       '<div class="win thanks-win pop-in">' +
       '  <div class="titlebar"><span></span></div>' +
       '  <div class="thanks-body">' +
@@ -647,6 +650,7 @@ const UI = (() => {
       '    </div>' +
       '  </div>' +
       '</div>', 'thanks-screen');
+    el.querySelector('.desk-bg').getContext('2d').drawImage(drawDeskBg(), 0, 0);   // same pixel hill as the chapter select and the ending
     draggable(el.querySelector('.thanks-win'));
     el.querySelector('#thanksNext').addEventListener('click', e => { e.stopPropagation(); Sound.click(); onNext(); });
     Sound.page();

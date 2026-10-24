@@ -94,9 +94,9 @@ Until a file exists, its frame simply stays empty (the caption still shows). A v
 | `assets/photos/04-teen-posters.webp` | First poster goes up | Walls = personality. |
 | ✅ `assets/photos/04-teen-trophies.webp` | First trophy is shelved | Solo dance: 2nd, 2nd… then 1st! (Still learning to brake.) |
 | ✅ `assets/photos/05-youngadult-teddy.webp` (cut-out) | Teddy is put down in the young adult room | Still here. A bit faded, a lot loved. |
-| ✅ `assets/photos/05-youngadult-novel.webp` | Novel is put down | [Content here] |
-| ✅ `assets/photos/05-youngadult-cosmetics.webp` | Cosmetics are put down | [Content here] |
-| ✅ `assets/photos/05-youngadult-digicam.webp` | Digicam is put down | [Content here] |
+| ✅ `assets/photos/05-youngadult-novel.webp` | Novel is put down | Getting ready for uni, one chapter at a time. |
+| ✅ `assets/photos/05-youngadult-cosmetics.webp` | Cosmetics are put down | Too many blushes? No such thing. |
+| ✅ `assets/photos/05-youngadult-digicam.webp` | Digicam is put down | If it’s not on the digicam, it didn’t happen. |
 | ✅ `assets/video/05-youngadult-painting.mp4` | Flower painting goes on the wall (or the desk) | Painting just for me again. |
 | 🥚 ✅ `assets/video/05-youngadult-laptop-ad.mp4` (still: `assets/photos/05-youngadult-laptop-ad.webp`, the poster) | **Easter egg:** the laptop goes on the desk (or is clicked). The laptop opens full screen and plays our exhibition ad, with an "Ad" tag and "Skip ad" after 5 s. No ! badge, not counted in Memories. Shape **1.414 : 1** like the poster (e.g. 1920 × 1358); keep the bottom-right corner and bottom edge free of key text. | (none: it's an ad) |
 | ✅ `assets/video/06-moving-out-boxes.mp4` (still: `assets/photos/06-moving-out-boxes.jpg`) | Teddy is packed (the finale) | Teddy, the family photo, and some clothes. |

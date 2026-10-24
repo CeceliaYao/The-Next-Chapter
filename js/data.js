@@ -9,7 +9,7 @@
 
 // Change this (and the ?v= on the files in index.html) with every update, so browsers fetch the new
 // photos, videos and code together instead of mixing new files with old ones from their cache.
-const VERSION = '20261024c';
+const VERSION = '20261024d';
 
 const MEMORY_BOX_SIZE = 3;          // how many things (besides Teddy) carry over between chapters
 const IDLE_RESET_MS = 150000;       // exhibition: return to title after 2.5 min of no input
@@ -328,9 +328,9 @@ const CHAPTERS = [
     mess: [],
     memories: [
       { id: 'y-teddy', items: ['teddy'], type: 'photo', src: 'assets/photos/05-youngadult-teddy.webp', caption: 'Still here. A bit faded, a lot loved.' },
-      { id: 'y-novel', items: ['novel'], type: 'photo', src: 'assets/photos/05-youngadult-novel.webp', caption: '[Content here]' },
-      { id: 'y-cosmetics', items: ['cosmetics'], type: 'photo', src: 'assets/photos/05-youngadult-cosmetics.webp', caption: '[Content here]' },
-      { id: 'y-digicam', items: ['digicam'], type: 'photo', src: 'assets/photos/05-youngadult-digicam.webp', caption: '[Content here]' },
+      { id: 'y-novel', items: ['novel'], type: 'photo', src: 'assets/photos/05-youngadult-novel.webp', caption: 'Getting ready for uni, one chapter at a time.' },
+      { id: 'y-cosmetics', items: ['cosmetics'], type: 'photo', src: 'assets/photos/05-youngadult-cosmetics.webp', caption: 'Too many blushes? No such thing.' },
+      { id: 'y-digicam', items: ['digicam'], type: 'photo', src: 'assets/photos/05-youngadult-digicam.webp', caption: 'If it’s not on the digicam, it didn’t happen.' },
       { id: 'y-polaroids', items: ['polaroids'], type: 'text', title: 'polaroids.txt', caption: 'Friends I hadn’t met yet when I was twelve.' },
       { id: 'y-painting', items: ['painting'], type: 'video', src: 'assets/video/05-youngadult-painting.mp4', caption: 'Painting just for me again.' },
       /* EASTER EGG: put the laptop on the desk and it opens up full screen and plays our exhibition ad.

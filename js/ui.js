@@ -636,7 +636,7 @@ const UI = (() => {
   function showThanks(note, teddyThumb, onNext) {
     const lines = note.lines.map((t, i) => '<p class="tl" style="--d:' + (0.15 + i * 0.15).toFixed(2) + 's">' + esc(t) + '</p>').join('');
     const el = setScreen(
-      '<div class="holo"></div>' +
+      '<canvas class="px desk-bg" width="' + ART_W + '" height="240"></canvas>' +
       '<div class="win thanks-win pop-in">' +
       '  <div class="titlebar"><span></span></div>' +
       '  <div class="thanks-body">' +
@@ -648,6 +648,7 @@ const UI = (() => {
       '    </div>' +
       '  </div>' +
       '</div>', 'thanks-screen');
+    el.querySelector('.desk-bg').getContext('2d').drawImage(drawDeskBg(), 0, 0);   // same pixel hill as the chapter select and the ending
     draggable(el.querySelector('.thanks-win'));
     el.querySelector('#thanksNext').addEventListener('click', e => { e.stopPropagation(); Sound.click(); onNext(); });
     Sound.page();

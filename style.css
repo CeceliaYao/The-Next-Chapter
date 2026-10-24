@@ -214,14 +214,6 @@ button { font-family: var(--font-ui); cursor: var(--cursor-hand); }
 #overlay { position: absolute; inset: 0; z-index: 20; pointer-events: none; }
 #overlay .screen { position: absolute; inset: 0; pointer-events: auto; display: flex; align-items: center; justify-content: center; }
 #overlay .screen.intro-screen, #overlay .screen.keep-screen, #overlay .screen.complete-screen { background: rgba(34, 26, 19, .32); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
-.holo {
-  position: absolute; inset: 0;
-  background:
-    radial-gradient(50% 40% at 18% 12%, rgba(255, 255, 255, .95), transparent 70%),
-    radial-gradient(45% 35% at 88% 85%, rgba(255, 220, 245, .95), transparent 70%),
-    radial-gradient(40% 30% at 80% 18%, rgba(205, 240, 255, .9), transparent 70%),
-    linear-gradient(180deg, #fff1df 0%, #ffdcc6 38%, #ffd2ec 70%, #d4f0ff 100%);
-}
 
 .pop-in { animation: popIn .3s var(--ease) both; }
 @keyframes popIn { from { opacity: 0; transform: scale(.96); } }

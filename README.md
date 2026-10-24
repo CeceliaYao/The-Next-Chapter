@@ -92,7 +92,7 @@ Until a file exists, its frame simply stays empty (the caption still shows). A v
 | ✅ `assets/video/04-teen-clothes-pile.mp4` (still: `assets/photos/04-teen-clothes.webp`) | Both clothes go in the basket (then Mum scolds) | One more on the pile… "CLEAN. YOUR. ROOM." |
 | ✅ `assets/photos/04-teen-high-heels.webp` | Heels are put down | Stole these from mum. |
 | ✅ `assets/photos/04-teen-trophies.webp` | First trophy is shelved | Solo dance: 2nd, 2nd… then 1st! (Still learning to brake.) |
-| `assets/photos/05-youngadult-teddy.webp` | Teddy is put down in the young adult room | Still here. A bit faded, a lot loved. |
+| ✅ `assets/photos/05-youngadult-teddy.webp` (cut-out) | Teddy is put down in the young adult room | Still here. A bit faded, a lot loved. |
 | ✅ `assets/photos/05-youngadult-novel.webp` | Novel is put down | Getting ready for uni, one chapter at a time. |
 | ✅ `assets/photos/05-youngadult-cosmetics.webp` | Cosmetics are put down | Too many blushes? No such thing. |
 | ✅ `assets/photos/05-youngadult-digicam.webp` | Digicam is put down | If it’s not on the digicam, it didn’t happen. |

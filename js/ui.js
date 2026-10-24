@@ -12,6 +12,7 @@ const UI = (() => {
   // escapes text for HTML; hearts get the text-style selector so phones don't turn them into emoji
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])).replace(/\u2665(?!\uFE0E)/g, '\u2665\uFE0E');
   const DEV = /[?&]dev\b/.test(location.search);   // add ?dev to the URL to see which media files are missing
+  const fresh = p => p + '?v=' + VERSION;   // photos and videos load with the current version (see data.js)
 
   /* small vector icons (smooth at any size) */
   const ICONS = {
@@ -381,7 +382,7 @@ const UI = (() => {
         };
         loop();
       };
-      img.src = mem.still;
+      img.src = fresh(mem.still);
     };
     if (mem.type === 'photo') {
       const img = new Image();
@@ -393,7 +394,7 @@ const UI = (() => {
         host.appendChild(img);
       };
       img.onerror = showEmpty;
-      img.src = mem.src;
+      img.src = fresh(mem.src);
     } else {
       const v = document.createElement('video');
       v.playsInline = true; v.preload = 'auto';
@@ -410,7 +411,7 @@ const UI = (() => {
       v.addEventListener('play', () => setPlayIcon(true));
       v.addEventListener('pause', () => setPlayIcon(false));
       v.addEventListener('ended', () => { setSeek(1); memState.timers.push(setTimeout(() => closeMemory(), 2600)); });
-      v.src = mem.src;
+      v.src = fresh(mem.src);
       memState.video = v;
     }
     const replay = modal.querySelector('#memReplay');
@@ -505,7 +506,7 @@ const UI = (() => {
         reveal();
       };
       im.onerror = blank;
-      im.src = mem.still;
+      im.src = fresh(mem.still);
     };
     const v = document.createElement('video');
     v.playsInline = true; v.preload = 'auto';
@@ -518,7 +519,7 @@ const UI = (() => {
       st.timers.push(setTimeout(() => { if (!live()) return; const p = v.play(); if (p && p.catch) p.catch(() => {}); reveal(); }, 900));
     });
     v.addEventListener('ended', finish);
-    v.src = mem.src;
+    v.src = fresh(mem.src);
     st.video = v;
 
     skipB.addEventListener('click', e => { e.stopPropagation(); if (st.canSkip) { Sound.click(); closeMemory(); } });

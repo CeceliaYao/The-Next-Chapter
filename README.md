@@ -60,36 +60,36 @@ npx serve .        # then open the printed localhost address
 
 | # | Chapter | Year | What happens | Memories (from the shot list) |
 | --- | --- | --- | --- | --- |
-| 1 | The Nursery | 2000 | Cot, mobile, night-light, snow globe, Peter Rabbit | Teddy resting in bed (photo), snow globe (video), Peter Rabbit on the books (photo) |
-| 2 | Childhood | 2005 | Tea party, dress-ups (tutu, wings, tiara), tiny messes, brother's truck | Tea party (video), drawings (photo) |
-| 3 | Tween | 2010 | Backpack, skates, art, brother's controller | Backpack plonk (video), roller skates (photo), drawing (photo), family photo (photo) |
+| 1 | The Nursery | 2000 | Cot, mobile, night-light, snow globe, Peter Rabbit | Teddy resting in bed (video), snow globe (video), Peter Rabbit on the books (photo) |
+| 2 | Childhood | 2005 | Tea party, dress-ups (tutu, wings, tiara), tiny messes, brother's truck | Tea party (video), dolls (photo), drawings (note) |
+| 3 | Tween | 2010 | Backpack, skates, art, brother's controller | Backpack plonk (video), roller skates, art supplies, anime sketch, CD player (photos), family photo (note) |
 | 4 | Teen | 2014 | Mess everywhere, posters, skating trophies, Mum nagging, old sneakers kicked under the bed | Homework (photo), clothes pile + Mum (video), heels (photo), posters (photo), trophies (photo) |
-| 5 | Young Adult | 2017 | More grown-up room; fairy lights, laptop | Faded Teddy (photo), text notes |
+| 5 | Young Adult | 2017 | More grown-up room; flower painting, laptop | Faded Teddy (photo), painting (video), novel, cosmetics, digicam (photos), polaroids (note), laptop ad (easter egg) |
 | 6 | Moving Out | 2018 | Pack the box, uni acceptance letter | Letter (text), boxes with Teddy / family photo / clothes (video) |
 
 ---
 
 ## Adding the real photos & videos
 
-Until a file exists, its frame simply stays empty (the caption still shows). The snow globe and moving-out videos use the team's photo with a slow camcorder zoom until the clips arrive. Open the game with `?dev` on the end of the address (e.g. `index.html?dev`) to see which filename each one is waiting for. To add footage, **save it with exactly these names**. Files marked ✅ are already in the game (from the team's photos):
+Until a file exists, its frame simply stays empty (the caption still shows). A video with a still photo shows the photo with a slow camcorder zoom if the clip can't play. Open the game with `?dev` on the end of the address (e.g. `index.html?dev`) to see which filename each one is waiting for. To add footage, **save it with exactly these names**. Files marked ✅ are already in the game (from the team's photos):
 
 | File | Plays when… | Caption on screen |
 | --- | --- | --- |
-| ✅ `assets/photos/01-nursery-teddy.webp` (cut-out) | Teddy is put in the cot | Teddy resting in bed. |
-| `assets/video/01-nursery-snowglobe.mp4` (still: `assets/photos/01-nursery-snowglobe.jpg`) | Snow globe is put away | ♪ ♫ ♪  Watching the glitter fall.  ♪ ♫ ♪ |
-| ✅ `assets/photos/01-nursery-peter-rabbit.webp` | Peter Rabbit is put down | Peter Rabbit, chilling on a shelf. |
-| `assets/video/02-childhood-tea-party.mp4` (✅ still: `assets/photos/02-childhood-tea-party.webp`) | Tea set goes on the tea table | Tea party with the dolls and Teddy. |
-| ✅ `assets/photos/02-childhood-dolls.webp` | Doll is put down | [Content here] |
-| no picture, just a note: `my_family.txt` | Drawing goes on the wall | MY FAMILY, by me (age 5) … Teddy is the biggest. |
-| `assets/video/03-tween-backpack.mp4` (✅ still: `assets/photos/03-tween-backpack.webp`) | Backpack is put down | Too many textbooks to carry. |
+| ✅ `assets/video/01-nursery-teddy.mp4` (still: `assets/photos/01-nursery-teddy.webp`) | Teddy is put in the cot | Teddy resting in bed. |
+| ✅ `assets/video/01-nursery-snowglobe.mp4` (still: `assets/photos/01-nursery-snowglobe.jpg`) | Snow globe is put away | ♪ ♫ ♪  Watching the glitter fall.  ♪ ♫ ♪ |
+| ✅ `assets/photos/01-nursery-peter-rabbit.webp` | Peter Rabbit or the board books are put down (same photo) | Peter Rabbit, chilling on a shelf. |
+| ✅ `assets/video/02-childhood-tea-party.mp4` (still: `assets/photos/02-childhood-tea-party.webp`) | Tea set goes on the tea table | Tea party with the dolls and the teddy. |
+| ✅ `assets/photos/02-childhood-dolls.webp` | Dolls are put down | Yay! Everyone’s here! |
+| no picture, just a note: `my_family.txt` | Drawing goes on the wall | MY FAMILY, by me (age 5) … And teddy. |
+| ✅ `assets/video/03-tween-backpack.mp4` (still: `assets/photos/03-tween-backpack.webp`) | Backpack is put down | Too many textbooks to carry. |
 | ✅ `assets/photos/03-tween-rollerskates.webp` | Skates are put down | I got these for my birthday! Now to learn how to brake. |
 | ✅ `assets/photos/03-tween-art-supplies.webp` | Art supplies go on the desk | Drawing is hard, but fun! |
-| ✅ `assets/photos/03-tween-drawing.webp` | Anime sketch is put up (or on the desk) | [Content here] |
-| ✅ `assets/photos/03-tween-cd-player.webp` | CD player is put down | [Content here] |
+| ✅ `assets/photos/03-tween-drawing.webp` | Anime sketch is put up (or on the desk) | Don’t look at my sketches! |
+| ✅ `assets/photos/03-tween-cd-player.webp` | CD player is put down | Mum says I listen to this too much. She doesn’t get it. |
 | no picture, just a note: `family_photo.txt` | Family photo is placed | Family photo day. "Everybody say cheese!" |
 | ✅ `assets/photos/04-teen-homework.webp` | History homework goes on the desk | This is my life now. |
-| ✅ `assets/photos/04-teen-mock-exam.webp` | Mock exam goes on the desk | [Content here] |
-| `assets/video/04-teen-clothes-pile.mp4` (✅ still: `assets/photos/04-teen-clothes.webp`) | Both clothes go in the basket (then Mum scolds) | One more on the pile… "CLEAN. YOUR. ROOM." |
+| ✅ `assets/photos/04-teen-mock-exam.webp` | Mock exam goes on the desk | Please let me PASS... |
+| ✅ `assets/video/04-teen-clothes-pile.mp4` (still: `assets/photos/04-teen-clothes.webp`) | Both clothes go in the basket (then Mum scolds) | One more on the pile… "CLEAN. YOUR. ROOM." |
 | ✅ `assets/photos/04-teen-high-heels.webp` | Heels are put down | Stole these from mum. |
 | `assets/photos/04-teen-posters.webp` | First poster goes up | Walls = personality. |
 | ✅ `assets/photos/04-teen-trophies.webp` | First trophy is shelved | Solo dance: 2nd, 2nd… then 1st! (Still learning to brake.) |
@@ -97,13 +97,14 @@ Until a file exists, its frame simply stays empty (the caption still shows). The
 | ✅ `assets/photos/05-youngadult-novel.webp` | Novel is put down | [Content here] |
 | ✅ `assets/photos/05-youngadult-cosmetics.webp` | Cosmetics are put down | [Content here] |
 | ✅ `assets/photos/05-youngadult-digicam.webp` | Digicam is put down | [Content here] |
-| 🥚 `assets/video/05-youngadult-laptop-ad.mp4` (still: `assets/photos/05-youngadult-laptop-ad.webp`, the poster) | **Easter egg:** the laptop goes on the desk (or is clicked). The laptop opens full screen and plays our exhibition ad, with an "Ad" tag and "Skip ad" after 5 s. No ! badge, not counted in Memories. Shape **1.414 : 1** like the poster (e.g. 1920 × 1358); keep the bottom-right corner and bottom edge free of key text. | (none: it's an ad) |
-| `assets/video/06-moving-out-boxes.mp4` (still: `assets/photos/06-moving-out-boxes.jpg`) | Teddy is packed (the finale) | Teddy, the family photo, and some clothes. |
+| ✅ `assets/video/05-youngadult-painting.mp4` (still: `assets/photos/05-youngadult-painting.webp`, a frame from the clip) | Flower painting goes on the wall (or the desk) | Painting just for me again. |
+| 🥚 ✅ `assets/video/05-youngadult-laptop-ad.mp4` (still: `assets/photos/05-youngadult-laptop-ad.webp`, the poster) | **Easter egg:** the laptop goes on the desk (or is clicked). The laptop opens full screen and plays our exhibition ad, with an "Ad" tag and "Skip ad" after 5 s. No ! badge, not counted in Memories. Shape **1.414 : 1** like the poster (e.g. 1920 × 1358); keep the bottom-right corner and bottom edge free of key text. | (none: it's an ad) |
+| ✅ `assets/video/06-moving-out-boxes.mp4` (still: `assets/photos/06-moving-out-boxes.jpg`) | Teddy is packed (the finale) | Teddy, the family photo, and some clothes. |
 
 **Formats**
 
 - **Photos:** `.jpg` (or `.png` / `.webp` for cut-outs with a transparent background; change the extension in `js/data.js`). About 1600 px on the long side is plenty. Portrait or landscape both work: the photo frame takes the shape of the photo, nothing is cropped. Strip location data (phone photos carry GPS) by exporting a copy rather than using the original.
-- **Videos:** **MP4, H.264**. Phone footage is often HEVC `.mov`, which many browsers can't play. In Premiere: *Export → H.264 → Match Source*. Keep clips short (5–20 s) and landscape 16:9. The player closes itself shortly after a video ends.
+- **Videos:** **MP4, H.264**. Phone footage is often HEVC `.mov`, which many browsers can't play. In Premiere: *Export → H.264 → Match Source*. Keep clips short (5–20 s), landscape 4:3 or 16:9 (the player takes the shape of the clip). The player closes itself shortly after a video ends.
 - **Stills for videos:** a video memory can have a `still` photo and a `focus` point (e.g. `focus: [0.2, 0.76]` = 20% across, 76% down). Until the video file exists, the still plays with a slow camcorder zoom towards that point.
 - Captions, filenames, Mum's messages and chapter text all live in **`js/data.js`**. Change them freely; it's plain text.
 

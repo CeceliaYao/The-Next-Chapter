@@ -62,7 +62,7 @@ const TEDDY_AGES = [
 ];
 
 /* Surface tags an object can "fit" on:
-   bed · shelf · desk · sill · table · floor · wall · hook · mobile · socket · lights
+   bed · shelf · desk · sill · table · floor · wall · hook · mobile · socket
    bins (object disappears into them): door · toybox · basket · underbed · box    */
 const CARRY_FITS = ['shelf', 'desk', 'bed', 'sill', 'floor'];
 
@@ -114,7 +114,7 @@ const ITEM_DEFS = {
   // 5 · young adult
   laptop:       { name: 'Laptop', fits: ['desk'], hint: 'The laptop goes on the desk.' },
   plant:        { name: 'Plant', fits: ['sill', 'shelf', 'desk', 'floor'], hint: 'Plants love the windowsill.' },
-  fairylights:  { name: 'Fairy Lights', fits: ['lights'], hint: 'Hang the fairy lights over the window.' },
+  painting:     { name: 'Flower Painting', fits: ['wall', 'desk'], hint: 'Hang your painting on the wall above the bed (or lean it on the desk).' },
   mug:          { name: 'Mug', fits: ['desk', 'sill', 'shelf'], hint: 'Mug on the desk or the windowsill.' },
   novel:        { name: 'Novel', fits: ['shelf', 'desk', 'bed'], hint: 'Books on the shelf, desk or bed.' },
   polaroids:    { name: 'Polaroids', fits: ['wall'], hint: 'Hang the polaroids on the wall above the bed.' },
@@ -160,8 +160,7 @@ const YA_SURFACES = [
   { id: 'wall', tag: 'wall', type: 'wall', x1: 194, y1: 118, x2: 478, y2: 292 },
   { id: 'desk', tag: 'desk', type: 'line', x1: 796, x2: 958, y: 338 },
   { id: 'shelf', tag: 'shelf', type: 'line', x1: 806, x2: 984, y: 200 },
-  SILL,
-  { id: 'lights', tag: 'lights', type: 'spot', x: 640, y: 84, r: 110 }
+  SILL
 ];
 
 /* ---------- the six chapters ---------- */
@@ -183,9 +182,9 @@ const CHAPTERS = [
     tray: ['teddy', 'blanket', 'mobile', 'rabbit', 'rabbitbooks', 'snowglobe', 'nightlight', 'rattle', 'bottle'],
     mess: [],
     memories: [
-      { id: 'n-teddy', items: ['teddy'], type: 'photo', src: 'assets/photos/01-nursery-teddy.webp', caption: 'Teddy resting in bed.' },
+      { id: 'n-teddy', items: ['teddy'], type: 'video', src: 'assets/video/01-nursery-teddy.mp4', still: 'assets/photos/01-nursery-teddy.webp', focus: [0.5, 0.45], caption: 'Teddy resting in bed.' },
       { id: 'n-globe', items: ['snowglobe'], type: 'video', src: 'assets/video/01-nursery-snowglobe.mp4', still: 'assets/photos/01-nursery-snowglobe.jpg', focus: [0.2, 0.76], caption: '♪ ♫ ♪\u00a0\u00a0Watching the glitter fall.\u00a0\u00a0♪ ♫ ♪' },
-      { id: 'n-rabbit', items: ['rabbit'], type: 'photo', src: 'assets/photos/01-nursery-peter-rabbit.webp', caption: 'Peter Rabbit, chilling on a shelf.' }
+      { id: 'n-rabbit', items: ['rabbit', 'rabbitbooks'], type: 'photo', src: 'assets/photos/01-nursery-peter-rabbit.webp', caption: 'Peter Rabbit, chilling on a shelf.' }
     ],
     onStart: [{ do: 'wait', ms: 1600 }, { do: 'toast', from: 'Mum', text: 'Sweet dreams, little one. ♥' }],
     onPlace: {},
@@ -220,8 +219,8 @@ const CHAPTERS = [
     ],
     memories: [
       { id: 'c-tea', items: ['teaset'], type: 'video', src: 'assets/video/02-childhood-tea-party.mp4', still: 'assets/photos/02-childhood-tea-party.webp', focus: [0.5, 0.5], caption: 'Tea party with the dolls and the teddy.' },
-      { id: 'c-doll', items: ['doll'], type: 'photo', src: 'assets/photos/02-childhood-dolls.webp', caption: '[Content here]' },
-      { id: 'c-draw', items: ['drawing'], type: 'text', title: 'my_family.txt', caption: 'MY FAMILY, by me (age 5)\n\nMum. Dad. Me. My little brother.\nAnd Teddy.\n\nTeddy is the biggest.' }
+      { id: 'c-doll', items: ['doll'], type: 'photo', src: 'assets/photos/02-childhood-dolls.webp', caption: 'Yay! Everyone’s here!' },
+      { id: 'c-draw', items: ['drawing'], type: 'text', title: 'my_family.txt', caption: 'MY FAMILY, by me (age 5)\n\nMum. Dad. Me. My little brother.\nAnd teddy.' }
     ],
     onStart: [{ do: 'wait', ms: 1800 }, { do: 'toast', from: 'Mum', text: 'Tidy up before dinner, sweetheart. ♥' }],
     onPlace: {
@@ -253,9 +252,9 @@ const CHAPTERS = [
       { id: 't-bag', items: ['backpack'], type: 'video', src: 'assets/video/03-tween-backpack.mp4', still: 'assets/photos/03-tween-backpack.webp', focus: [0.55, 0.5], caption: 'Too many textbooks to carry.' },
       { id: 't-skates', items: ['skates'], type: 'photo', src: 'assets/photos/03-tween-rollerskates.webp', caption: 'I got these for my birthday! Now to learn how to brake.' },
       { id: 't-art', items: ['artsupplies'], type: 'photo', src: 'assets/photos/03-tween-art-supplies.webp', caption: 'Drawing is hard, but fun!' },
-      { id: 't-sketch', items: ['sketch'], type: 'photo', src: 'assets/photos/03-tween-drawing.webp', caption: '[Content here]' },
-      { id: 't-cd', items: ['discman'], type: 'photo', src: 'assets/photos/03-tween-cd-player.webp', caption: '[Content here]' },
-      { id: 't-family', items: ['familyphoto'], type: 'text', title: 'family_photo.txt', caption: 'Family photo day.\n\n“Everybody say cheese!”\n\nMum framed a copy for my room.' }
+      { id: 't-sketch', items: ['sketch'], type: 'photo', src: 'assets/photos/03-tween-drawing.webp', caption: 'Don’t look at my sketches!' },
+      { id: 't-cd', items: ['discman'], type: 'photo', src: 'assets/photos/03-tween-cd-player.webp', caption: 'Mum says I listen to this too much. She doesn’t get it.' },
+      { id: 't-family', items: ['familyphoto'], type: 'text', title: 'family_photo.txt', caption: 'Family photo day.\n\n“Everybody say cheese!”' }
     ],
     onStart: [{ do: 'wait', ms: 1800 }, { do: 'toast', from: 'Little bro', text: 'Have you seen my controller??' }],
     onPlace: {
@@ -292,7 +291,7 @@ const CHAPTERS = [
     ],
     memories: [
       { id: 'te-homework', items: ['homework1'], type: 'photo', src: 'assets/photos/04-teen-homework.webp', caption: 'This is my life now.' },
-      { id: 'te-mock', items: ['homework2'], type: 'photo', src: 'assets/photos/04-teen-mock-exam.webp', caption: '[Content here]' },
+      { id: 'te-mock', items: ['homework2'], type: 'photo', src: 'assets/photos/04-teen-mock-exam.webp', caption: 'Please let me PASS...' },
       { id: 'te-clothes', items: [], type: 'video', src: 'assets/video/04-teen-clothes-pile.mp4', still: 'assets/photos/04-teen-clothes.webp', focus: [0.5, 0.5], caption: 'One more on the pile… “CLEAN. YOUR. ROOM.”' },
       { id: 'te-heels', items: ['heels'], type: 'photo', src: 'assets/photos/04-teen-high-heels.webp', caption: 'Stole these from mum.' },
       { id: 'te-posters', items: ['posterband', 'postermovie'], type: 'photo', src: 'assets/photos/04-teen-posters.webp', caption: 'Walls = personality.' },
@@ -318,10 +317,10 @@ const CHAPTERS = [
   {
     id: 'youngadult', kicker: 'Chapter 5', title: 'Young Adult', year: 2017, accent: '#ff5400',
     intro: 'A more grown-up room. Most of the childhood things are gone now. Not all of them.',
-    tip: 'Make the room yours. Fairy lights go over the window.',
+    tip: 'Make the room yours. Hang your painting on the wall above the bed.',
     bg: bgYoungAdult, layout: L_YA,
     surfaces: YA_SURFACES.concat([{ id: 'floor', tag: 'floor', type: 'area', x1: 60, x2: 1220, y1: 492, y2: 558 }]),
-    tray: ['laptop', 'fairylights', 'plant', 'mug', 'novel', 'polaroids', 'cosmetics', 'digicam'],
+    tray: ['laptop', 'painting', 'plant', 'mug', 'novel', 'polaroids', 'cosmetics', 'digicam'],
     mess: [],
     memories: [
       { id: 'y-teddy', items: ['teddy'], type: 'photo', src: 'assets/photos/05-youngadult-teddy.webp', caption: 'Still here. A bit faded, a lot loved.' },
@@ -329,7 +328,7 @@ const CHAPTERS = [
       { id: 'y-cosmetics', items: ['cosmetics'], type: 'photo', src: 'assets/photos/05-youngadult-cosmetics.webp', caption: '[Content here]' },
       { id: 'y-digicam', items: ['digicam'], type: 'photo', src: 'assets/photos/05-youngadult-digicam.webp', caption: '[Content here]' },
       { id: 'y-polaroids', items: ['polaroids'], type: 'text', title: 'polaroids.txt', caption: 'Friends I hadn’t met yet when I was twelve.' },
-      { id: 'y-lights', items: ['fairylights'], type: 'text', title: 'status.txt', caption: 'current mood: fairy lights & no curfew ✦' },
+      { id: 'y-painting', items: ['painting'], type: 'video', src: 'assets/video/05-youngadult-painting.mp4', still: 'assets/photos/05-youngadult-painting.webp', focus: [0.4, 0.4], caption: 'Painting just for me again.' },
       /* EASTER EGG: put the laptop on the desk and it opens up full screen and plays our exhibition ad.
          secret: true = no ! badge and it doesn't count towards "Memories x/y", so it stays a surprise.
          Video: MP4 / H.264, same 1.414 : 1 shape as the poster (e.g. 1920 x 1358). Until it exists, the poster plays with a slow zoom.

@@ -611,17 +611,18 @@ const PIXEL_SPRITES = {
       b.grid(6, 13, ['w.w', 'www', '.w.']);
     }
   },
-  fairylights: {
-    w: 75, h: 10, frames: 2,
-    draw(b, f) {
-      const ys = [];
-      for (let x = 0; x < 75; x++) { const u = (x % 37.5) / 37.5; ys[x] = 1 + Math.round(Math.sin(u * Math.PI) * 5); b.px(x, ys[x], 'o'); }
-      const cols = ['h', 'Y', 'A', 'L'];
-      for (let k = 0, x = 2; x < 74; x += 5, k++) {
-        const on = (k + f) % 2 === 0;
-        b.rect(x, ys[x] + 1, 2, 2, on ? cols[k % 4] : 'g');
-        if (on) b.px(x, ys[x] + 1, 'w');
-      }
+  painting: {                       // her flower painting: a vase of red flowers on a stretched canvas
+    w: 20, h: 24,
+    draw(b) {
+      b.rect(0, 0, 20, 24, 'r');                                   // canvas edge
+      b.rect(1, 1, 18, 15, 'g'); b.rect(10, 1, 9, 15, 'y'); b.rect(9, 1, 1, 15, 'l');   // cool-to-warm wall
+      b.rect(1, 16, 18, 7, 'k'); b.rect(1, 20, 18, 3, 'K');        // the table
+      b.rect(6, 12, 8, 9, 'e'); b.vline(6, 12, 9, 'E'); b.vline(13, 12, 9, 'E'); b.hline(6, 20, 8, 'E');   // glass vase
+      [[7, 6], [9, 4], [10, 5], [12, 7]].forEach(([x, y]) => b.vline(x, y, 15 - y + 5, 'F'));             // stems
+      [[4, 4, 'X'], [7, 3, 'x'], [9, 2, 'X'], [11, 3, 'x'], [14, 4, 'X'], [6, 6, 'P'], [12, 6, 'h'], [15, 7, 'x'], [5, 8, 'x']]
+        .forEach(([x, y, c]) => { b.rect(x, y, 2, 2, c); });
+      b.px(3, 12, 'x'); b.px(16, 11, 'x'); b.px(4, 15, 'X');      // falling petals
+      b.hline(1, 1, 18, 'w');                                      // a bit of shine on the top edge
     }
   },
   mug: {

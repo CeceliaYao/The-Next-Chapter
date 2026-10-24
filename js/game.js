@@ -918,11 +918,6 @@ function drawRoomFx() {
       if (lvl && BAYER4[((cy + y) & 3) * 4 + ((cx + x) & 3)] < lvl) apx(cx + x, cy + y, '#fff3a8');
     }
   }
-  const fl = G.items.find(i => i.id === 'fairylights' && i.state === 'placed');
-  if (fl) {
-    const cx = Math.round(fl.x / ART), cy = Math.round(fl.y / ART);
-    for (let y = -4; y < 22; y++) for (let x = -50; x <= 50; x++) if (BAYER4[((cy + y) & 3) * 4 + ((cx + x) & 3)] < (y < 10 ? 2 : 1) && Math.abs(x) < 50 - y) apx(cx + x, cy + y, '#ffd6ee');
-  }
   // twinkles on the walls
   for (let i = 0; i < 6; i++) {
     const ph = (G.time / 1500 + i * 0.37) % 1;

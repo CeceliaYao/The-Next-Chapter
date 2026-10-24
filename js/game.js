@@ -831,9 +831,28 @@ function render() {
 /* ---------- words on the canvas: smooth fonts on top of the pixel art ---------- */
 function canvasText(ctx, str, x, y, o) {
   ctx.font = (o.weight || (o.family === FONT_BODY ? W_TEXT : W_STRONG)) + ' ' + o.size + 'px ' + (o.family || FONT_UI);
-  ctx.textAlign = o.align || 'center'; ctx.textBaseline = 'middle';
+  ctx.textBaseline = 'middle';
   ctx.fillStyle = o.color || PALETTE.o;
-  ctx.fillText(str, x, y);
+  const align = o.align || 'center';
+  if (!str.endsWith(HEART)) { ctx.textAlign = align; ctx.fillText(str, x, y); return; }
+  // a trailing ♥ is drawn as a shape: browsers size the ♥ glyph differently (on the iPad "DONE ♥" sat off centre)
+  const text = str.slice(0, -HEART.length).trimEnd(), hw = o.size * 0.72, gap = text ? o.size * 0.28 : 0;
+  const tw = text ? ctx.measureText(text).width : 0, total = tw + gap + hw;
+  const left = align === 'left' ? x : align === 'right' ? x - total : x - total / 2;
+  ctx.textAlign = 'left';
+  if (text) ctx.fillText(text, left, y);
+  heartShape(ctx, left + total - hw / 2, y + o.size * 0.04, hw);
+}
+// a ♥ of width w centred on (cx, cy)
+function heartShape(ctx, cx, cy, w) {
+  const r = w / 4, top = cy - w * 0.12;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + w * 0.42);
+  ctx.bezierCurveTo(cx - w * 0.15, cy + w * 0.28, cx - w / 2, cy + w * 0.08, cx - w / 2, top);
+  ctx.arc(cx - r, top, r, Math.PI, 0);
+  ctx.arc(cx + r, top, r, Math.PI, 0);
+  ctx.bezierCurveTo(cx + w / 2, cy + w * 0.08, cx + w * 0.15, cy + w * 0.28, cx, cy + w * 0.42);
+  ctx.closePath(); ctx.fill();
 }
 function pill(ctx, str, cx, cy, size, accent) {
   ctx.font = W_STRONG + ' ' + size + 'px ' + FONT_UI;

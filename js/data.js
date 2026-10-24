@@ -9,7 +9,7 @@
 
 // Change this (and the ?v= on the files in index.html) with every update, so browsers fetch the new
 // photos, videos and code together instead of mixing new files with old ones from their cache.
-const VERSION = '20261024g';
+const VERSION = '20261024h';
 
 const MEMORY_BOX_SIZE = 3;          // how many things (besides Teddy) carry over between chapters
 const IDLE_RESET_MS = 150000;       // exhibition: return to title after 2.5 min of no input
@@ -187,7 +187,7 @@ const CHAPTERS = [
     mess: [],
     memories: [
       { id: 'n-teddy', items: ['teddy'], type: 'video', src: 'assets/video/01-nursery-teddy.mp4', still: 'assets/photos/01-nursery-teddy.webp', focus: [0.5, 0.45], caption: 'Teddy resting in bed.' },
-      { id: 'n-globe', items: ['snowglobe'], type: 'video', src: 'assets/video/01-nursery-snowglobe.mp4', still: 'assets/photos/01-nursery-snowglobe.jpg', focus: [0.2, 0.76], caption: '♪ ♫ ♪\u00a0\u00a0Watching the glitter fall.\u00a0\u00a0♪ ♫ ♪' },
+      { id: 'n-globe', items: ['snowglobe'], type: 'video', src: 'assets/video/01-nursery-snowglobe.mp4', still: 'assets/photos/01-nursery-snowglobe.webp', focus: [0.2, 0.76], caption: '♪ ♫ ♪\u00a0\u00a0Watching the glitter fall.\u00a0\u00a0♪ ♫ ♪' },
       { id: 'n-rabbit', items: ['rabbit'], type: 'photo', src: 'assets/photos/01-nursery-peter-rabbit.webp', caption: 'Peter Rabbit, chilling on a shelf.' }
     ],
     onStart: [{ do: 'wait', ms: 1600 }, { do: 'toast', from: 'Mum', text: 'Sweet dreams, little one. ♥' }],
@@ -364,7 +364,7 @@ const CHAPTERS = [
         id: 'm-letter', items: ['uniletter'], type: 'letter', title: 'acceptance_letter.txt',
         caption: 'Dear {name},\n\nCongratulations! We are delighted to offer you a place in our Bachelor of Creative Industries, commencing next semester.\n\nWelcome to your next chapter.\n\nOffice of Admissions'
       },
-      { id: 'm-boxes', items: [], type: 'video', src: 'assets/video/06-moving-out-boxes.mp4', still: 'assets/photos/06-moving-out-boxes.jpg', focus: [0.5, 0.45], caption: 'Teddy, the family photo, and some clothes. That’s the important stuff.' }
+      { id: 'm-boxes', items: [], type: 'video', src: 'assets/video/06-moving-out-boxes.mp4', still: 'assets/photos/06-moving-out-boxes.webp', focus: [0.5, 0.45], caption: 'Teddy, the family photo, and some clothes. That’s the important stuff.' }
     ],
     onStart: [{ do: 'wait', ms: 1500 }, { do: 'toast', from: 'Mum', text: 'There’s mail for you on your desk! The car’s packed, take your time. x' }],
     onPlace: {},

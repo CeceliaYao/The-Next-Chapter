@@ -43,7 +43,7 @@ const CREDITS_ROLL = [
   ['Web Design & Development', 'Qinxi Yao']
 ];
 // The Follow Us folder on the same screen opens this note: [name, Instagram handle without the @]
-const SOCIALS_LEAD = 'Follow us for behind the scenes ✦';
+const SOCIALS_LEAD = 'Follow us for behind the scenes. ✦';
 const SOCIALS = [
   ['Chloee Park', 'larchivedeclo'],
   ['Isabella Kiosses', 'isafish_films'],
@@ -102,7 +102,7 @@ const ITEM_DEFS = {
   homework2:    { name: 'Mock Exam', fits: ['desk'], hint: 'Homework goes on the desk.', keep: false },
   hoodie:       { name: 'Hoodie', fits: ['basket'], hint: 'Clothes go in the laundry basket.', keep: false },
   jeans:        { name: 'Jeans', fits: ['basket'], hint: 'Clothes go in the laundry basket.', keep: false },
-  tee:          { name: 'T-shirt', fits: ['basket'], hint: 'Clothes go in the laundry basket.', keep: false },
+  tee:          { name: 'T-Shirt', fits: ['basket'], hint: 'Clothes go in the laundry basket.', keep: false },
   heels:        { name: "Mum's Heels", fits: ['floor'], hint: 'Shoes go on the floor.' },
   sneakers:     { name: 'Old Sneakers', fits: ['underbed'], hint: 'Kick them under the bed. Out of sight, out of mind.', keep: false },
   posterband:   { name: 'Posters', fits: ['wall'], hint: 'Posters go on the wall above the bed.' },
@@ -163,7 +163,9 @@ const YA_SURFACES = [
   SILL
 ];
 
-/* ---------- the six chapters ---------- */
+/* ---------- the six chapters ----------
+   Videos: ratio = the shape of the picture inside the clip. Our exports have black bars baked in
+   (16:9 or 9:16 picture in a 4:3 file), so the player shows just the picture, at full quality. */
 const CHAPTERS = [
   {
     id: 'nursery', kicker: 'Chapter 1', title: 'The Nursery', year: 2000, accent: '#ffc700',
@@ -182,8 +184,8 @@ const CHAPTERS = [
     tray: ['teddy', 'blanket', 'mobile', 'rabbit', 'rabbitbooks', 'snowglobe', 'nightlight', 'rattle', 'bottle'],
     mess: [],
     memories: [
-      { id: 'n-teddy', items: ['teddy'], type: 'video', src: 'assets/video/01-nursery-teddy.mp4', still: 'assets/photos/01-nursery-teddy.webp', focus: [0.5, 0.45], caption: 'Teddy resting in bed.' },
-      { id: 'n-globe', items: ['snowglobe'], type: 'video', src: 'assets/video/01-nursery-snowglobe.mp4', still: 'assets/photos/01-nursery-snowglobe.jpg', focus: [0.2, 0.76], caption: '♪ ♫ ♪\u00a0\u00a0Watching the glitter fall.\u00a0\u00a0♪ ♫ ♪' },
+      { id: 'n-teddy', items: ['teddy'], type: 'video', src: 'assets/video/01-nursery-teddy.mp4', ratio: 608 / 1080, still: 'assets/photos/01-nursery-teddy.webp', focus: [0.5, 0.4], caption: 'Teddy resting in bed.' },
+      { id: 'n-globe', items: ['snowglobe'], type: 'video', src: 'assets/video/01-nursery-snowglobe.mp4', ratio: 16 / 9, still: 'assets/photos/01-nursery-snowglobe.webp', focus: [0.62, 0.5], caption: '♪ ♫ ♪\u00a0\u00a0Watching the glitter fall.\u00a0\u00a0♪ ♫ ♪' },
       { id: 'n-rabbit', items: ['rabbit', 'rabbitbooks'], type: 'photo', src: 'assets/photos/01-nursery-peter-rabbit.webp', caption: 'Peter Rabbit, chilling on a shelf.' }
     ],
     onStart: [{ do: 'wait', ms: 1600 }, { do: 'toast', from: 'Mum', text: 'Sweet dreams, little one. ♥' }],
@@ -218,7 +220,7 @@ const CHAPTERS = [
       { id: 'truck', x: 880, y: 528, rot: -0.15 }
     ],
     memories: [
-      { id: 'c-tea', items: ['teaset'], type: 'video', src: 'assets/video/02-childhood-tea-party.mp4', still: 'assets/photos/02-childhood-tea-party.webp', focus: [0.5, 0.5], caption: 'Tea party with the dolls and the teddy.' },
+      { id: 'c-tea', items: ['teaset'], type: 'video', src: 'assets/video/02-childhood-tea-party.mp4', ratio: 16 / 9, still: 'assets/photos/02-childhood-tea-party.webp', focus: [0.5, 0.5], caption: 'Tea party with the dolls and the teddy.' },
       { id: 'c-doll', items: ['doll'], type: 'photo', src: 'assets/photos/02-childhood-dolls.webp', caption: 'Yay! Everyone’s here!' },
       { id: 'c-draw', items: ['drawing'], type: 'text', title: 'my_family.txt', caption: 'MY FAMILY, by me (age 5)\n\nMum. Dad. Me. My little brother.\nAnd teddy.' }
     ],
@@ -249,7 +251,7 @@ const CHAPTERS = [
       { id: 'sketch', x: 640, y: 518, rot: -0.35 }
     ],
     memories: [
-      { id: 't-bag', items: ['backpack'], type: 'video', src: 'assets/video/03-tween-backpack.mp4', still: 'assets/photos/03-tween-backpack.webp', focus: [0.55, 0.5], caption: 'Too many textbooks to carry.' },
+      { id: 't-bag', items: ['backpack'], type: 'video', src: 'assets/video/03-tween-backpack.mp4', ratio: 16 / 9, still: 'assets/photos/03-tween-backpack.webp', focus: [0.55, 0.5], caption: 'Too many textbooks to carry.' },
       { id: 't-skates', items: ['skates'], type: 'photo', src: 'assets/photos/03-tween-rollerskates.webp', caption: 'I got these for my birthday! Now to learn how to brake.' },
       { id: 't-art', items: ['artsupplies'], type: 'photo', src: 'assets/photos/03-tween-art-supplies.webp', caption: 'Drawing is hard, but fun!' },
       { id: 't-sketch', items: ['sketch'], type: 'photo', src: 'assets/photos/03-tween-drawing.webp', caption: 'Don’t look at my sketches!' },
@@ -292,7 +294,7 @@ const CHAPTERS = [
     memories: [
       { id: 'te-homework', items: ['homework1'], type: 'photo', src: 'assets/photos/04-teen-homework.webp', caption: 'This is my life now.' },
       { id: 'te-mock', items: ['homework2'], type: 'photo', src: 'assets/photos/04-teen-mock-exam.webp', caption: 'Please let me PASS...' },
-      { id: 'te-clothes', items: [], type: 'video', src: 'assets/video/04-teen-clothes-pile.mp4', still: 'assets/photos/04-teen-clothes.webp', focus: [0.5, 0.5], caption: 'One more on the pile… “CLEAN. YOUR. ROOM.”' },
+      { id: 'te-clothes', items: [], type: 'video', src: 'assets/video/04-teen-clothes-pile.mp4', ratio: 608 / 1080, still: 'assets/photos/04-teen-clothes.webp', focus: [0.5, 0.5], caption: 'One more on the pile… “CLEAN. YOUR. ROOM.”' },
       { id: 'te-heels', items: ['heels'], type: 'photo', src: 'assets/photos/04-teen-high-heels.webp', caption: 'Stole these from mum.' },
       { id: 'te-trophy', items: ['trophy', 'medal', 'award'], type: 'photo', src: 'assets/photos/04-teen-trophies.webp', caption: 'Solo dance: 2nd, 2nd… then 1st! (Still learning to brake.)' }
     ],
@@ -327,7 +329,7 @@ const CHAPTERS = [
       { id: 'y-cosmetics', items: ['cosmetics'], type: 'photo', src: 'assets/photos/05-youngadult-cosmetics.webp', caption: 'Too many blushes? No such thing.' },
       { id: 'y-digicam', items: ['digicam'], type: 'photo', src: 'assets/photos/05-youngadult-digicam.webp', caption: 'If it’s not on the digicam, it didn’t happen.' },
       { id: 'y-polaroids', items: ['polaroids'], type: 'text', title: 'polaroids.txt', caption: 'Friends I hadn’t met yet when I was twelve.' },
-      { id: 'y-painting', items: ['painting'], type: 'video', src: 'assets/video/05-youngadult-painting.mp4', still: 'assets/photos/05-youngadult-painting.webp', focus: [0.4, 0.4], caption: 'Painting just for me again.' },
+      { id: 'y-painting', items: ['painting'], type: 'video', src: 'assets/video/05-youngadult-painting.mp4', ratio: 16 / 9, still: 'assets/photos/05-youngadult-painting.webp', focus: [0.4, 0.4], caption: 'Painting just for me again.' },
       /* EASTER EGG: put the laptop on the desk and it opens up full screen and plays our exhibition ad.
          secret: true = no ! badge and it doesn't count towards "Memories x/y", so it stays a surprise.
          Video: MP4 / H.264, same 1.414 : 1 shape as the poster (e.g. 1920 x 1358). Until it exists, the poster plays with a slow zoom.
@@ -360,7 +362,7 @@ const CHAPTERS = [
         id: 'm-letter', items: ['uniletter'], type: 'letter', title: 'acceptance_letter.txt',
         caption: 'Dear {name},\n\nCongratulations! We are delighted to offer you a place in our Bachelor of Creative Industries, commencing next semester.\n\nWelcome to your next chapter.\n\nOffice of Admissions'
       },
-      { id: 'm-boxes', items: [], type: 'video', src: 'assets/video/06-moving-out-boxes.mp4', still: 'assets/photos/06-moving-out-boxes.jpg', focus: [0.5, 0.45], caption: 'Teddy, the family photo, and some clothes. That’s the important stuff.' }
+      { id: 'm-boxes', items: [], type: 'video', src: 'assets/video/06-moving-out-boxes.mp4', ratio: 16 / 9, still: 'assets/photos/06-moving-out-boxes.webp', focus: [0.5, 0.5], caption: 'Teddy, the family photo, and some clothes. That’s the important stuff.' }
     ],
     onStart: [{ do: 'wait', ms: 1500 }, { do: 'toast', from: 'Mum', text: 'There’s mail for you on your desk! The car’s packed, take your time. x' }],
     onPlace: {},

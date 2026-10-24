@@ -342,9 +342,9 @@ const UI = (() => {
       if (DEV) modal.querySelector('.missing').classList.remove('hidden');
       const c = modal.querySelector('.mem-controls'); if (c) c.style.visibility = 'hidden';
     };
-    // photos and stills keep their own shape (portrait photos get a tall frame, nothing is cropped)
+    // photos and stills keep their own shape (portrait photos and videos get a taller frame, nothing is cropped)
     const fitFrame = (ratio, inset) => {
-      const a = Math.min(1.9, Math.max(0.6, ratio)), MW = 600, MH = 440;
+      const a = Math.min(1.9, Math.max(0.5, ratio)), MW = 600, MH = a < 1 ? 520 : 440;
       const w = a >= MW / MH ? MW : Math.round(MH * a), h = a >= MW / MH ? Math.round(MW / a) : MH;
       frameEl.style.width = (w + inset) + 'px'; frameEl.style.height = (h + inset) + 'px';
     };
@@ -401,7 +401,8 @@ const UI = (() => {
       v.addEventListener('loadeddata', () => {
         if (!live()) return;
         host.innerHTML = '';
-        if (v.videoWidth) fitFrame(v.videoWidth / v.videoHeight, 0);   // portrait phone videos get a tall frame
+        if (v.videoWidth) fitFrame(mem.ratio || v.videoWidth / v.videoHeight, 0);   // portrait phone videos get a tall frame
+        if (mem.ratio) v.style.objectFit = 'cover';   // the black bars baked into the clip fall outside the frame
         host.appendChild(v);
         const p = v.play(); if (p && p.catch) p.catch(() => setPlayIcon(false));
       });

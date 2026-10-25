@@ -54,7 +54,8 @@ function roomShell(b, th) {
       b.line(at(rows[k] + 1), rows[k] + 1, at(rows[k + 1] - 1), rows[k + 1] - 1, th.floor2);
     }
   }
-  b.dither(LX, WY2 + 1, RX - LX + 1, 4, th.floor2, 4);
+  // soft shade along the back of the floor (only on the floor, not over the side walls)
+  for (let y = WY2 + 1; y <= WY2 + 4; y++) { const x0 = Math.ceil(xl(y)), x1 = Math.floor(xr(y)); b.dither(x0, y, x1 - x0 + 1, 1, th.floor2, 4); }
   // skirting board
   b.rect(WX1, WY2 - 2, WX2 - WX1 + 1, 3, th.base || 'w'); b.hline(WX1, WY2 - 3, WX2 - WX1 + 1, 'o');
   // room edges (dollhouse cut-away)

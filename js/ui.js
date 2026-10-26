@@ -103,6 +103,16 @@ const UI = (() => {
     bar.addEventListener('click', e => { if (moved) { e.stopPropagation(); moved = false; } });
   }
 
+  // on an iPad (or any touch screen) going through the door also hides the browser's bars: the browser only
+  // allows full screen straight after a tap, so it's asked for on the door taps; iPhones can't, and nothing happens
+  function goFullscreen() {
+    const d = document, el = d.documentElement;
+    if (!(navigator.maxTouchPoints > 0) || d.fullscreenElement || d.webkitFullscreenElement) return;
+    const req = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (!req) return;
+    try { const p = req.call(el); if (p && p.catch) p.catch(() => {}); } catch (err) { /* not allowed here */ }
+  }
+
   function setScreen(html, cls) {
     overlay.innerHTML = html ? '<div class="screen ' + (cls || '') + '">' + html + '</div>' : '';
     return overlay.firstElementChild;
@@ -177,6 +187,7 @@ const UI = (() => {
         }
         opened = true;
         playerName = name;
+        goFullscreen();
         // "<name> has just signed in." pops up above the Tip, once (this screen is rebuilt without it next time)
         const tip = el.querySelector('.note-win');
         el.insertAdjacentHTML('beforeend',
@@ -196,6 +207,7 @@ const UI = (() => {
       // screensaver -> login window
       const wake = () => {
         if (!splash.classList.contains('saver')) return;
+        goFullscreen();
         splash.classList.remove('saver');
         splash.removeAttribute('role');
         window.removeEventListener('keydown', onKeyWake, true);

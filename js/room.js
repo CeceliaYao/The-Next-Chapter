@@ -278,38 +278,20 @@ function shelfPlank(b, x1, x2, y, col) {
 }
 
 function drawCot(b, c) {
-  const x1 = q(c.x1), x2 = q(c.x2), top = q(c.top), bot = q(c.bottom), D = 7, f = D / (top - VP[1]);
-  floorShadow(b, x1 - 1, x2 + 3, bot);
-  shadeRect(b, x1 + 2, top + 12, x2 - x1 - 3, bot - top - 12, 0.15 * DARK);                // the floor under the cot, in soft shade
-  // the far side of the cot: its top rail, slats and posts, further back and a little dimmer
-  const [bx1, by] = back(x1 + 1, top - 15, f), [bx2] = back(x2 - 2, top - 15, f), [, my] = back(x1, top, f);
-  const far = mixCol('w', SHADOW, 0.16);
-  for (let x = bx1 + 4; x < bx2 - 2; x += 5) b.vline(x, by + 2, my - by - 2, far);
-  b.rect(bx1, by, bx2 - bx1 + 1, 2, far); b.hline(bx1, by - 1, bx2 - bx1 + 1, 'o');
-  [back(x1 + 1, top, f)[0], back(x2 - 2, top, f)[0]].forEach(px => {             // its posts stop at its rail, so nothing pokes up behind the near side
-    b.rect(px - 1, by - 1, 3, my - by + 1, far); b.vline(px - 2, by - 1, my - by + 1, 'o'); b.vline(px + 2, by - 1, my - by + 1, 'o'); b.hline(px - 2, by - 2, 5, 'o');
-  });
-  // the mattress, its sheet showing on top
-  const mt = [[x1 + 2, top], [x2 - 2, top], back(x2 - 2, top, f), back(x1 + 2, top, f)];   // its top, with no line at the head end (it showed between the slats)
-  b.poly(mt, mixCol('b', '#ffffff', 0.32)); b.line(...mt[1], ...mt[2], 'o'); b.line(...mt[2], ...mt[3], 'o');
-  block(b, x1 + 2, x2 - 2, top, top + 5, D, 'b', { noSide: true, noTop: true });
-  for (let x = x1 + 5; x < x2 - 3; x += 5) b.vline(x, top + 1, 4, 'w');
-  // the skirt under the mattress
-  b.rect(x1 + 3, top + 6, x2 - x1 - 5, 4, 'p'); shadeRect(b, x1 + 3, top + 8, x2 - x1 - 5, 2, 0.14);
-  for (let x = x1 + 3; x < x2 - 2; x += 4) { b.px(x, top + 10, 'p'); b.px(x + 1, top + 10, 'p'); b.px(x + 1, top + 11, 'o'); b.px(x + 3, top + 10, 'o'); }
-  cotFront(b, c);
-}
-
-/* the cot's near side: its top rail, slats and posts. The game draws these again over what's put in the cot,
-   so things sit inside it, seen between the slats */
-function cotFront(b, c) {
   const x1 = q(c.x1), x2 = q(c.x2), top = q(c.top), bot = q(c.bottom);
-  b.box(x1 + 2, top - 16, x2 - x1 - 3, 3, 'w'); lightRect(b, x1 + 3, top - 15, x2 - x1 - 5, 1, 0.5);
+  b.box(x1 + 2, top - 16, x2 - x1 - 3, 3, 'w');
   for (let x = x1 + 6; x < x2 - 4; x += 5) { b.rect(x, top - 13, 2, 13, 'w'); b.vline(x + 2, top - 13, 13, 'g'); }
-  // the posts (the head post has no side face, so the near rail and the mattress meet it)
-  block(b, x1 - 1, x1 + 2, top - 20, bot - 1, 3, 'w', { noTop: true, noSide: true }); block(b, x2 - 3, x2, top - 20, bot - 1, 3, 'w', { noTop: true });
+  b.box(x1 + 2, top, x2 - x1 - 3, 6, 'b');
+  for (let x = x1 + 5; x < x2 - 3; x += 5) b.vline(x, top + 1, 4, 'w');
+  b.rect(x1 + 3, top + 6, x2 - x1 - 5, 4, 'p');
+  for (let x = x1 + 3; x < x2 - 2; x += 4) { b.px(x, top + 10, 'p'); b.px(x + 1, top + 10, 'p'); b.px(x + 1, top + 11, 'o'); b.px(x + 3, top + 10, 'o'); }
+  b.box(x1 - 1, top - 20, 4, bot - top + 20, 'w'); b.box(x2 - 3, top - 20, 4, bot - top + 20, 'w');
   b.ell(x1 + 1, top - 22, 2.5, 2.5, 'P'); b.ell(x2 - 1, top - 22, 2.5, 2.5, 'P');
   b.px(x1, top - 23, 'w'); b.px(x2 - 2, top - 23, 'w');
+  bevel(b, x1 - 1, top - 20, 4, bot - top + 20); bevel(b, x2 - 3, top - 20, 4, bot - top + 20);
+  bevel(b, x1 + 2, top, x2 - x1 - 3, 6);
+  shadeRect(b, x1 + 3, top + 8, x2 - x1 - 5, 2, 0.14);
+  shadeRect(b, x1 - 1, bot + 1, x2 - x1 + 3, 2, 0.24); shadeRect(b, x1 + 1, bot + 3, x2 - x1 - 1, 1, 0.12);   // its light shadow on the floor
 }
 
 function drawBed(b, bed, style) {
@@ -325,18 +307,16 @@ function drawBed(b, bed, style) {
   // headboard: a panel at the head end; we see its inner face going back to the wall
   block(b, x1, x1 + 5, top - 21, bot, D, s.frame, { sideT: 0.14 });
   lightRect(b, x1 + 6, top - 18, 2, 18, 0.12);                                   // light catching the panel's edge
-  // the base, with the dark space under it between the legs
-  block(b, x1 + 6, x2 - 5, top + 9, bot - 3, D, s.frame, { noTop: true, noSide: true });
-  shadeRect(b, x1 + 6, bot - 2, x2 - x1 - 11, 3, 0.45 * DARK);
+  // the base: one thin line along its bottom, and its legs
+  b.rect(x1 + 6, top + 9, x2 - x1 - 10, bot - top - 12, s.frame); b.hline(x1 + 6, bot - 3, x2 - x1 - 10, 'o');
   b.rect(x1 + 9, bot - 2, 2, 2, 'o'); b.rect(x2 - 11, bot - 2, 2, 2, 'o');
-  if (s.frame === 'R') for (let y = top + 12; y < bot - 4; y += 3) for (let x = x1 + 8 + (y * 7) % 11; x < x2 - 9; x += 15) shadeRect(b, x, y, 8, 1, 0.1);   // wood grain
+  shadeRect(b, x1 + 7, bot - 6, x2 - x1 - 12, 3, 0.16);                                   // the base darkens towards the floor
   // the mattress, its top going back to the wall
   block(b, x1 + 5, x2 - 4, top + 2, top + 8, D, 'w', { noSide: true });
   const dx1 = x1 + 15, dx2 = x2 - 4;
   if (style === 'bare') {
     const tp = [[x1 + 5, top + 2], [x2 - 4, top + 2], back(x2 - 4, top + 2, f), back(x1 + 5, top + 2, f)];
     b.poly(tp, mixCol(s.duvet, '#ffffff', 0.25)); edges(b, tp);
-    for (let x = x1 + 9; x < x2 - 5; x += 4) b.line(x, top + 1, back(x, top + 1, f)[0], top - D + 2, mixCol('G', '#ffffff', 0.3));
     b.box(x1 + 5, top, x2 - x1 - 8, 10, s.duvet);
     for (let x = x1 + 8; x < x2 - 4; x += 4) b.vline(x, top + 1, 8, 'G');
     lightRect(b, x1 + 6, top + 1, x2 - x1 - 10, 1, 0.35); shadeRect(b, x1 + 6, top + 7, x2 - x1 - 10, 2, 0.14);
@@ -345,14 +325,13 @@ function drawBed(b, bed, style) {
     const pillow = () => {
       if (!s.pillow) return;
       const [cx, cy] = back(x1 + 13, top, f * 0.45);
-      b.ell(cx, cy, 7, 3.5, s.pillow); b.ring(cx, cy, 7, 3.5, 'o');
+      b.ell(cx, cy, 7, 3.5, s.pillow); b.ring(cx, cy, 7, 3.5, mixCol(s.pillow, SHADOW, 0.5));
       lightRect(b, cx - 5, cy - 2, 9, 1, 0.5); shadeRect(b, cx - 5, cy + 2, 11, 1, 0.18); shadeRect(b, cx - 1, cy - 1, 2, 2, 0.12);
     };
     if (style === 'messy') {
       // the top of the duvet, rumpled
       const tp = [[dx1 + 3, top], [dx2, top], back(dx2, top, f), back(dx1 + 6, top, f)];
       b.poly(tp, mixCol(s.duvet, '#ffffff', 0.18)); edges(b, tp);
-      [[dx1 + 12, -2, 9], [dx1 + 30, -5, 7], [dx1 + 44, -3, 10]].forEach(([x, dy, w]) => { shadeRect(b, x, top + dy, w, 1, 0.2); lightRect(b, x + 1, top + dy - 1, w - 2, 1, 0.25); });
       pillow();
       b.poly([[x1 + 18, top], [x1 + 40, top - 1], [x1 + 60, top + 2], [x2 - 3, top], [x2 - 2, top + 15], [x1 + 50, top + 17], [x1 + 30, top + 13], [x1 + 16, top + 16]], s.duvet);
       b.line(x1 + 26, top + 5, x1 + 46, top + 8, '#6d5a8f'); b.line(x1 + 50, top + 4, x1 + 64, top + 6, '#6d5a8f');
@@ -364,14 +343,11 @@ function drawBed(b, bed, style) {
       const tp = [[dx1, top], [dx2, top], back(dx2, top, f), back(dx1, top, f)];
       b.poly(tp, mixCol(s.duvet, '#ffffff', 0.28)); edges(b, tp);
       const [rx, ry] = back(dx1, top, f / 2); b.line(dx1 + 1, top - 1, rx + 1, ry, mixCol(s.duvet, SHADOW, 0.2));
-      for (let k = 0; k < 3; k++) { const x = dx1 + 18 + k * 20; b.line(x, top - 1, back(x, top - 1, f)[0] + 2, top - D + 1, mixCol(s.duvet, SHADOW, 0.12)); b.line(x + 1, top - 1, back(x + 1, top - 1, f)[0] + 3, top - D + 1, mixCol(s.duvet, '#ffffff', 0.45)); }
       pillow();
-      // the front: it hangs over the side of the bed with a soft, uneven hem
+      // the front: it hangs over the side of the bed
       b.box(dx1, top, dx2 - dx1 + 1, 13, s.duvet);
-      for (let x = dx1 + 1; x < dx2; x++) if ((x * 5) % 11 < 4) b.px(x, top + 13, mixCol(s.dark, SHADOW, 0.2));
       lightRect(b, dx1 + 1, top + 1, dx2 - dx1 - 1, 2, 0.3);
       shadeRect(b, dx1 + 1, top + 8, dx2 - dx1 - 1, 2, 0.1); shadeRect(b, dx1 + 1, top + 10, dx2 - dx1 - 1, 3, 0.2);
-      for (let x = dx1 + 12; x < dx2 - 6; x += 17) for (let j = 0; j < 10; j++) { const xx = x + Math.round(j / 4); shadeRect(b, xx, top + 2 + j, 2, 1, 0.1); lightRect(b, xx - 2, top + 2 + j, 2, 1, 0.14); }
       if (style === 'flowers') for (let x = dx1 + 5, k = 0; x < dx2 - 4; x += 9, k++) { const y = top + 3 + (k % 2) * 2; stamp(b, x, y, ['.#.', '#.#', '.#.'], 'w'); b.px(x + 1, y + 1, 'Y'); }
       if (style === 'butterflies') for (let x = dx1 + 5, k = 0; x < dx2 - 4; x += 10, k++) stamp(b, x, top + 3 + (k % 2), ['#.#', '###', '#.#'], k % 2 ? 'L' : 'h');
       if (style === 'linen') { b.hline(dx1 + 1, top + 3, dx2 - dx1 - 1, 'g'); b.hline(dx1 + 1, top + 5, dx2 - dx1 - 1, 'L'); }
@@ -438,15 +414,10 @@ function drawDesk(b, d, o) {
 }
 
 function drawRug(b, cx, cy, rx, ry, c1, c2) {
-  shadeRect(b, cx - rx + 2, cy + ry, rx * 2 - 3, 2, 0.22 * DARK);
-  // the rug's thickness: its edge shows below the top, a step darker
-  b.ell(cx, cy + 1, rx, ry, mixCol(c1, SHADOW, 0.3)); b.ring(cx, cy + 1, rx, ry, mixCol(c1, SHADOW, 0.62));
   b.ell(cx, cy, rx, ry, c1);
-  shadeRect(b, cx - rx, cy - ry, rx * 2 + 1, Math.ceil(ry * 0.5), 0.08); lightRect(b, cx - rx, cy + Math.ceil(ry * 0.3), rx * 2 + 1, Math.ceil(ry * 0.7), 0.12);
+  shadeRect(b, cx - rx, cy - ry, rx * 2 + 1, Math.ceil(ry * 0.5), 0.07); lightRect(b, cx - rx, cy + Math.ceil(ry * 0.4), rx * 2 + 1, Math.ceil(ry * 0.6), 0.1);
   b.ring(cx, cy, rx - 4, ry - 2.5, c2);
-  b.ring(cx, cy, rx, ry, mixCol(c1, SHADOW, 0.55));
-  // a soft, slightly uneven edge (a little pile) along the front
-  for (let x = cx - rx + 6; x < cx + rx - 6; x += 3) { const y = Math.round(cy + ry * Math.sqrt(Math.max(0, 1 - ((x - cx) / rx) ** 2))); b.px(x, y + 1, mixCol(c1, SHADOW, 0.3)); }
+  b.ring(cx, cy, rx, ry, 'o');
 }
 
 function drawToyBox(b, t) {
@@ -522,9 +493,6 @@ function bgNursery(b, L) {
   windowLight(b, 'night');
 }
 
-// what stands in front of the things put in the nursery's cot
-function frontNursery(b, L) { cotFront(b, L.cot); }
-
 function bgChildhood(b, L) {
   DARK = 1;
   roomShell(b, { ceil: '#fbeeee', side: '#e5bcc0', side2: '#ddb2b7', sideShade: '#d3a5ab', wall: '#f0d0d2', dots: '#fbeeee', dots2: '#e3a0b2', floor: '#dcb48a', floor2: '#c59a6e', pattern: 'dots' });
@@ -561,7 +529,7 @@ function bgTeen(b, L) {
   drawDoor(b, 'w', 'keepout');
   shelfPlank(b, q(L.shelf.x1), q(L.shelf.x2), q(L.shelf.y), 'V');
   drawRug(b, 175, 130, 38, 8, 'P', 'o');
-  drawDesk(b, L.desk, { lamp: 'V', chair: 'v', drawer: 'A', papers: true });
+  drawDesk(b, L.desk, { lamp: 'V', chair: 'v', drawer: 'A' });
   drawBed(b, L.bed, 'messy');
   drawBasket(b, L.basket);
   windowLight(b, 'dusk');

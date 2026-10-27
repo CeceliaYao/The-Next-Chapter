@@ -122,7 +122,7 @@ function roomShell(b, th) {
   b.poly([[LX, CY], [RX + 1, CY], [WX2 + 1, WY1], [WX1, WY1]], th.ceil);
   b.poly([[LX, CY], [WX1, WY1], [WX1, WY2 + 1], [LX, FY + 1]], th.side);
   b.poly([[WX2 + 1, WY1], [RX + 1, CY], [RX + 1, FY + 1], [WX2 + 1, WY2 + 1]], th.side2 || th.side);
-  b.dither(LX, CY, 12, FY - CY, th.sideShade || th.side, 6);
+  for (let y = CY; y < FY; y++) for (let x = LX; x < LX + 12; x++) if (b.get(x, y) === th.side && BAYER4[(y & 3) * 4 + (x & 3)] < 6) b.px(x, y, th.sideShade || th.side);   // only on the left wall
   b.rect(WX1, WY1, WX2 - WX1 + 1, WY2 - WY1 + 1, th.wall);
   wallpaper(b, th);
   // floor + planks in perspective
@@ -157,7 +157,15 @@ function roomShell(b, th) {
   shadeRect(b, WX1 + 3, WY1 + 1, WX2 - WX1 - 5, 2, 0.1);
   shadeRect(b, WX1 + 3, WY2 - 12, WX2 - WX1 - 5, 5, 0.05); shadeRect(b, WX1 + 3, WY2 - 7, WX2 - WX1 - 5, 4, 0.1);
   // side walls: darker towards the room's open front edge, like the left one already was
-  shadeRect(b, RX - 9, CY, 10, FY - CY, 0.06);
+  for (let y = CY; y < FY; y++) for (let x = RX - 9; x <= RX; x++) if (b.get(x, y) === (th.side2 || th.side)) shadeRect(b, x, y, 1, 1, 0.06);   // only on the right wall
+  // a little structure: the cut front edge of each side wall catches the light, and a narrow shade where a side wall
+  // meets the back wall. One art pixel each, kept inside the side walls (between their ceiling and floor lines)
+  const wallTop = x => x <= WX1 ? CY + (WY1 - CY) * (x - LX) / (WX1 - LX) : CY + (WY1 - CY) * (RX - x) / (RX - WX2);
+  const wallBot = x => x <= WX1 ? FY + (WY2 - FY) * (x - LX) / (WX1 - LX) : FY + (WY2 - FY) * (RX - x) / (RX - WX2);
+  const column = (x, fn) => { const y0 = Math.ceil(wallTop(x)) + 1, y1 = Math.floor(wallBot(x)) - 1; fn(x, y0, 1, y1 - y0 + 1); };
+  column(LX, (x, y, w, h) => b.rect(x, y, w, h, mixCol(th.side, '#ffffff', 0.45)));   // one even colour, over the dotted band
+  column(RX, (x, y, w, h) => lightRect(b, x, y, w, h, 0.45));
+  [WX1 - 1, WX2 + 1].forEach(x => column(x, (x, y, w, h) => shadeRect(b, x, y, w, h, 0.2)));
   // skirting board
   b.rect(WX1, WY2 - 2, WX2 - WX1 + 1, 3, th.base || 'w'); b.hline(WX1, WY2 - 3, WX2 - WX1 + 1, 'o');
   shadeRect(b, WX1 + 1, WY2, WX2 - WX1 - 1, 1, 0.12);
@@ -255,7 +263,7 @@ function lightBeam() { /* the dotted beam is gone: the light now lands as a patc
 
 function drawDoor(b, col, deco) {
   const x1 = 253, x2 = 274, y1 = 48, y2 = 105;
-  b.box(x1 - 2, y1 - 2, x2 - x1 + 5, y2 - y1 + 3, 'w');
+  b.box(x1 - 2, y1 - 2, x2 - x1 + 6, y2 - y1 + 3, 'w');   // its right edge is the room's corner line
   b.box(x1, y1, x2 - x1 + 1, y2 - y1 + 1, col);
   b.box(x1 + 3, y1 + 4, x2 - x1 - 5, 20, col); b.box(x1 + 3, y1 + 28, x2 - x1 - 5, 24, col);
   b.box(x1 + 2, 79, 3, 3, 'Y');
@@ -265,7 +273,7 @@ function drawDoor(b, col, deco) {
   if (deco === 'baby') { b.box(x1 + 3, 58, 16, 7, 'w'); miniText(b, x1 + 5, 59, 'SHH', 'v'); }
   if (deco === 'letters') ['x', 'n', 'Y', 'E'].forEach((c, i) => b.box(x1 + 3 + i * 4, 60, 3, 3, c));
   if (deco === 'butterfly') stamp(b, x1 + 9, 58, ['##.##', '#####', '.###.', '##.##'], 'L');
-  if (deco === 'keepout') { b.box(x1 + 1, 56, 20, 14, 'Y'); miniText(b, x1 + 3, 57, 'KEEP', 'h'); miniText(b, x1 + 3, 63, 'OUT!', 'h'); }
+  if (deco === 'keepout') { b.box(x1, 56, x2 - x1 + 1, 14, 'Y');    miniText(b, x1 + 3, 57, 'KEEP', 'h'); miniText(b, x1 + 3, 63, 'OUT!', 'h'); }
   if (deco === 'wreath') { b.ring(x1 + 11, 62, 5, 5, 'E'); b.ring(x1 + 11, 62, 4, 4, 'F'); b.px(x1 + 11, 67, 'h'); }
 }
 
@@ -360,8 +368,8 @@ function drawBed(b, bed, style) {
 function drawDresser(b, d, col) {
   const x1 = q(d.x1), x2 = q(d.x2), top = q(d.top), bot = q(d.bottom), D = 6;
   floorShadow(b, x1 - 1, x2 + 4, bot);
-  block(b, x1, x2, top + 3, bot - 3, D, col, { noTop: true });
-  block(b, x1 - 2, x2 + 2, top, top + 2, D, 'w');
+  block(b, x1, x2, top + 2, bot - 3, D, col, { noTop: true });          // its top edge is the board's bottom line
+  block(b, x1 - 2, x2 + 2, top, top + 2, D, 'w', { noSide: true });
   const h = Math.floor((bot - top - 9) / 3);
   for (let i = 0; i < 3; i++) { inset(b, x1 + 3, top + 6 + i * h, x2 - x1 - 5, h - 1, col); b.rect(Math.round((x1 + x2) / 2) - 1, top + 6 + i * h + Math.floor(h / 2) - 1, 2, 2, 'h'); }
   b.rect(x1 + 2, bot - 2, 3, 2, 'o'); b.rect(x2 - 4, bot - 2, 3, 2, 'o');
@@ -370,7 +378,7 @@ function drawDresser(b, d, col) {
 function drawBookshelf(b, s, col) {
   const x1 = q(s.x1), x2 = q(s.x2), top = q(s.top - 4), mid = q(s.mid), low = q(s.low), bot = q(s.bottom), D = 5;
   floorShadow(b, x1 - 1, x2 + 4, bot);
-  block(b, x1, x2, top + 3, bot - 1, D, col, { noTop: true });
+  block(b, x1, x2, top + 2, bot - 1, D, col, { noTop: true });          // its top edge is the board's bottom line
   b.rect(x1 + 2, top + 4, x2 - x1 - 3, bot - top - 6, '#f2d98e');
   // each shelf is a hollow: dark under the board above, the inner right-hand wall in view
   [[top + 4, mid], [mid + 3, low], [low + 3, bot - 2]].forEach(([y0, y1]) => {
@@ -379,7 +387,7 @@ function drawBookshelf(b, s, col) {
   });
   b.vline(x1 + 2, top + 4, bot - top - 6, '#e2c070');
   [mid, low].forEach(y => { b.box(x1, y, x2 - x1 + 1, 3, col); lightRect(b, x1 + 1, y + 1, x2 - x1 - 1, 1, 0.35); });
-  block(b, x1 - 2, x2 + 2, top, top + 2, D, 'w');
+  block(b, x1 - 2, x2 + 2, top, top + 2, D, 'w', { noSide: true });
 }
 
 function drawDesk(b, d, o) {
@@ -389,13 +397,16 @@ function drawDesk(b, d, o) {
   shadeRect(b, x1 + 4, top + 3, x2 - x1 - 23, RA.WY2 - top - 3, 0.16); shadeRect(b, x1 + 4, top + 3, x2 - x1 - 23, 3, 0.12);
   shadeRect(b, x1 + 4, RA.WY2 + 1, x2 - x1 - 23, bot - RA.WY2, 0.22 * DARK);
   floorShadow(b, x1 - 1, x2 + 4, bot);
-  // a leg and the drawer unit, each a solid block
-  block(b, x1 + 1, x1 + 3, top + 3, bot - 1, D, col, { noTop: true });
-  block(b, x2 - 19, x2 - 1, top + 3, bot - 1, D, col, { noTop: true });
+  // a leg and the drawer unit, each a solid block; their top edge is the desk top's bottom line (one line, not two)
+  block(b, x1 + 1, x1 + 3, top + 2, bot - 1, D, col, { noTop: true });
+  block(b, x2 - 19, x2 - 1, top + 2, bot - 1, D, col, { noTop: true });
   inset(b, x2 - 17, top + 6, 15, 10, o.drawer || 'L'); inset(b, x2 - 17, top + 18, 15, 10, o.drawer || 'L');
   b.rect(x2 - 11, top + 10, 3, 2, 'Y'); b.rect(x2 - 11, top + 22, 3, 2, 'Y'); b.hline(x2 - 11, top + 12, 3, mixCol(o.drawer || 'L', SHADOW, 0.3)); b.hline(x2 - 11, top + 24, 3, mixCol(o.drawer || 'L', SHADOW, 0.3));
-  // the desk top: a slab with its lit top going back to the wall
-  block(b, x1 - 2, x2 + 2, top, top + 2, D, col);
+  // the desk top: a slab with its lit top going back to the wall. Its left end goes back just one step, so that
+  // corner is one clean line like the right one (no side face: the slab is too thin for one)
+  const f = D / (top - VP[1]), [bx2, by] = back(x2 + 2, top, f), tp = [[x1 - 2, top], [x2 + 2, top], [bx2, by], [x1 - 3, by]];
+  b.poly(tp, mixCol(col, '#ffffff', 0.32)); edges(b, tp);
+  b.box(x1 - 2, top, x2 - x1 + 5, 3, col);
   // the chair: seat with a top, a back, legs
   block(b, x1 + 6, x1 + 26, top + 18, top + 21, 3, o.chair || 'P', { noSide: true });
   b.box(x1 + 8, top + 6, 17, 13, o.chair || 'P'); lightRect(b, x1 + 9, top + 7, 15, 1, 0.35); shadeRect(b, x1 + 9, top + 14, 15, 4, 0.14);
@@ -463,8 +474,9 @@ function drawTeaTable(b, cx, top, w, bot) {
 
 function drawStackedBoxes(b) {
   floorShadow(b, 276, 315, 139); shadeRect(b, 276, 138, 5, 3, 0.22 * DARK);
-  [[281, 118, 30, 22, 'BOOKS'], [284, 97, 26, 21, 'STUFF'], [287, 80, 21, 17, 'MISC']].forEach(([x, y, w, h, label], i) => {
-    block(b, x, x + w - 1, y, y + h - 1, 6, 'r');
+  // (the top box is a touch deeper so its back edge meets the room's corner line instead of running beside it)
+  [[281, 118, 30, 22, 'BOOKS', 6], [284, 97, 26, 22, 'STUFF', 6], [287, 80, 21, 18, 'MISC', 7]].forEach(([x, y, w, h, label, D], i) => {
+    block(b, x, x + w - 1, y, y + h - 1, D, 'r');
     if (i < 2) shadeRect(b, x + 3, y + 1, w - 4, 2, 0.22);                        // the box above sits on this one
     b.rect(x + Math.floor(w / 2) - 1, y + 1, 3, h - 2, 'y');
     miniText(b, x + Math.round((w - miniWidth(label)) / 2), y + Math.floor(h / 2) - 2, label, 'o');

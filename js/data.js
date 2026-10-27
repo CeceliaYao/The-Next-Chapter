@@ -9,7 +9,7 @@
 
 // Change this (and the ?v= on the files in index.html) with every update, so browsers fetch the new
 // photos, videos and code together instead of mixing new files with old ones from their cache.
-const VERSION = '20261024p';
+const VERSION = '20261024q';
 
 const MEMORY_BOX_SIZE = 3;          // how many things (besides Teddy) carry over between chapters
 const IDLE_RESET_MS = 150000;       // exhibition: return to title after 2.5 min of no input
@@ -137,7 +137,7 @@ const L_NURSERY = {
   cot: { x1: 200, x2: 470, top: 370, bottom: 476 },
   mobile: { x: 335, y: 178 },
   shelf: { x1: 800, x2: 1000, y: 210 },
-  dresser: { x1: 790, x2: 1000, top: 335, bottom: 472 },
+  dresser: { x1: 790, x2: 1004, top: 335, bottom: 472 },   // its right side on the door frame's line
   socket: { x: 505, y: 384 }
 };
 const L_CHILD = {
@@ -154,7 +154,7 @@ const L_TWEEN = {
 };
 const L_TEEN = Object.assign({}, L_TWEEN, { basket: { x1: 500, y1: 452, x2: 590, y2: 540 } });
 const L_YA = {
-  bed: { x1: 170, x2: 500, top: 376, bottom: 476 },
+  bed: { x1: 166, x2: 500, top: 376, bottom: 476 },   // its headboard against the corner, on the corner line
   desk: { x1: 790, x2: 1000, top: 338, bottom: 474 },
   shelf: { x1: 800, x2: 990, y: 200 }
 };

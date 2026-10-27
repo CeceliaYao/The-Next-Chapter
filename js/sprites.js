@@ -697,6 +697,20 @@ const PIXEL_SPRITES = {
   }
 };
 
+/* A little volume on every thing, without changing its shape or colours: the pixels just inside the top of the
+   outline catch the light, the ones along the bottom and right sit in shade. */
+function rimLight(b) {
+  const W = b.W, src = b.d.slice();
+  const edge = i => !src[i] || src[i] === 'o';
+  for (let i = W; i < src.length - W; i++) {
+    const c = src[i];
+    if (!c || c === 'o') continue;
+    if (edge(i - W)) b.d[i] = mixCol(c, '#ffffff', 0.28);
+    else if (edge(i + W)) b.d[i] = mixCol(c, SHADOW, 0.2);
+    else if (edge(i + 1)) b.d[i] = mixCol(c, SHADOW, 0.12);
+  }
+}
+
 /* Build every sprite once: normal, hover (white glow) and ghost (dithered) versions. */
 const SPR = {};
 function buildSprites() {
@@ -711,6 +725,7 @@ function buildSprites() {
         if (def.rows) b.grid(0, 0, def.rows); else def.draw(b, f, v);
         if (def.pal) b.d = b.d.map(c => (c && def.pal[c]) || c);
         b.outline('o');
+        rimLight(b);
         frames.push({
           normal: b.toCanvas(1),
           hover: b.clone().halo('w').toCanvas(1),

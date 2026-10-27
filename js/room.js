@@ -27,6 +27,28 @@ function skyGrad(b, x, y, w, h, cols) {
   }
 }
 
+/* light and shade without new shapes: every pixel in the box (outlines and empty pixels left alone) is mixed
+   towards a dark plum or towards white; with a level it only takes every so many pixels (an ordered dither) */
+function shadeRect(b, x, y, w, h, t, level, toward) {
+  x = Math.round(x); y = Math.round(y);
+  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
+    const X = x + i, Y = y + j, k = b.idx(X, Y);
+    if (k < 0) continue;
+    const c = b.d[k];
+    if (!c || c === 'o' || (level != null && BAYER4[(Y & 3) * 4 + (X & 3)] >= level)) continue;
+    b.d[k] = mixCol(c, toward || SHADOW, t);
+  }
+}
+const lightRect = (b, x, y, w, h, t, level) => shadeRect(b, x, y, w, h, t, level, '#ffffff');
+/* a raised, glossy edge for a box drawn with b.box(x, y, w, h): lit along the top and left, shaded along the bottom and right */
+function bevel(b, x, y, w, h, k) {
+  k = k || 1;
+  lightRect(b, x + 1, y + 1, w - 2, 1, 0.45 * k); lightRect(b, x + 1, y + 2, 1, h - 3, 0.3 * k);
+  shadeRect(b, x + 1, y + h - 2, w - 2, 1, 0.18 * k); shadeRect(b, x + w - 2, y + 2, 1, h - 4, 0.14 * k);
+}
+/* a soft shadow on the floor where a piece of furniture stands */
+function floorShadow(b, x1, x2, y) { shadeRect(b, x1, y + 1, x2 - x1 + 1, 2, 0.24); shadeRect(b, x1 + 2, y + 3, x2 - x1 - 3, 1, 0.12); }
+
 function stamp(b, x, y, rows, c, clip) {
   rows.forEach((r, j) => { for (let i = 0; i < r.length; i++) if (r[i] === '#' && (!clip || clip(x + i, y + j))) b.px(x + i, y + j, c); });
 }
@@ -56,8 +78,28 @@ function roomShell(b, th) {
   }
   // soft shade along the back of the floor (only on the floor, not over the side walls)
   for (let y = WY2 + 1; y <= WY2 + 4; y++) { const x0 = Math.ceil(xl(y)), x1 = Math.floor(xr(y)); b.dither(x0, y, x1 - x0 + 1, 1, th.floor2, 4); }
+  // boards of slightly different tones, so the floor reads as wood; the floor also gets lighter towards the front
+  for (let k = 1; k < rows.length - 1; k++) {
+    for (let y = rows[k] + 1; y < rows[k + 1]; y++) {
+      const x0 = Math.ceil(xl(y)) + 1, x1 = Math.floor(xr(y)) - 1;
+      const seams = [];
+      for (let xb = WX1 + (k % 2 ? 22 : 8) - 30; xb < WX2 + 30; xb += 30) { const xf = 160 + (xb - 160) * spread; seams.push(xb + (xf - xb) * (y - WY2) / (FY - WY2)); }
+      for (let x = x0; x <= x1; x++) {
+        const n = seams.filter(sx => sx < x).length, tone = (k * 5 + n * 3) % 5;
+        if (tone === 0) shadeRect(b, x, y, 1, 1, 0.07); else if (tone === 2) lightRect(b, x, y, 1, 1, 0.1);
+      }
+    }
+  }
+  for (let y = 131; y <= FY; y++) { const x0 = Math.ceil(xl(y)), x1 = Math.floor(xr(y)); lightRect(b, x0, y, x1 - x0 + 1, 1, 0.06); }
+  // the back wall: darker into the corners, under the ceiling and in two steps down towards the skirting
+  shadeRect(b, WX1 + 1, WY1 + 1, 2, WY2 - WY1 - 3, 0.12); shadeRect(b, WX2 - 2, WY1 + 1, 2, WY2 - WY1 - 3, 0.12);
+  shadeRect(b, WX1 + 3, WY1 + 1, WX2 - WX1 - 5, 2, 0.1);
+  shadeRect(b, WX1 + 3, WY2 - 12, WX2 - WX1 - 5, 5, 0.05); shadeRect(b, WX1 + 3, WY2 - 7, WX2 - WX1 - 5, 4, 0.1);
+  // side walls: darker towards the room's open front edge, like the left one already was
+  shadeRect(b, RX - 9, CY, 10, FY - CY, 0.06);
   // skirting board
   b.rect(WX1, WY2 - 2, WX2 - WX1 + 1, 3, th.base || 'w'); b.hline(WX1, WY2 - 3, WX2 - WX1 + 1, 'o');
+  shadeRect(b, WX1 + 1, WY2, WX2 - WX1 - 1, 1, 0.12);
   // room edges (dollhouse cut-away)
   b.vline(WX1, WY1, WY2 - WY1 + 1, 'o'); b.vline(WX2, WY1, WY2 - WY1 + 1, 'o');
   b.hline(WX1, WY1, WX2 - WX1 + 1, 'o');
@@ -120,12 +162,16 @@ function drawWindow(b, sky, curtain) {
     [[140, 54, 6], [148, 49, 5], [166, 52, 6], [174, 46, 6]].forEach(([x, y, w]) => { for (let yy = y; yy < y2; yy++) for (let xx = x; xx < x + w; xx++) put(xx, yy, '#2b2160'); put(x + 2, y + 3, 'y'); });
     put(145, 33, 'w'); put(171, 30, 'w');
   }
+  // a glossy streak across the glass
+  for (let i = 0; i < 9; i++) { put(x1 + 4 + i, y1 + 13 - i, 'w'); if (i % 2) put(x1 + 5 + i, y1 + 13 - i, 'w'); }
+  for (let i = 0; i < 5; i++) put(x1 + 26 + i, y2 - 5 - i, 'w');
   // frame, mullions, sill
   b.rect(x1, y1, x2 - x1 + 1, 2, 'w'); b.rect(x1, y2 - 1, x2 - x1 + 1, 2, 'w');
   b.rect(x1, y1, 2, y2 - y1 + 1, 'w'); b.rect(x2 - 1, y1, 2, y2 - y1 + 1, 'w');
   b.rect(159, y1, 2, y2 - y1, 'w'); b.rect(x1, 45, x2 - x1, 2, 'w');
   b.hline(x1 - 1, y1 - 1, x2 - x1 + 3, 'o'); b.vline(x1 - 1, y1 - 1, y2 - y1 + 2, 'o'); b.vline(x2 + 1, y1 - 1, y2 - y1 + 2, 'o');
   b.box(x1 - 4, 68, x2 - x1 + 9, 3, 'w');
+  shadeRect(b, x1 - 3, 71, x2 - x1 + 7, 2, 0.12);
   if (curtain) {
     b.box(x1 - 13, 19, x2 - x1 + 27, 3, 'w');
     const left = [[x1 - 10, 22], [x1 + 6, 22], [x1 + 3, 40], [x1 + 7, 60], [x1 + 3, 74], [x1 - 10, 74]];
@@ -133,6 +179,7 @@ function drawWindow(b, sky, curtain) {
     [left, right].forEach(pts => {
       b.poly(pts, curtain);
       const xs = pts.map(p => p[0]), mx = (Math.min(...xs) + Math.max(...xs)) / 2;
+      shadeRect(b, Math.round(mx) - 1, 23, 4, 51, 0.2); lightRect(b, Math.round(mx) - 5, 23, 2, 51, 0.18);   // folds: one in shade, one catching light
       b.vline(Math.round(mx) - 2, 24, 48, 'o'); b.vline(Math.round(mx) + 3, 26, 46, 'o');
       for (let i = 0; i < pts.length; i++) { const [ax, ay] = pts[i], [bx, by] = pts[(i + 1) % pts.length]; b.line(ax, ay, bx, by, 'o'); }
     });
@@ -147,6 +194,9 @@ function drawDoor(b, col, deco) {
   b.box(x1, y1, x2 - x1 + 1, y2 - y1 + 1, col);
   b.box(x1 + 3, y1 + 4, x2 - x1 - 5, 20, col); b.box(x1 + 3, y1 + 28, x2 - x1 - 5, 24, col);
   b.box(x1 + 2, 79, 3, 3, 'Y');
+  bevel(b, x1, y1, x2 - x1 + 1, y2 - y1 + 1, 0.8);
+  [[y1 + 4, 20], [y1 + 28, 24]].forEach(([py, ph]) => { shadeRect(b, x1 + 4, py + 1, x2 - x1 - 7, 1, 0.14); shadeRect(b, x1 + 4, py + 2, 1, ph - 3, 0.12); lightRect(b, x1 + 4, py + ph - 2, x2 - x1 - 7, 1, 0.3); });
+  shadeRect(b, x1 - 4, y1 - 1, 2, y2 - y1 + 2, 0.1);   // shadow on the wall beside the frame
   if (deco === 'baby') { b.box(x1 + 3, 58, 16, 7, 'w'); miniText(b, x1 + 5, 59, 'SHH', 'v'); }
   if (deco === 'letters') ['x', 'n', 'Y', 'E'].forEach((c, i) => b.box(x1 + 3 + i * 4, 60, 3, 3, c));
   if (deco === 'butterfly') stamp(b, x1 + 9, 58, ['##.##', '#####', '.###.', '##.##'], 'L');
@@ -157,6 +207,7 @@ function drawDoor(b, col, deco) {
 /* ---------- furniture ---------- */
 
 function shelfPlank(b, x1, x2, y, col) {
+  shadeRect(b, x1, y + 3, x2 - x1 + 2, 2, 0.16);
   b.box(x1 - 1, y, x2 - x1 + 3, 3, col);
   [x1 + 4, x2 - 4].forEach((x, i) => { b.vline(x, y + 3, 5, 'o'); b.line(x, y + 7, x + (i ? -4 : 4), y + 3, 'o'); });
 }
@@ -172,6 +223,10 @@ function drawCot(b, c) {
   b.box(x1 - 1, top - 20, 4, bot - top + 20, 'w'); b.box(x2 - 3, top - 20, 4, bot - top + 20, 'w');
   b.ell(x1 + 1, top - 22, 2.5, 2.5, 'P'); b.ell(x2 - 1, top - 22, 2.5, 2.5, 'P');
   b.px(x1, top - 23, 'w'); b.px(x2 - 2, top - 23, 'w');
+  bevel(b, x1 - 1, top - 20, 4, bot - top + 20); bevel(b, x2 - 3, top - 20, 4, bot - top + 20);
+  bevel(b, x1 + 2, top, x2 - x1 - 3, 6);
+  shadeRect(b, x1 + 3, top + 8, x2 - x1 - 5, 2, 0.14);
+  floorShadow(b, x1 - 1, x2 + 1, bot);
 }
 
 function drawBed(b, bed, style) {
@@ -188,21 +243,27 @@ function drawBed(b, bed, style) {
   b.box(x1 + 5, top + 2, x2 - x1 - 8, 7, 'w');
   b.rect(x1 + 6, top + 9, x2 - x1 - 10, bot - top - 12, s.frame); b.hline(x1 + 6, bot - 3, x2 - x1 - 10, 'o');
   b.rect(x1 + 9, bot - 2, 2, 2, 'o'); b.rect(x2 - 11, bot - 2, 2, 2, 'o');
+  bevel(b, x1, top - 21, 6, bot - top + 21); bevel(b, x2 - 4, top - 7, 5, bot - top + 7);   // posts
+  shadeRect(b, x1 + 7, bot - 6, x2 - x1 - 12, 3, 0.16);                                   // the base darkens towards the floor
+  floorShadow(b, x1 - 1, x2 + 1, bot);
   if (style === 'bare') {
     b.box(x1 + 5, top, x2 - x1 - 8, 10, s.duvet);
     for (let x = x1 + 8; x < x2 - 4; x += 4) b.vline(x, top + 1, 8, 'G');
+    bevel(b, x1 + 5, top, x2 - x1 - 8, 10);
     return;
   }
-  if (s.pillow) b.box(x1 + 6, top - 4, 17, 7, s.pillow);
+  if (s.pillow) { b.box(x1 + 6, top - 4, 17, 7, s.pillow); bevel(b, x1 + 6, top - 4, 17, 7, 1.2); }
   if (style === 'messy') {
     b.poly([[x1 + 18, top], [x1 + 40, top - 1], [x1 + 60, top + 2], [x2 - 3, top], [x2 - 2, top + 15], [x1 + 50, top + 17], [x1 + 30, top + 13], [x1 + 16, top + 16]], s.duvet);
     b.line(x1 + 26, top + 5, x1 + 46, top + 8, '#6d5a8f'); b.line(x1 + 50, top + 4, x1 + 64, top + 6, '#6d5a8f');
     b.line(x1 + 18, top, x1 + 16, top + 16, 'o'); b.line(x1 + 16, top + 16, x1 + 30, top + 13, 'o'); b.line(x1 + 30, top + 13, x1 + 50, top + 17, 'o'); b.line(x1 + 50, top + 17, x2 - 2, top + 15, 'o');
     b.hline(x1 + 18, top, x2 - x1 - 20, 'o');
+    lightRect(b, x1 + 19, top + 1, x2 - x1 - 23, 2, 0.22); shadeRect(b, x1 + 17, top + 10, x2 - x1 - 20, 8, 0.16);
     return;
   }
   b.box(x1 + 15, top, x2 - x1 - 18, 13, s.duvet);
   b.rect(x1 + 16, top + 9, x2 - x1 - 20, 3, s.dark);
+  lightRect(b, x1 + 16, top + 1, x2 - x1 - 20, 2, 0.3); shadeRect(b, x2 - 5, top + 1, 2, 8, 0.14);
   if (style === 'flowers') for (let x = x1 + 20, k = 0; x < x2 - 6; x += 9, k++) { const y = top + 3 + (k % 2) * 2; stamp(b, x, y, ['.#.', '#.#', '.#.'], 'w'); b.px(x + 1, y + 1, 'Y'); }
   if (style === 'butterflies') for (let x = x1 + 20, k = 0; x < x2 - 6; x += 10, k++) stamp(b, x, top + 3 + (k % 2), ['#.#', '###', '#.#'], k % 2 ? 'L' : 'h');
   if (style === 'linen') { b.hline(x1 + 16, top + 3, x2 - x1 - 20, 'g'); b.hline(x1 + 16, top + 5, x2 - x1 - 20, 'L'); }
@@ -215,6 +276,9 @@ function drawDresser(b, d, col) {
   const h = Math.floor((bot - top - 9) / 3);
   for (let i = 0; i < 3; i++) { b.box(x1 + 3, top + 6 + i * h, x2 - x1 - 5, h - 1, col); b.rect(Math.round((x1 + x2) / 2) - 1, top + 6 + i * h + Math.floor(h / 2) - 1, 2, 2, 'h'); }
   b.rect(x1 + 2, bot - 2, 3, 2, 'o'); b.rect(x2 - 4, bot - 2, 3, 2, 'o');
+  bevel(b, x1, top + 3, x2 - x1 + 1, bot - top - 5);
+  for (let i = 0; i < 3; i++) bevel(b, x1 + 3, top + 6 + i * h, x2 - x1 - 5, h - 1);
+  floorShadow(b, x1 - 1, x2 + 1, bot);
 }
 
 function drawBookshelf(b, s, col) {
@@ -224,6 +288,9 @@ function drawBookshelf(b, s, col) {
   b.vline(x1 + 2, top + 4, bot - top - 6, '#e2c070');
   b.box(x1, mid, x2 - x1 + 1, 3, col); b.box(x1, low, x2 - x1 + 1, 3, col);
   b.box(x1 - 2, top, x2 - x1 + 5, 3, 'w');
+  [top + 3, mid + 3, low + 3].forEach(y => shadeRect(b, x1 + 2, y, x2 - x1 - 3, 2, 0.16));   // shade under each board
+  bevel(b, x1, top + 3, x2 - x1 + 1, bot - top - 3, 0.8);
+  floorShadow(b, x1 - 1, x2 + 1, bot);
 }
 
 function drawDesk(b, d, o) {
@@ -233,8 +300,13 @@ function drawDesk(b, d, o) {
   b.box(x2 - 19, top + 3, 19, bot - top - 3, col);
   b.box(x2 - 17, top + 6, 15, 10, o.drawer || 'L'); b.box(x2 - 17, top + 18, 15, 10, o.drawer || 'L');
   b.rect(x2 - 11, top + 10, 3, 2, 'Y'); b.rect(x2 - 11, top + 22, 3, 2, 'Y');
+  shadeRect(b, x1 + 4, top + 3, x2 - x1 - 23, 3, 0.16); shadeRect(b, x1 + 4, top + 6, x2 - x1 - 23, 4, 0.08);   // under the desk top
+  bevel(b, x2 - 19, top + 3, 19, bot - top - 3); bevel(b, x2 - 17, top + 6, 15, 10); bevel(b, x2 - 17, top + 18, 15, 10);
   b.box(x1 - 2, top, x2 - x1 + 5, 3, col);
+  lightRect(b, x1 - 1, top + 1, x2 - x1 + 3, 1, 0.35);
+  floorShadow(b, x1, x2 + 1, bot);
   b.box(x1 + 8, top + 6, 17, 13, o.chair || 'P'); b.box(x1 + 6, top + 18, 21, 4, o.chair || 'P');
+  bevel(b, x1 + 8, top + 6, 17, 13); bevel(b, x1 + 6, top + 18, 21, 4); b.box(x1 + 6, top + 18, 21, 4, o.chair || 'P');
   b.vline(x1 + 8, top + 22, bot - top - 22, 'o'); b.vline(x1 + 24, top + 22, bot - top - 22, 'o');
   if (o.lamp) {
     const lx = x2 - 4;
@@ -248,6 +320,7 @@ function drawDesk(b, d, o) {
 
 function drawRug(b, cx, cy, rx, ry, c1, c2) {
   b.ell(cx, cy, rx, ry, c1);
+  shadeRect(b, cx - rx, cy - ry, rx * 2 + 1, Math.ceil(ry * 0.5), 0.07); lightRect(b, cx - rx, cy + Math.ceil(ry * 0.4), rx * 2 + 1, Math.ceil(ry * 0.6), 0.1);
   b.ring(cx, cy, rx - 4, ry - 2.5, c2);
   b.ring(cx, cy, rx, ry, 'o');
 }
@@ -257,6 +330,7 @@ function drawToyBox(b, t) {
   b.poly([[x1 + 1, y1], [x2, y1], [x2 + 2, y1 - 10], [x1 + 3, y1 - 12]], 'Y');
   b.line(x1 + 1, y1, x1 + 3, y1 - 12, 'o'); b.line(x1 + 3, y1 - 12, x2 + 2, y1 - 10, 'o'); b.line(x2 + 2, y1 - 10, x2, y1, 'o');
   b.box(x1, y1, x2 - x1 + 1, y2 - y1 + 1, 'B');
+  bevel(b, x1, y1, x2 - x1 + 1, y2 - y1 + 1); floorShadow(b, x1, x2 + 1, y2);
   miniText(b, Math.round((x1 + x2) / 2) - 7, y1 + 8, 'TOYS', 'w');
   stamp(b, x1 + 3, y1 + 3, ['.#.', '###', '.#.'], 'y'); stamp(b, x2 - 6, y2 - 6, ['.#.', '###', '.#.'], 'y');
 }
@@ -266,6 +340,7 @@ function drawBasket(b, k) {
   b.box(x1, y1, x2 - x1 + 1, y2 - y1 + 1, 'r');
   for (let y = y1 + 2; y < y2; y += 3) for (let x = x1 + 1 + (y % 2); x < x2; x += 3) b.px(x, y, 'R');
   b.box(x1 - 1, y1 - 1, x2 - x1 + 3, 3, 't');
+  shadeRect(b, x2 - 2, y1 + 2, 2, y2 - y1 - 2, 0.16); shadeRect(b, x1 + 1, y2 - 1, x2 - x1 - 1, 1, 0.16); floorShadow(b, x1, x2 + 1, y2);
 }
 
 function drawHookRail(b, h) {
@@ -287,6 +362,7 @@ function drawTeaTable(b, cx, top, w, bot) {
 function drawStackedBoxes(b) {
   [[281, 118, 30, 22, 'BOOKS'], [284, 97, 26, 21, 'STUFF'], [287, 80, 21, 17, 'MISC']].forEach(([x, y, w, h, label]) => {
     b.box(x, y, w, h, 'r'); b.rect(x + Math.floor(w / 2) - 1, y + 1, 3, h - 2, 'y');
+    bevel(b, x, y, w, h);
     miniText(b, x + Math.round((w - miniWidth(label)) / 2), y + Math.floor(h / 2) - 2, label, 'o');
   });
 }

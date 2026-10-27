@@ -905,6 +905,12 @@ function shadowCv(w) {
   return (_shadowCache[w] = out.toCanvas(1));
 }
 
+const _silhouettes = new Map();
+function silhouetteCv(fr) {
+  if (!_silhouettes.has(fr)) _silhouettes.set(fr, fr.buf.map(() => 'o').toCanvas(1));
+  return _silhouettes.get(fr);
+}
+
 function drawItem(it) {
   if (it.state === 'binned' && (!it.tw || it.alpha < 0.15)) return;
   const S = SPR[it.id], fr = spriteFrame(it.id, G.time);
@@ -914,6 +920,14 @@ function drawItem(it) {
   if (it.wig > 0.15) ax += Math.floor(G.time / 45) % 2 ? 1 : -1;
   const lifted = it.state === 'drag';
   if (lifted) { const sw = Math.max(4, Math.round(S.w * 0.8)); art.drawImage(shadowCv(sw), ax + Math.round((S.w - sw) / 2), ay + S.h); ay -= 3; }
+  else if (it.state === 'placed' && !it.tw) {
+    // put down: a soft shadow where it stands, or a faint drop shadow if it hangs on the wall
+    const s = surfaceById(it.surface), hung = !s || s.type === 'wall' || s.type === 'hang' || s.type === 'spot';
+    art.globalAlpha = hung ? 0.22 : 0.45;
+    if (hung) art.drawImage(silhouetteCv(fr), ax, ay);
+    else { const sw = Math.max(4, Math.round(S.w * 0.75)); art.drawImage(shadowCv(sw), ax + Math.round((S.w - sw) / 2), ay + S.h - 2); }
+    art.globalAlpha = 1;
+  }
   const img = it.alpha < 0.6 ? fr.ghost : (lifted || G.hover === it) ? fr.hover : fr.normal;
   art.drawImage(img, ax - 1, ay - 1);
   if (it.state === 'tray' && it.carried) art.drawImage(heartCv(), ax + S.w - 5, ay - 3);

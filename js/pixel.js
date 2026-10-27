@@ -29,6 +29,14 @@ const PALETTE = {
 };
 
 const _rgba = {};
+/* mix colour c towards colour d by t (0..1); used for light and shade on the rooms and the things in them */
+const SHADOW = '#3b2a4a', _mixed = {};
+function mixCol(c, d, t) {
+  const k = c + d + t;
+  if (_mixed[k]) return _mixed[k];
+  const a = toRGBA(c), e = toRGBA(d);
+  return (_mixed[k] = '#' + [0, 1, 2].map(i => Math.round(a[i] + (e[i] - a[i]) * t).toString(16).padStart(2, '0')).join(''));
+}
 function toRGBA(c) {
   if (_rgba[c]) return _rgba[c];
   let hex = c.length === 1 ? PALETTE[c] : c;

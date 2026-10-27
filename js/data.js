@@ -9,7 +9,7 @@
 
 // Change this (and the ?v= on the files in index.html) with every update, so browsers fetch the new
 // photos, videos and code together instead of mixing new files with old ones from their cache.
-const VERSION = '20261024n';
+const VERSION = '20261024o';
 
 const MEMORY_BOX_SIZE = 3;          // how many things (besides Teddy) carry over between chapters
 const IDLE_RESET_MS = 150000;       // exhibition: return to title after 2.5 min of no input
@@ -173,9 +173,9 @@ const CHAPTERS = [
     id: 'nursery', kicker: 'Chapter 1', title: 'The Nursery', year: 2000, accent: '#ffc700',
     intro: 'My story begins in a butter colored room. Someone very small is about to arrive.',
     tip: 'Drag each thing from the box into the room.\nBlue dotted lines show where it can go.',
-    bg: bgNursery, layout: L_NURSERY,
+    bg: bgNursery, front: frontNursery, layout: L_NURSERY,
     surfaces: [
-      { id: 'cot', tag: 'bed', type: 'line', x1: 210, x2: 462, y: 370 },
+      { id: 'cot', tag: 'bed', type: 'line', x1: 210, x2: 462, y: 328, above: 68, below: 72, lower: { blanket: 28, rattle: 28 } },   // inside, behind the near rail; flat things lie further forward on the mattress
       { id: 'mobile', tag: 'mobile', type: 'spot', x: 335, y: 178, r: 80 },
       { id: 'shelf', tag: 'shelf', type: 'line', x1: 806, x2: 994, y: 210 },
       { id: 'dresser', tag: 'desk', type: 'line', x1: 798, x2: 992, y: 335 },

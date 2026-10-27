@@ -27,7 +27,7 @@ const G = {
   yaLayout: null, packed: [], boxClose: 0, gift: false, labels: []
 };
 
-let canvasEl, artCv, art, bgCv = null, bgFor = null, trayCv = null, thumbCache = {}, CURSORS = {};
+let canvasEl, artCv, art, bgCv = null, frontCv = null, bgFor = null, trayCv = null, thumbCache = {}, CURSORS = {};
 
 /* ================= p5 lifecycle ================= */
 
@@ -355,7 +355,7 @@ function surfaceUnder(it) {
 
 function zoneOf(s) {
   switch (s.type) {
-    case 'line': return { x1: s.x1 - 10, x2: s.x2 + 10, y1: s.y - 110, y2: s.y + 30 };
+    case 'line': return { x1: s.x1 - 10, x2: s.x2 + 10, y1: s.y - (s.above || 110), y2: s.y + (s.below || 30) };
     case 'hang': return { x1: s.x1 - 10, x2: s.x2 + 10, y1: s.y - 30, y2: s.y + 120 };
     case 'area': return { x1: s.x1, x2: s.x2, y1: s.y1 - 70, y2: s.y2 + 24 };
     case 'spot': return { x1: s.x - s.r, x2: s.x + s.r, y1: s.y - s.r, y2: s.y + s.r };
@@ -384,7 +384,7 @@ function computePlacement(it, s, cx, cy, list) {
   }
   if (s.maxH && h > s.maxH) return null;
   let xmin, xmax, ymin, ymax;
-  if (s.type === 'line') { ymin = ymax = s.y - h / 2; xmin = s.x1 + w / 2; xmax = s.x2 - w / 2; }
+  if (s.type === 'line') { ymin = ymax = s.y + ((s.lower && s.lower[it.id]) || 0) - h / 2; xmin = s.x1 + w / 2; xmax = s.x2 - w / 2; }
   else if (s.type === 'hang') { ymin = ymax = s.y + h / 2; xmin = s.x1 + w / 2; xmax = s.x2 - w / 2; }
   else if (s.type === 'wall') { xmin = s.x1 + w / 2; xmax = s.x2 - w / 2; ymin = s.y1 + h / 2; ymax = s.y2 - h / 2; }
   else { xmin = s.x1 + w / 2; xmax = s.x2 - w / 2; ymin = s.y1 - h / 2; ymax = s.y2 - h / 2; }
@@ -789,6 +789,13 @@ function buildBg() {
   G.ch.bg(b, G.ch.layout);
   bgCv = b.toCanvas(1);
   bgFor = G.idx;
+  // furniture that stands in front of what's put on it (the cot's near rail): the room's own pixels, drawn again over those things
+  frontCv = null;
+  if (G.ch.front) {
+    const m = new PixBuf(ART_W, ART_H, 0);
+    G.ch.front(m, G.ch.layout);
+    frontCv = b.map((c, x, y) => m.get(x, y) ? c : null).toCanvas(1);
+  }
 }
 
 function buildTray() {
@@ -812,8 +819,13 @@ function render() {
   G.labels = [];
   drawRoomFx();
   const guideItem = G.drag ? G.drag.item : (G.helpFlash && G.time < G.helpFlash.until ? G.helpFlash.item : null);
-  const list = drawList();
-  list.filter(i => i.state !== 'tray' && i.state !== 'drag').forEach(drawItem);
+  const list = drawList(), inRoom = list.filter(i => i.state !== 'tray' && i.state !== 'drag');
+  // things on the walls and on shelves, desks and beds; then the furniture parts in front of them; then the floor
+  const behind = frontCv ? inRoom.filter(i => layerOf(i) <= 1) : inRoom;
+  behind.forEach(drawItem);
+  const ghostBehind = frontCv && G.drag && G.drag.target && G.drag.target.surf && G.drag.target.surf.type === 'line';
+  if (ghostBehind) drawGhost();
+  if (frontCv) { art.drawImage(frontCv, 0, 0); inRoom.filter(i => layerOf(i) > 1).forEach(drawItem); }
   drawFront();
   if (guideItem) drawGuides(guideItem);
   drawTray();
@@ -823,7 +835,7 @@ function render() {
   drawLabels(ctx);               // the words sit on the room and the box...
   art.clearRect(0, 0, ART_W, ART_H);
   list.filter(i => i.state === 'tray').forEach(drawItem);   // ...and the things in the tray / in your hand go over them
-  if (G.drag) { drawGhost(); drawItem(G.drag.item); }
+  if (G.drag) { if (!ghostBehind) drawGhost(); drawItem(G.drag.item); }
   drawMarkers();
   drawParticles();
   ctx.drawImage(artCv, 0, 0, W, H);
@@ -920,19 +932,29 @@ function drawItem(it) {
   if (it.wig > 0.15) ax += Math.floor(G.time / 45) % 2 ? 1 : -1;
   const lifted = it.state === 'drag';
   if (lifted) { const sw = Math.max(4, Math.round(S.w * 0.8)); art.drawImage(shadowCv(sw), ax + Math.round((S.w - sw) / 2), ay + S.h); ay -= 3; }
-  else if (it.state === 'placed' && !it.tw) {
-    // put down: a soft shadow where it stands, or a faint drop shadow if it hangs on the wall
-    const s = surfaceById(it.surface), hung = !s || s.type === 'wall' || s.type === 'hang' || s.type === 'spot';
-    art.globalAlpha = hung ? 0.22 : 0.45;
-    if (hung) art.drawImage(silhouetteCv(fr), ax, ay);
-    else { const sw = Math.max(4, Math.round(S.w * 0.75)); art.drawImage(shadowCv(sw), ax + Math.round((S.w - sw) / 2), ay + S.h - 2); }
+  else if (it.state === 'placed') {
+    // put down: a shadow that suits where it is (it fades in as the thing lands)
+    const s = surfaceById(it.surface), k = it.tw ? Math.min(1, it.tw.t / it.tw.dur) : 1;
+    const hung = !s || s.type === 'wall' || s.type === 'hang' || s.type === 'spot';
+    if (hung) { art.globalAlpha = 0.14 * k; art.drawImage(silhouetteCv(fr), ax, ay); }          // a faint edge on the wall
+    else {
+      const floor = s.type === 'area', soft = s.tag === 'bed' || s.tag === 'cot';
+      const sw = Math.max(4, Math.round(S.w * (floor ? 0.85 : soft ? 0.7 : 0.6)));
+      art.globalAlpha = (floor ? 0.5 : soft ? 0.3 : 0.4) * k;                                // floor / bedding / desk and shelves
+      art.drawImage(shadowCv(sw), ax + Math.round((S.w - sw) / 2), ay + S.h - 2);
+    }
     art.globalAlpha = 1;
   }
   const img = it.alpha < 0.6 ? fr.ghost : (lifted || G.hover === it) ? fr.hover : fr.normal;
+  const mouth = it.state === 'binned' && it.tw && BIN_MOUTH[it.surface];
+  if (mouth) { art.save(); art.beginPath(); art.rect(0, 0, ART_W, mouth); art.clip(); }
   art.drawImage(img, ax - 1, ay - 1);
+  if (mouth) art.restore();
   if (it.state === 'tray' && it.carried) art.drawImage(heartCv(), ax + S.w - 5, ay - 3);
   if (it.mess && it.state === 'placed' && !it.tw && G.state === 'play') bubble(ax + S.w - 3, ay - 6 + (Math.floor(G.time / 300) % 2), '2', '!');
 }
+
+const BIN_MOUTH = { basket: 113, toybox: 117, box: 156 };   // art row of the opening things drop into
 
 let _heart = null;
 function heartCv() { return _heart || (_heart = iconBuf('heart').toCanvas(1)); }
@@ -949,7 +971,7 @@ function drawRoomFx() {
   if (nl) {
     const cx = Math.round(nl.x / ART), cy = Math.round(nl.y / ART), pulse = Math.floor(G.time / 700) % 2;
     for (let y = -26; y <= 26; y++) for (let x = -26; x <= 26; x++) {
-      const d = Math.sqrt(x * x + y * y), lvl = d < 9 ? 7 : d < 16 ? 4 : d < 24 + pulse * 2 ? 2 : 0;
+      const d = Math.sqrt(x * x + y * y), lvl = d < 6 ? 5 : d < 11 ? 3 : d < 16 + pulse ? 1 : 0;
       if (lvl && BAYER4[((cy + y) & 3) * 4 + ((cx + x) & 3)] < lvl) apx(cx + x, cy + y, '#fff3a8');
     }
   }

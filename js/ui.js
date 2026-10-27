@@ -42,6 +42,8 @@ const UI = (() => {
     overlay = $('#overlay'); modal = $('#modal'); hud = $('#hud'); dock = $('#dock'); hintEl = $('#hint'); hintText = $('#hintText'); toasts = $('#toasts');
     $('#menuBtn').addEventListener('click', () => { Sound.click(); H.onMenu(); });
     $('#muteBtn').addEventListener('click', () => { H.onMute(); });
+    // the iPad leaves full screen on a downward swipe (easy to do by accident while dragging): the next tap goes back
+    window.addEventListener('touchend', () => { if (keepFullscreen) goFullscreen(); }, { capture: true, passive: true });
     // "click anywhere to continue" also counts the black margins around the 4:3 page
     // (only a real click out there: a drag that starts on the memory window and ends outside doesn't count)
     let downOutside = false;
@@ -105,9 +107,12 @@ const UI = (() => {
 
   // on an iPad (or any touch screen) going through the door also hides the browser's bars: the browser only
   // allows full screen straight after a tap, so it's asked for on the door taps; iPhones can't, and nothing happens
+  let keepFullscreen = false;   // once someone has come through the door, a swipe out of full screen is undone on the next tap
   function goFullscreen() {
     const d = document, el = d.documentElement;
-    if (!(navigator.maxTouchPoints > 0) || d.fullscreenElement || d.webkitFullscreenElement) return;
+    if (!(navigator.maxTouchPoints > 0)) return;
+    keepFullscreen = true;
+    if (d.fullscreenElement || d.webkitFullscreenElement) return;
     const req = el.requestFullscreen || el.webkitRequestFullscreen;
     if (!req) return;
     try { const p = req.call(el); if (p && p.catch) p.catch(() => {}); } catch (err) { /* not allowed here */ }

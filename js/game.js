@@ -62,7 +62,9 @@ function draw() {
 
 function fitStage() {
   const FILL = 0.9;   // the stage fills 90% of the window, leaving ~5% breathing room on each side
-  const s = Math.min(window.innerWidth / STAGE_W, window.innerHeight / STAGE_H) * FILL;
+  // the screen's own size: while a phone is still loading the page, innerWidth can be the zoomed-out page width
+  const vw = document.documentElement.clientWidth || window.innerWidth, vh = document.documentElement.clientHeight || window.innerHeight;
+  const s = Math.min(vw / STAGE_W, vh / STAGE_H) * FILL;
   document.documentElement.style.setProperty('--s', s);
   const pd = Math.min(3, Math.max(1, Math.round(s * SCREEN_K * (window.devicePixelRatio || 1) * 4) / 4));
   if (pd !== pixelDensity()) pixelDensity(pd);

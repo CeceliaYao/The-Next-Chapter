@@ -42,6 +42,9 @@ const UI = (() => {
     overlay = $('#overlay'); modal = $('#modal'); hud = $('#hud'); dock = $('#dock'); hintEl = $('#hint'); hintText = $('#hintText'); toasts = $('#toasts');
     $('#menuBtn').addEventListener('click', () => { Sound.click(); H.onMenu(); });
     $('#muteBtn').addEventListener('click', () => { H.onMute(); });
+    // the iPad leaves full screen on a quick downward swipe (built in, a page can't turn it off), and dragging something
+    // down can do it by accident: once someone has come through the door, their next tap (a tap, not the end of a drag) goes back
+    document.addEventListener('click', () => { if (keepFullscreen) goFullscreen(); }, true);
     // "click anywhere to continue" also counts the black margins around the 4:3 page
     // (only a real click out there: a drag that starts on the memory window and ends outside doesn't count)
     let downOutside = false;
@@ -104,14 +107,17 @@ const UI = (() => {
   }
 
   // on an iPad (or any touch screen) tapping the door also hides the browser's bars. The browser only allows full
-  // screen straight after a tap and may ask first, so it's asked for once, when someone taps the door, and never
-  // again while they play (each new visitor taps the door). iPhones can't, and nothing happens
+  // screen straight after a tap, so it's asked for when someone taps the door, and again only after a swipe has taken
+  // the page out of it (never at the end of a drag, and not twice in a row). iPhones can't, and nothing happens
+  let keepFullscreen = false, lastAsk = 0;
   function goFullscreen() {
     const d = document, el = d.documentElement;
     if (!(navigator.maxTouchPoints > 0)) return;
+    keepFullscreen = true;
     if (d.fullscreenElement || d.webkitFullscreenElement) return;
     const req = el.requestFullscreen || el.webkitRequestFullscreen;
-    if (!req) return;
+    if (!req || performance.now() - lastAsk < 1500) return;
+    lastAsk = performance.now();
     try { const p = req.call(el); if (p && p.catch) p.catch(() => {}); } catch (err) { /* not allowed here */ }
   }
 

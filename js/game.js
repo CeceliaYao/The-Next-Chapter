@@ -373,8 +373,9 @@ function computePlacement(it, s, cx, cy, list) {
   const w = it.w, h = it.h;
   if (s.type === 'bin') {
     if (s.capacity) {
-      const cap = it.id === 'teddy' ? s.capacity : s.capacity - 1;
-      if (binCount(s.id, list) >= cap) return null;
+      const n = binCount(s.id, list), cap = it.id === 'teddy' ? s.capacity : s.capacity - 1;
+      if (n >= cap) return null;
+      if (it.id === 'teddy' && n === 0) return null;   // Teddy goes in last: something else is packed first
     }
     return { x: (s.x1 + s.x2) / 2, y: (s.y1 + s.y2) / 2, bin: true };
   }
@@ -554,7 +555,7 @@ function drop() {
   if (t || d.ty < 566) {
     it.wig = 1; Sound.wrong();
     let msg = it.def.hint || 'Hmm, not there.';
-    if (t && t.full) msg = (t.full.id === 'box') ? 'The box is nearly full. Only room for Teddy now!' : 'No room there. Try another spot!';
+    if (t && t.full) msg = t.full.id !== 'box' ? 'No room there. Try another spot!' : it.id === 'teddy' ? 'Pack something else first. Teddy goes in last.' : 'The box is nearly full. Only room for Teddy now!';
     UI.hint(msg, { pulse: true, ms: 4500 });
   } else Sound.back();
   flyBack(it, d.home);
@@ -620,7 +621,7 @@ function debugSkip() {
   if (G.ch.moving) {
     const teddy = G.items.find(i => i.id === 'teddy');
     const box = surfaceById('box');
-    if (teddy && teddy.state !== 'binned') place(teddy, box, computePlacement(teddy, box, 0, 0, G.items));
+    if (teddy && teddy.state !== 'binned') place(teddy, box, computePlacement(teddy, box, 0, 0, G.items) || { x: (box.x1 + box.x2) / 2, y: (box.y1 + box.y2) / 2, bin: true });
     return;
   }
   autoTidy();

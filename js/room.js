@@ -116,12 +116,25 @@ function stamp(b, x, y, rows, c, clip) {
 
 /* ---------- walls, floor & wallpaper ---------- */
 
+// pixels per step along the side walls' top edges (left: from the frame corner down; right: from the back corner up).
+// One pixel where a step meets the frame, so the two lines never run side by side
+const STAIR_STEPS = { left: [1, 9, 9, 9, 9], right: [9, 9, 9, 10, 1] };
 function roomShell(b, th) {
   const { LX, RX, CY, WX1, WX2, WY1, WY2, FY } = RA;
   b.rect(0, 0, ART_W, ART_H, '#fff6ea'); b.dither(0, 0, ART_W, ART_H, '#ffe3c8', 6);
   b.poly([[LX, CY], [RX + 1, CY], [WX2 + 1, WY1], [WX1, WY1]], th.ceil);
   b.poly([[LX, CY], [WX1, WY1], [WX1, WY2 + 1], [LX, FY + 1]], th.side);
   b.poly([[WX2 + 1, WY1], [RX + 1, CY], [RX + 1, FY + 1], [WX2 + 1, WY2 + 1]], th.side2 || th.side);
+  // the side walls' top edges: even steps from the frame's corner down to the back wall's top corner, landing on
+  // that corner (not running on along the back wall's top line); ceiling above each step, wall below it
+  const st = STAIR_STEPS, edge = {};
+  let ex = LX; st.left.forEach((n, i) => { for (let k = 0; k < n; k++) edge[ex++] = CY + i; });
+  ex = WX2 + 1; st.right.forEach((n, i) => { for (let k = 0; k < n; k++) edge[ex++] = WY1 - 1 - i; });
+  Object.keys(edge).forEach(k => {
+    const x = +k, e = edge[x], side = x < WX1 ? th.side : (th.side2 || th.side);
+    for (let y = CY; y < e; y++) b.px(x, y, th.ceil);
+    for (let y = e + 1; y <= WY1 + 1; y++) if (b.get(x, y) === th.ceil) b.px(x, y, side);
+  });
   for (let y = CY; y < FY; y++) for (let x = LX; x < LX + 12; x++) if (b.get(x, y) === th.side && BAYER4[(y & 3) * 4 + (x & 3)] < 6) b.px(x, y, th.sideShade || th.side);   // only on the left wall
   b.rect(WX1, WY1, WX2 - WX1 + 1, WY2 - WY1 + 1, th.wall);
   wallpaper(b, th);
@@ -160,7 +173,7 @@ function roomShell(b, th) {
   for (let y = CY; y < FY; y++) for (let x = RX - 9; x <= RX; x++) if (b.get(x, y) === (th.side2 || th.side)) shadeRect(b, x, y, 1, 1, 0.06);   // only on the right wall
   // a little structure: the cut front edge of each side wall catches the light, and a narrow shade where a side wall
   // meets the back wall. One art pixel each, kept inside the side walls (between their ceiling and floor lines)
-  const wallTop = x => x <= WX1 ? CY + (WY1 - CY) * (x - LX) / (WX1 - LX) : CY + (WY1 - CY) * (RX - x) / (RX - WX2);
+  const wallTop = x => edge[x] != null ? edge[x] : x <= WX1 ? CY + (WY1 - CY) * (x - LX) / (WX1 - LX) : CY + (WY1 - CY) * (RX - x) / (RX - WX2);
   const wallBot = x => x <= WX1 ? FY + (WY2 - FY) * (x - LX) / (WX1 - LX) : FY + (WY2 - FY) * (RX - x) / (RX - WX2);
   const column = (x, fn) => { const y0 = Math.ceil(wallTop(x)) + 1, y1 = Math.floor(wallBot(x)) - 1; fn(x, y0, 1, y1 - y0 + 1); };
   column(LX, (x, y, w, h) => b.rect(x, y, w, h, mixCol(th.side, '#ffffff', 0.45)));   // one even colour, over the dotted band
@@ -173,7 +186,7 @@ function roomShell(b, th) {
   b.vline(WX1, WY1, WY2 - WY1 + 1, 'o'); b.vline(WX2, WY1, WY2 - WY1 + 1, 'o');
   b.hline(WX1, WY1, WX2 - WX1 + 1, 'o');
   b.line(WX1, WY2, LX, FY, 'o'); b.line(WX2, WY2, RX, FY, 'o');
-  b.line(WX1, WY1, LX, CY, 'o'); b.line(WX2, WY1, RX, CY, 'o');
+  Object.keys(edge).forEach(k => b.px(+k, edge[k], 'o'));
   b.rect(LX - 1, CY - 1, RX - LX + 3, 1, 'o'); b.rect(LX - 1, CY - 1, 1, FY - CY + 3, 'o'); b.rect(RX + 1, CY - 1, 1, FY - CY + 3, 'o');
   b.rect(LX - 1, FY + 1, RX - LX + 3, 2, 'o');
 }

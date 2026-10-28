@@ -253,7 +253,7 @@ button { font-family: var(--font-ui); cursor: var(--cursor-hand); }
 /* the team logo in its own window, up and to the left, tucked slightly under the main window */
 .logo-win { position: absolute; left: 64px; top: 56px; width: 400px; }
 .logo-body { padding: 64px 72px; display: flex; justify-content: center; }
-.logo-body img { display: block; }
+.logo-body img { display: block; max-width: 100%; }   /* never wider than the window's inside (252 px), in every browser */
 
 /* tip caption (the Mum pop-up style, in orange) that stays put at the top right */
 .note-win { position: absolute; right: 40px; top: 36px; width: 420px; border-radius: 12px; overflow: hidden; background: linear-gradient(180deg, #ffffff 0%, #fff4e8 100%); border: 1px solid #e35000; box-shadow: 0 6px 16px rgba(120, 40, 0, .25); }

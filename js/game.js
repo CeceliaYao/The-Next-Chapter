@@ -270,7 +270,7 @@ function showSummary() {
     packed, letGo: G.letGo.map(l => ({ id: l.id, label: 'Let Go ' + l.year })),
     memSeen: [...G.seen].filter(id => !secretIds.has(id)).length, memTotal, credits: CREDITS, thumb: id => getThumb(id), names: id => ITEM_DEFS[id].name,
     teddy: CHAPTERS.map((c, k) => ({ thumb: getThumb('teddy', k), year: c.year, label: TEDDY_AGES[k] }))
-  }, goTitle);
+  }, () => goTitle(true));   // Play Again: back to the door, ready for the next visitor
 }
 
 function setBlur(on) { if (canvasEl) canvasEl.classList.toggle('blur', on); }

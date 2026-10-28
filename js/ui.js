@@ -723,6 +723,7 @@ const UI = (() => {
       '      <button class="aqua alt" data-a="restart">Restart Chapter</button>' +
       '      <button class="aqua alt" data-a="title">Select Chapter</button>' +
       '      <button class="aqua alt" data-a="sound">' + (Sound.isMuted() ? 'Sound: Off' : 'Sound: On') + '</button>' +
+      '      <button class="aqua alt" data-a="door">Back to the Door</button>' +
       '      <p class="small">Keys: Esc for Menu · M for Sound</p>' +
       '    </div>' +
       '  </div>' +

@@ -639,6 +639,7 @@ function openMenu() {
     if (a === 'resume') closeMenu();
     if (a === 'restart') { closeMenu(); setupChapter(G.idx); beginChapter(); }
     if (a === 'title') { closeMenu(); goTitle(); }
+    if (a === 'door') { closeMenu(); goTitle(true); }
     if (a === 'sound') { toggleMute(); G.modal = null; openMenu(); }
   });
 }

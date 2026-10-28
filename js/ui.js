@@ -162,7 +162,7 @@ const UI = (() => {
           '  <div class="login-win">' +
           '    <div class="avatar"><svg class="avatar-fallback" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="38" r="17" fill="rgba(255,255,255,.75)"/><path d="M16 92c2-24 16-34 34-34s32 10 34 34z" fill="rgba(255,255,255,.75)"/></svg>' +
           '      <img class="avatar-img" src="assets/brand/profile.webp" alt=""></div>' +
-          '    <input class="login-name" id="loginName" type="text" maxlength="20" placeholder="User Name" autocomplete="off" spellcheck="false" aria-label="User Name">' +
+          '    <input class="login-name" id="loginName" type="text" maxlength="20" placeholder="User name" autocomplete="off" spellcheck="false" aria-label="User name">' +
           '    <button class="aqua login-go" id="loginGo" type="button" aria-disabled="true">Sign In</button>' +
           '  </div>' +
           '  <div class="title-foot">© 2026 Chloee Park, Isabella Kiosses, Lyebin Cho, Qinxi "Cecelia" Yao. All rights reserved. </div>' +

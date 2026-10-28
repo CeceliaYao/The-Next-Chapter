@@ -251,7 +251,7 @@ button { font-family: var(--font-ui); cursor: var(--cursor-hand); }
 .desk-bg { position: absolute; inset: 0; width: 1280px; height: 960px; filter: saturate(.7) contrast(1) brightness(.9); }   /* calmer wallpaper so the windows read first */
 
 /* the team logo in its own window, up and to the left, tucked slightly under the main window */
-.logo-win { position: absolute; left: 64px; top: 56px; width: 400px; }
+.logo-win { position: absolute; left: 64px; top: 56px; width: 472px; }   /* the 324 px logo plus its 72 px each side */
 .logo-body { padding: 64px 72px; display: flex; justify-content: center; }
 .logo-body img { display: block; }
 

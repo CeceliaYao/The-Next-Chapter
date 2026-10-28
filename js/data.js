@@ -18,9 +18,8 @@ const IDLE_RESET_MS = 150000;       // exhibition: return to title after 2.5 min
 const ENDING_NOTE = {
   title: 'Thank you for playing this far.',
   lines: [
-    'In one small room, you just read the first eighteen years of a girl’s life. She never said much. You got to know her through what she kept, what she outgrew, and what she couldn’t quite let go.',
-    'That’s upkeep: the quiet, everyday care of the things we live with. A bed made. A trophy dusted. A worn-out bear carried into one more room. Objects can’t remember for us, but they hold on to who we were.',
-    'Now the room is empty. She’s off to study a Bachelor of Creative Industries, to make new things, and new memories, of her own.'
+    'In one small room, you got to know your life through what you kept, what you outgrew, and what you couldn’t quite let go of.',
+    'That’s upkeep: the quiet, everyday care of the things we live with. A bed made. A trophy dusted. A worn-out bear carried into one more room. Objects can’t remember for us, but they hold on to who we were.'
   ],
   sign: 'Here’s to her next chapter.\nAnd to yours.'
 };

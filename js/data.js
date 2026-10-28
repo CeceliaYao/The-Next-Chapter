@@ -9,7 +9,7 @@
 
 // Change this (and the ?v= on the files in index.html) with every update, so browsers fetch the new
 // photos, videos and code together instead of mixing new files with old ones from their cache.
-const VERSION = '20261025d';
+const VERSION = '20261025e';
 
 const MEMORY_BOX_SIZE = 3;          // how many things (besides Teddy) carry over between chapters
 const IDLE_RESET_MS = 150000;       // exhibition: return to title after 2.5 min of no input
@@ -363,7 +363,7 @@ const CHAPTERS = [
         id: 'm-letter', items: ['uniletter'], type: 'letter', title: 'acceptance_letter.txt',
         caption: 'Dear {name},\n\nCongratulations! We are delighted to offer you a place in our Bachelor of Creative Industries, commencing next semester.\n\nWelcome to your next chapter.\n\nOffice of Admissions'
       },
-      { id: 'm-boxes', items: [], type: 'video', src: 'assets/video/06-moving-out-boxes.mp4', still: 'assets/photos/06-moving-out-boxes.webp', focus: [0.5, 0.45], caption: 'Teddy, the family photo, and some clothes. That’s the important stuff.' }
+      { id: 'm-boxes', items: [], type: 'video', src: 'assets/video/06-moving-out-boxes.mp4', still: 'assets/photos/06-moving-out-boxes.webp', focus: [0.5, 0.45], caption: 'That’s everything I need. I think I’m ready to go.' }
     ],
     onStart: [{ do: 'wait', ms: 1500 }, { do: 'toast', from: 'Mum', text: 'There’s mail for you on your desk! The car’s packed, take your time. x' }],
     onPlace: {},

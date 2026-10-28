@@ -342,12 +342,21 @@ function drawBed(b, bed, style) {
     for (let x = x1 + 8; x < x2 - 4; x += 4) b.vline(x, top + 1, 8, 'G');
     lightRect(b, x1 + 6, top + 1, x2 - x1 - 10, 1, 0.35); shadeRect(b, x1 + 6, top + 7, x2 - x1 - 10, 2, 0.14);
   } else {
-    // pillow: a soft, rounded shape lying on the mattress by the headboard
+    // pillow: soft and a little puffed up - flat where it rests, its top rising in pixel steps to a puff in the middle
+    // (not an ellipse), lit along the top, a touch of shade along the bottom and where it rests on the mattress
     const pillow = () => {
       if (!s.pillow) return;
-      const [cx, cy] = back(x1 + 13, top, f * 0.45);
-      b.ell(cx, cy, 7, 3.5, s.pillow); b.ring(cx, cy, 7, 3.5, mixCol(s.pillow, SHADOW, 0.5));
-      lightRect(b, cx - 5, cy - 2, 9, 1, 0.5); shadeRect(b, cx - 5, cy + 2, 11, 1, 0.18); shadeRect(b, cx - 1, cy - 1, 2, 2, 0.12);
+      const [cx, cy] = back(x1 + 13, top, f * 0.45), edge = mixCol(s.pillow, SHADOW, 0.5);
+      const TOP = [-1, -2, -3, -4, -4, -4, -5, -5], BOT = [1, 2, 2, 3, 3, 3, 3, 3];   // from each end in to the middle
+      const col = x => { const i = Math.min(x - (cx - 8), cx + 7 - x); return i < 0 ? null : [cy + TOP[i], cy + BOT[i], i]; };
+      const inside = (x, y) => { const c = col(x); return !!c && y >= c[0] && y <= c[1]; };
+      for (let x = cx - 8; x <= cx + 7; x++) {
+        const [y0, y1, i] = col(x);
+        for (let y = y0; y <= y1; y++) b.px(x, y, [[0, -1], [0, 1], [-1, 0], [1, 0]].every(([u, v]) => inside(x + u, y + v)) ? s.pillow : edge);
+        if (i >= 2) { lightRect(b, x, y0 + 1, 1, 1, 0.5); if (i >= 4) lightRect(b, x, y0 + 2, 1, 1, 0.25); }
+        if (i >= 3) shadeRect(b, x, y1 - 1, 1, 1, 0.16);
+        if (i >= 1) shadeRect(b, x, y1 + 1, 1, 1, i >= 3 ? 0.12 : 0.06);                      // resting on the mattress
+      }
     };
     if (style === 'messy') {
       // the top of the duvet, rumpled

@@ -199,7 +199,9 @@ const UI = (() => {
         splash.classList.remove('saver');
         splash.removeAttribute('role');
         window.removeEventListener('keydown', onKeyWake, true);
-        nameEl.focus({ preventScroll: true });
+        // on a touch screen the visitor taps the box to type: the iPad's keyboard then comes up from their own tap
+        // (opening it from here, while the door is still fading, can leave Safari stuck)
+        if (!(navigator.maxTouchPoints > 0)) nameEl.focus({ preventScroll: true });
       };
       const onKeyWake = e => {
         if (!splash.isConnected) { window.removeEventListener('keydown', onKeyWake, true); return; }
